@@ -13,7 +13,7 @@ Loader_Phy_Address equ Loader_Base * 0x10 + Loader_Offset
 ; 重新放置后分配的空间为 0x10000 ~ 0x90000 
 Kernel_File_Base		equ	0x7000
 Kernel_File_Offset		equ	0
-Kernel_File_Phy_Addr	equ	KERNEL_FILE_SEG * 0x10
+Kernel_File_Phy_Addr	equ	Kernel_File_Base * 0x10
 Kernel_Enter_point	equ	0x1000
 
 ; 超级块 目标内存地址
@@ -60,49 +60,4 @@ ELF_Header_e_phoff      equ 0x1c
 ELF_Program_Header_p_size   equ 0x10
 ELF_Program_Header_p_offset equ 0x4
 ELF_Program_Header_p_vaddr  equ 0x8
-
-; Kernel入口的物理地址
-; Kernel_Entry_Point_Phy_Addr equ 0x1000
-
-;; kernel entry point, corresponding with Makefile
-KRNL_ENT_PT_PHY_ADDR	equ	0x1000
-
-;; where kernel file is loaded
-KERNEL_FILE_SEG		equ	0x7000
-KERNEL_FILE_OFF		equ	0
-KERNEL_FILE_PHY_ADDR	equ	KERNEL_FILE_SEG * 0x10
-
-; bytes reserved for kernel.bin
-;KERNEL_VALID_SPACE	equ	LOADER_PHY_ADDR - KERNEL_FILE_PHY_ADDR
-
-;; super block will be stored at: [0x700,0x900)
-SUPER_BLK_SEG		equ	0x70
-
-;; ATTENTION:
-;;     Macros below should corresponding with C source.
-BOOT_PARAM_ADDR		equ	0x900
-BOOT_PARAM_MAGIC	equ	0xB007
-
-;; we don't calculate the base sector nr of the root device while loading
-;; but define it as a macro for two reasons:
-;; 1. it is a constant for any certain system
-;; 2. it simplifies boot sector and loader
-ROOT_BASE		equ	0x4EFF
-
-;; corresponding with include/sys/fs.h
-SB_MAGIC_V1		equ	0x111
-SB_MAGIC		equ	4 *  0
-SB_NR_INODES		equ	4 *  1
-SB_NR_SECTS		equ	4 *  2
-SB_NR_IMAP_SECTS	equ	4 *  3
-SB_NR_SMAP_SECTS	equ	4 *  4
-SB_N_1ST_SECT		equ	4 *  5
-SB_NR_INODE_SECTS	equ	4 *  6
-SB_ROOT_INODE		equ	4 *  7
-SB_INODE_SIZE		equ	4 *  8
-SB_INODE_ISIZE_OFF	equ	4 *  9
-SB_INODE_START_OFF	equ	4 * 10
-SB_DIR_ENT_SIZE		equ	4 * 11
-SB_DIR_ENT_INODE_OFF	equ	4 * 12
-SB_DIR_ENT_FNAME_OFF	equ	4 * 13
 

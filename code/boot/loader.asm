@@ -526,7 +526,6 @@ Protect_Mode_Start:
 
 	mov ax,SelectorVideo
 	mov gs,ax
-	xchg bx,bx
 	
 	;***************************************************************
 	jmp	SelectorFlatC:Kernel_Enter_point	; 正式进入内核 
@@ -781,6 +780,7 @@ next_entry:
 
 
 ; 启动分页机制 --------------------------------------------------------------
+; 其实感觉根据内存大小分配页表有些鸡肋,毕竟不缺那一点空间
 SetupPaging:
 	; 根据内存大小计算应初始化多少PDE以及多少页表
 	xor	edx, edx
