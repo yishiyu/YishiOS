@@ -67,10 +67,26 @@ int sys_get_diskinfo(char* buffer, int count, int pid) {
 
 u32 sys_get_pid() { return asm_syscall(SYS_GET_PID, 0, 0, 0, 0); }
 
-
+int sys_set_timer(int pid, u32 time){
+    return asm_syscall(SYS_SET_TIMER, pid, time, 0, 0);
+}
 
 //=================最终工作的函数======================
 // IPC相关函数单独放在一个文件中
 
 u32 kernel_get_ticks() { return ticks; }
 u32 kernel_get_pid() { return p_proc_ready_head->pid; }
+u32 kernel_set_timer(int pid, u32 time){
+    // 检查时间是否为正
+    if(time ==0) return 0;
+
+    // 寻找是否还有空余的定时器
+    for(int i=0;i<TASK_NUM;i++){
+        if(timers[i].pid == NO_TASK){
+            timers[i].pid = pid;
+            timers[i].time = time;
+            return 1;
+        }
+    }
+    return 0;
+}

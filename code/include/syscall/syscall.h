@@ -19,6 +19,7 @@ int sys_sendrec(int function, int src_dest, MESSAGE* m, int pid);
 u32 sys_get_ticks();
 int sys_get_diskinfo(char* buffer, int count, int pid);
 u32 sys_get_pid();
+int sys_set_timer(int pid, u32 time);
 
 //============系统调用中引发中断的函数部分===============
 u32 asm_syscall(int sys_vector, u32 para0, u32 para1, u32 para2, u32 para3);
@@ -27,6 +28,7 @@ u32 asm_syscall(int sys_vector, u32 para0, u32 para1, u32 para2, u32 para3);
 u32 kernel_sendrec(int function, int src_dest, MESSAGE* m, int pid);
 u32 kernel_get_ticks();
 u32 kernel_get_pid();
+u32 kernel_set_timer(int pid, u32 time);
 
 //=====================工具函数=======================
 int ldt_seg_linear(int pid, int seg_index);

@@ -21,6 +21,14 @@ void tty_0() {
     terminal_init(terminal);
     terminal_draw_screen(terminal);
     terminal_main(terminal, PID_TTY0);
+
+    // while (1) {
+    //     MESSAGE message;
+    //     sys_set_timer(PID_TTY0, 1000);
+    //     sys_sendrec(RECEIVE, ANY, &message, PID_TTY0);
+    //     disp_int(sys_get_ticks());
+    //     disp_str("\n");
+    // }
 }
 
 // 第二个终端
@@ -42,4 +50,5 @@ void tty_1() {
 
     terminal_init(terminal);
     terminal_main(terminal, PID_TTY1);
+
 }

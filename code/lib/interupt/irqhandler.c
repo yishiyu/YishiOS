@@ -4,6 +4,19 @@
 // 之所以加了个参数,是因为才处理中断的时候把中断号压栈了
 // 具体情况看include/base/kernel.inc 中关于中断处理函数的宏定义
 void clock_handler(int irq) {
+    for (int pid = 0; pid < TASK_NUM; pid++) {
+        // 判断该进程是否设置了定时器
+        if (timers[pid].pid != NO_TASK) {
+            timers[pid].time--;
+            // 判断该进程设置的时间是否到了
+            if (timers[pid].time <= 1) {
+                // 向对应的进程发送唤醒信息,然后取消该定时器
+                inform_int(timers[pid].pid, HARD_INT_CLOCK);
+                timers[pid].pid = NO_TASK;
+            }
+        }
+    }
+
     ticks++;
     p_proc_ready_head->ticks--;
 

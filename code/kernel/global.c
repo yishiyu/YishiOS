@@ -59,7 +59,7 @@ irq_handler irq_table[IRQ_NUM];
 
 //系统调用处理函数指针数组
 system_call sys_call_table[SYS_CALL_NUM] = {kernel_sendrec, kernel_get_ticks,
-                                            kernel_get_pid};
+                                            kernel_get_pid, kernel_set_timer};
 
 // 任务级进程
 TASK task_table[TASK_NUM] = {
@@ -85,3 +85,6 @@ KEYMAP_BUFFER key_buffer;
 
 TERMINAL terminal_table[TERMINAL_NUM];
 CONSOLE console_table[TERMINAL_NUM];
+
+// 定时器数组
+TIMER timers[TASK_NUM];

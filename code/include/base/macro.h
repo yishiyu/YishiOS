@@ -174,7 +174,7 @@
 #define TIMER_MODE 0x43
 #define RATE_GENERATOR 0x34
 #define TIMER_FREQ 1193182L
-#define HZ 100
+#define HZ 1000
 
 // 8259A 芯片的中断号和对应的中断
 #define IRQ_NUM 16
@@ -184,7 +184,7 @@
 #define IRQ_DISK 14
 
 // 系统调用的个数及其对应的中断号
-#define SYS_CALL_NUM 3
+#define SYS_CALL_NUM 4
 #define SYS_CALL_VECTOR 0x90
 
 // 系统调用表
@@ -193,6 +193,7 @@
 #define SYS_SENDREC 0
 #define SYS_GET_TICKS 1
 #define SYS_GET_PID 2
+#define SYS_SET_TIMER 3
 
 // 键盘缓冲区大小
 #define KEY_BUF_SIZE 128
@@ -284,6 +285,7 @@
 // 硬件中断类型
 #define HARD_INT_KEYBOARD 0x01  // 键盘中断
 #define HARD_INT_DISK 0x02      // 硬盘中断
+#define HARD_INT_CLOCK 0x04    // 时钟中断
 
 // OUTPUT子系统宏定义
 // OUTPUT子系统消息类型

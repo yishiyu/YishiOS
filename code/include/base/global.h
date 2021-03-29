@@ -89,4 +89,7 @@ extern KEYMAP_BUFFER key_buffer;
 extern TERMINAL terminal_table[];
 extern CONSOLE console_table[];
 
+// 定时器数组
+extern TIMER timers[];
+
 #endif
