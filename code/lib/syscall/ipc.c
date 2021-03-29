@@ -327,6 +327,11 @@ void inform_int(int pid, u32 int_type) {
         p->flags &= ~RECEIVING;
         p->recv_from = NO_TASK;
         unblock(pid);
+
+        // 如果当前运行的是空进程,则执行一次进程调度
+        if(p_proc_ready_head == &PCB_empty_task){
+            schedule();
+        }
     }
     // 2. 如果进程没有阻塞(进程没有准备好接收信息)
     // 把中断信息存放在has_int_msg变量中

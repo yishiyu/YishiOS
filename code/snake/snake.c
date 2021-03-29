@@ -78,12 +78,11 @@ void snake_handler() {
             snake_move();
             break;
 
-        case PID_TTY0:
-            // 2. 键盘消息
-            snake_control();
-            break;
-
         default:
+            // 2. 键盘信息
+            if (message.type == INPUT_SYSTEM) {
+                snake_control();
+            }
             break;
     }
 }
@@ -125,23 +124,70 @@ void snake_move() {
 }
 // 键盘信号处理
 void snake_control() {
-    switch (message.u.input_message.keyboard_result.data) {
-        case KEYBOARD_FUNC_UP:
-            snake_dire = SNAKE_UP;
-            break;
-        case KEYBOARD_FUNC_DOWN:
-            snake_dire = SNAKE_DOWN;
-            break;
-        case KEYBOARD_FUNC_LEFT:
-            snake_dire = SNAKE_LEFT;
-            break;
-        case KEYBOARD_FUNC_RIGHT:
-            snake_dire = SNAKE_RIGHT;
-            break;
-
-        default:
-            break;
+    if (message.u.input_message.keyboard_result.type == KEYBOARD_TYPE_ASCII) {
+        // ASCII 字符
+        switch (message.u.input_message.keyboard_result.data) {
+            case KEYBOARD_FUNC_PAUSE:
+                // 暂停键
+                while (1) {
+                    sys_sendrec(RECEIVE, ANY, &message, pid_snake);
+                    if ((message.type == INPUT_SYSTEM) &&
+                        (message.u.input_message.keyboard_result.type ==
+                         KEYBOARD_TYPE_ASCII) &&
+                        (message.u.input_message.keyboard_result.data ==
+                         KEYBOARD_FUNC_PAUSE)) {
+                        sys_set_timer(pid_snake, SNAKE_SPEED);
+                        break;
+                    }
+                }
+                break;
+            default:
+                break;
+        }
+    } else if (message.u.input_message.keyboard_result.type ==
+               KEYBOARD_TYPE_FUNC) {
+        //  功能按键
+        switch (message.u.input_message.keyboard_result.data) {
+            case KEYBOARD_FUNC_UP:
+                snake_dire = SNAKE_UP;
+                break;
+            case KEYBOARD_FUNC_DOWN:
+                snake_dire = SNAKE_DOWN;
+                break;
+            case KEYBOARD_FUNC_LEFT:
+                snake_dire = SNAKE_LEFT;
+                break;
+            case KEYBOARD_FUNC_RIGHT:
+                snake_dire = SNAKE_RIGHT;
+                break;
+            case KEYBOARD_FUNC_SHIFT:
+                snake_exit();
+                break;
+            default:
+                break;
+        }
     }
+}
+
+// 退出函数
+void snake_exit() {
+    for (int i = 0; i < MAX_ROW; i++) {
+        for (int j = 0; j < MAX_COLUMN; j++) {
+            video_mem[i * MAX_COLUMN + j].data = ' ';
+            video_mem[i * MAX_COLUMN + j].color = SNAKE_COLOR;
+        }
+    }
+    snake_refresh();
+    message.source = pid_snake;
+    message.type = 0;
+    message.u.mem_message.function = MEM_EXEIT;
+    message.u.mem_message.pid = pid_snake;
+    sys_sendrec(SEND, PID_TTY0, &message, pid_snake);
+    sys_sendrec(SEND, MEM_SYSTEM, &message, pid_snake);
+    sys_sendrec(RECEIVE, SERVER_MEM, &message, pid_snake);
+    // 等待退出
+    while (1)
+        ;
 }
 
 // 显示字符

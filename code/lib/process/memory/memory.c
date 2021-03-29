@@ -33,9 +33,10 @@ void mem_server() {
                 result = execute(&message);
                 break;
 
-            // case MEM_EXEIT:
-            //     // 运行一个程序
-            //     break;
+            case MEM_EXEIT:
+                exit(&message);
+                // 退出一个程序
+                break;
             default:
                 break;
         }
@@ -88,7 +89,14 @@ int execute(MESSAGE* message) {
     // 7. 返回子进程pid
     return pid;
 }
-void exit(MESSAGE* message) {}
+
+// 退出指定pid的进程
+void exit(MESSAGE* message) {
+    // 1. 把 PCB 从队列中提取并释放
+    free_pcb(message->u.mem_message.pid);
+    // 2. 释放内存
+    free_mem(message->u.mem_message.pid);
+}
 
 #pragma region PCB的申请与释放
 // 从预定义的PCB中取得一个空节点
@@ -161,7 +169,15 @@ int get_mem(u32* mem_ptr) {
     }
     return 0;
 }
-void free_mem() {}
+void free_mem(int pid) {
+    // 1. 计算内存空间位置
+    u32 memptr = (u32)va2la(pid, 0);
+    u32 mem_index = memptr / MM_BLOCK_SIZE;
+    u32 i = mem_index / 8;
+    u32 j = mem_index % 8;
+    // 2. 释放空间
+    MM_mem_bitmap[i] &= ~(1 << j);
+}
 
 #pragma endregion
 
@@ -250,6 +266,15 @@ void set_pcb(PROCESS* proc, char* name, u32 pid, u32 segment_base) {
     proc->regs.fs = (8 * 1) | SELEC_TI_LOCAL | PRIVILEGE_TASK;
     proc->regs.ss = (8 * 1) | SELEC_TI_LOCAL | PRIVILEGE_TASK;
     proc->regs.gs = (8 * 1) | SELEC_TI_LOCAL | PRIVILEGE_TASK;
+    proc->regs.edi = 0;
+    proc->regs.esi = 0;
+    proc->regs.ebp = 0;
+    proc->regs.kernel_esp = 0;
+    proc->regs.ebx = 0;
+    proc->regs.edx = 0;
+    proc->regs.ecx = 0;
+    proc->regs.eax = 0;
+    proc->regs.retaddr = 0;
     // proc->regs.gs = (SELECTOR_KERNEL_GS & SELEC_ATTR_RPL_MASK) | RPL_TASK;
 
     // 6. 设置进程当前运行的PC寄存器和栈寄存器

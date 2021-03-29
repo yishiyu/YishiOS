@@ -25,29 +25,28 @@ void terminal_init(TERMINAL* terminal) {
 void terminal_init_screen(TERMINAL* terminal) {
     terminal->terminal_ID = tty_count;
     terminal->console = &console_table[tty_count];
-    int mem_in_word = VIDEO_MEM_SIZE >> 1;
-    int mem_size = mem_in_word / TERMINAL_NUM;
-    terminal->console->original_addr = (u32)tty_count * mem_size;
-    terminal->console->mem_limit = mem_size;
+    terminal->console->original_addr =
+        (u32)tty_count * ((VIDEO_MEM_SIZE >> 1) / TERMINAL_NUM);
+    terminal->console->mem_limit = ((VIDEO_MEM_SIZE >> 1) / TERMINAL_NUM);
     terminal->console->current_start_addr = terminal->console->original_addr;
     terminal->console->cursor = terminal->console->original_addr;
     tty_count++;
 }
 
-// 终端的主函数
+// 主函数
 void terminal_main(TERMINAL* terminal, int terminal_pid, MESSAGE* message) {
     terminal_disp_str(terminal, "Terminal ");
     terminal_disp_int(terminal, terminal->terminal_ID);
     terminal_disp_str(terminal, "\n> ");
     while (1) {
-        sys_sendrec(RECEIVE, PID_INPUT_SERVER, message, terminal_pid);
+        sys_sendrec(RECEIVE, ANY, message, terminal_pid);
 
         switch (message->source) {
             case PID_INPUT_SERVER:
                 // 如果终端创建了子进程的话,就把消息继续向子进程传递
                 if (terminal->child_pid != NO_TASK) {
                     message->source = terminal->pid;
-                    message->type = terminal->pid;
+                    message->type = INPUT_SYSTEM;
                     message->u.input_message.input_source = terminal->pid;
                     sys_sendrec(SEND, terminal->child_pid, message,
                                 terminal->pid);
@@ -58,8 +57,17 @@ void terminal_main(TERMINAL* terminal, int terminal_pid, MESSAGE* message) {
                 break;
 
             default:
-                terminal_handler(terminal,
-                                 message->u.input_message.keyboard_result);
+                if ((terminal->child_pid != NO_TASK) &&
+                    (message->source == terminal->child_pid)) {
+                    // 如果是子进程发送来的退出信息
+                    if (message->type == 0) {
+                        terminal->child_pid = NO_TASK;
+                        terminal_disp_str(terminal, "\n> ");
+                    }
+                } else {
+                    terminal_handler(terminal,
+                                     message->u.input_message.keyboard_result);
+                }
                 break;
         }
     }
@@ -251,7 +259,8 @@ void terminal_command_handler(TERMINAL* terminal) {
 void terminal_disp_char(TERMINAL* terminal, char data) {
     // 把字符填充到显存中并修改光标
     // 1. 根据光标得到要显示的位置
-    u8* video_mem_position =
+    u8* video_mem_position[TERMINAL_NUM];
+    video_mem_position[terminal->terminal_ID] =
         (u8*)(VIDEO_MEM_BASE + terminal->console->cursor * 2);
 
     // 2. 填充字符和颜色
@@ -273,15 +282,15 @@ void terminal_disp_char(TERMINAL* terminal, char data) {
                 (((terminal->in_head - terminal->in_tail) % TTY_BUFFER_NUM) ==
                  terminal->in_count)) {
                 // 缓冲区非空,即此条命令有未被消除的部分
-                video_mem_position--;
-                *video_mem_position = BLANK_CHAR_COLOR;
+                video_mem_position[terminal->terminal_ID]--;
+                *(video_mem_position[terminal->terminal_ID]) = BLANK_CHAR_COLOR;
                 terminal->console->cursor--;
             }
             break;
 
         default:
-            *video_mem_position++ = data;
-            *video_mem_position = DEFAULT_CHAR_COLOR;
+            *(video_mem_position[terminal->terminal_ID])++ = data;
+            *(video_mem_position[terminal->terminal_ID]) = DEFAULT_CHAR_COLOR;
             terminal->console->cursor++;
             break;
     }
@@ -298,23 +307,24 @@ void terminal_disp_str(TERMINAL* terminal, char* data) {
 }
 
 void terminal_disp_int(TERMINAL* terminal, int data) {
-    char message[20] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-                        0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-    char* temp = &message[19];
+    char message[TERMINAL_NUM][20];
+    memset((void*)message[terminal->terminal_ID], 0, 20);
+    char* temp[TERMINAL_NUM];
+    temp[terminal->terminal_ID] = &message[terminal->terminal_ID][19];
 
     // 把数字转成字符串
     if (data == 0) {
-        temp--;
-        *temp = '0';
+        temp[terminal->terminal_ID]--;
+        *(temp[terminal->terminal_ID]) = '0';
     }
     while (data > 0) {
-        temp--;
-        *temp = (data % 10 + '0');
+        temp[terminal->terminal_ID]--;
+        *(temp[terminal->terminal_ID]) = (data % 10 + '0');
         data /= 10;
     }
 
     // 输出字符串
-    terminal_disp_str(terminal, temp);
+    terminal_disp_str(terminal, temp[terminal->terminal_ID]);
 }
 #pragma endregion
 

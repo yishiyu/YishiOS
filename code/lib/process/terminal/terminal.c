@@ -58,9 +58,9 @@ void tty_1() {
     int i = 0;
     int pid = sys_get_pid();
 
-	while(1);
-
     MESSAGE message;
+    while (1)
+        ;
 
     terminal_init(terminal);
     terminal_main(terminal, PID_TTY1, &message);

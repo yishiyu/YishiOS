@@ -26,7 +26,7 @@ int get_pcb(PROCESS** proc);
 void free_pcb(int pid);
 // 2. 内存的申请与释放
 int get_mem(u32* mem_ptr);
-void free_mem();
+void free_mem(int pid);
 // 3. elf文件的读取与重新放置
 int read_elf(char* buffer, struct inode* elf_inode);
 u32 replace_elf(char* buffer, u32 segment_base);

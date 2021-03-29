@@ -36,8 +36,17 @@
 #define KEYBOARD_FUNC_LEFT 2
 #define KEYBOARD_FUNC_RIGHT 3
 #define KEYBOARD_FUNC_SHIFT 4
-#define KEYBOARD_FUNC_CTRL 5
-#define KEYBOARD_FUNC_ALT 6
+#define KEYBOARD_FUNC_PAUSE ('p')
+
+// 键盘数据类型定义
+#define KEYBOARD_TYPE_EMPTY 0  // 空数据
+#define KEYBOARD_TYPE_ASCII 1  // 可打印的ASCII码
+#define KEYBOARD_TYPE_FUNC 2   // 功能按钮
+
+// 内存管理宏
+#define MEM_EXECUTE 0x01
+#define MEM_EXEIT 0x02
+
 
 // 入口函数
 void _start();
@@ -48,6 +57,7 @@ void snake_handler();
 void snake_refresh();
 void snake_move();
 void snake_control();
+void snake_exit();
 
 // 调试函数
 void disp_str(char* data);
