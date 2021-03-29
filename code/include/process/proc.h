@@ -5,10 +5,9 @@
 #ifndef YISHIOS_PROC_H
 #define YISHIOS_PROC_H
 
-#include "display.h"
-#include "global.h"
-#include "struct.h"
+
 #include "func.h"
+#include "irqhandler.h"
 
 int start_proc();
 

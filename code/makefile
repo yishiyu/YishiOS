@@ -12,14 +12,18 @@ ENTRYPOINT	= 	0x1000
 # 取决于 ENTRYPOINT
 ENTRYOFFSET	=   0x400
 
+# 分析函数调用关系时传入的文件名
+export CALL_TREE_FILE = ./kernel/kernel.c
+
 # 命令中断指令和option的宏定义
 ASM		= nasm
 DASM	= ndisasm
 CC		= gcc
 LD		= ld
+INCLUDE_PATH = -I include/base/ -I include/display -I include/interupt -I include/process
 ASM_BOOT_FLAGS	= -I boot/include/
-ASM_KERNEL_FLAGS	= -I include/ -f elf
-C_FLAGS		= -I include/ -c -fno-builtin -m32 -fno-stack-protector
+ASM_KERNEL_FLAGS	=$(INCLUDE_PATH) -f elf
+C_FLAGS		= $(INCLUDE_PATH) -c -fno-builtin -m32 -fno-stack-protector
 LD_FLAGS		= -s -Ttext $(ENTRYPOINT) -m elf_i386
 DASM_FLAGS	= -u -o $(ENTRYPOINT) -e $(ENTRYOFFSET)
 
@@ -31,25 +35,33 @@ OBJS		= kernel/kernel.o kernel/global.o kernel/c_kernel.o \
 						lib/proc.o lib/memory.o lib/display.o lib/port.o lib/func.o lib/irqhandler.o \
 						lib/kerneltask.o
 DASM_OUTPUT	= kernel.bin.asm
+CALL_TREE = calltree.png
 
 
 # 声明所有支持的命令
-.PHONY : run everything clean realclean disasm final buildimg image
+.PHONY : run everything clean realclean disasm final buildimg image calltree
 
 # 默认启动点
 run	:	image 
 	bochs -f bochsrc
+
+# 生成函数调用关系图
+calltree : 
+	cflow $(INCLUDE_PATH)  -T $(CALL_TREE_FILE) | tee temp | tree2dotx | dot -Tpng -o $(CALL_TREE)
+	cat ./temp
+	rm ./temp
+
 
 # 引导文件 内核文件
 everything : $(YISHI_BOOT) $(YISHI_KERNEL)
 
 # 删除所有中间文件
 clean :
-	rm -f $(OBJS)
+	rm -f $(OBJS) $(CALL_TREE)
 
 # 清楚所有文件(包括中间文件和最终目标文件)
 realclean :
-	rm -f $(OBJS) $(YISHI_BOOT) $(YISHI_KERNEL)
+	rm -f $(OBJS) $(YISHI_BOOT) $(YISHI_KERNEL) $(CALL_TREE)
 
 # 把内核反汇编
 disasm :
@@ -77,7 +89,6 @@ image : final buildimg
 $(YISHI_KERNEL) : $(OBJS)
 	$(LD) $(LD_FLAGS) -o $(YISHI_KERNEL) $(OBJS)
 
-
 boot/boot.bin : boot/boot.asm boot/include/boot.inc boot/include/Ext2.inc
 	$(ASM) $(ASM_BOOT_FLAGS) -o $@ $<
 
@@ -93,23 +104,23 @@ kernel/c_kernel.o : kernel/kernel.c
 kernel/global.o : kernel/global.c
 	$(CC) $(C_FLAGS) -o $@ $<
 
-lib/proc.o : lib/proc.c
+lib/func.o : lib/base/func.c
 	$(CC) $(C_FLAGS) -o $@ $<
 
-lib/func.o : lib/func.c
+lib/memory.o : lib/base/memory.asm
+	$(ASM) $(ASM_KERNEL_FLAGS) -o $@ $<
+
+lib/port.o : lib/base/port.asm
+	$(ASM) $(ASM_KERNEL_FLAGS) -o $@ $<
+
+lib/proc.o : lib/process/proc.c
 	$(CC) $(C_FLAGS) -o $@ $<
 
-lib/memory.o : lib/memory.asm
+lib/display.o : lib/display/display.asm
 	$(ASM) $(ASM_KERNEL_FLAGS) -o $@ $<
 
-lib/display.o : lib/display.asm
-	$(ASM) $(ASM_KERNEL_FLAGS) -o $@ $<
-
-lib/port.o : lib/port.asm
-	$(ASM) $(ASM_KERNEL_FLAGS) -o $@ $<
-
-lib/irqhandler.o : lib/irqhandler.c
+lib/irqhandler.o : lib/interupt/irqhandler.c
 	$(CC) $(C_FLAGS) -o $@ $<
 
-lib/kerneltask.o : lib/kerneltask.c
+lib/kerneltask.o : lib/process/kerneltask.c
 	$(CC) $(C_FLAGS) -o $@ $<

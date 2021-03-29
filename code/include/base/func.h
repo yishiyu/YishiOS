@@ -1,14 +1,11 @@
 // kernel.c 中的二级函数
 //创建这个文件的目的是为了减小kernel.c的体积
-#ifndef	YISHIOS_FUNC_H
-#define	YISHIOS_FUNC_H
+#ifndef YISHIOS_FUNC_H
+#define YISHIOS_FUNC_H
 
 #include "display.h"
 #include "global.h"
 #include "memory.h"
-#include "port.h"
-#include "type.h"
-#include "macro.h"
 
 // 中断处理函数
 // 具体实现在kernel.asm中

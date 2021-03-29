@@ -1,6 +1,5 @@
 // 防止各种中断处理
-
-#include "global.h"
+#include "irqhandler.h"
 
 void clock_handler(int irq) {
     ticks++;
