@@ -12,6 +12,8 @@ static u8 FS_inode_bitmap[32][1024];
 static const struct inode* FS_inode_table = (struct inode*)0x600000;
 // 根目录inode
 static struct inode FS_root_inode;
+// 大小为1kb的一级索引缓冲区
+static u32 FS_first_index_block[256];
 
 // 入口函数
 void FS_server() {
@@ -87,6 +89,7 @@ int FS_read_file(MESSAGE* message) {
     // 1.1 计算文件剩余大小
     int bytes_left = (message->u.fs_message.fd->fd_inode->i_size -
                       message->u.fs_message.fd->fd_pos);
+    int block_index = 0;
     // 1.2 文件剩余部分是否足够大 | 1 --> 足够大 |  0 --> 不够大  |
     int result = (bytes_left > message->u.fs_message.count);
     // 1.3 取(剩余部分大小) (要读取大小)二者较小者
@@ -96,8 +99,7 @@ int FS_read_file(MESSAGE* message) {
                                 (void*)message->u.fs_message.buffer);
 
     // 2.1 读取前12个block(直接索引)
-    for (int block_index = 0; (bytes_left > 0) && block_index < 12;
-         block_index++) {
+    for (block_index = 0; (bytes_left > 0) && block_index < 12; block_index++) {
         // 每次最多读取一个block
         int bytes_to_read = (bytes_left > BLOCK_SIZE) ? BLOCK_SIZE : bytes_left;
         bytes_left -= bytes_to_read;
@@ -110,6 +112,28 @@ int FS_read_file(MESSAGE* message) {
     }
 
     // 2.2 读取第13个block(一级间接索引)
+    if ((bytes_left > 0) && block_index == 12) {
+        // 读取一级索引块
+        FS_read_disk(
+            B2S(message->u.fs_message.fd->fd_inode->i_block[block_index]),
+            &FS_first_index_block, BLOCK_SIZE);
+
+        // 根据一级索引块读取文件
+        // 一级索引块中最多放1kb/4b = 256 个block索引号
+        for (block_index = 0; (bytes_left > 0) && block_index < 256;
+             block_index++) {
+            // 每次最多读取一个block
+            int bytes_to_read =
+                (bytes_left > BLOCK_SIZE) ? BLOCK_SIZE : bytes_left;
+            bytes_left -= bytes_to_read;
+
+            // 磁盘操作
+            FS_read_disk(B2S(FS_first_index_block[block_index]), buffer,
+                         bytes_to_read);
+            buffer += bytes_to_read;
+        }
+    }
+
     // 2.3 读取第14个block(二级间接索引)
     // 2.4 读取第15个block(三级间接索引)
     return result;

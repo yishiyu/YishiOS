@@ -2,6 +2,7 @@
 #include "snake.h"
 
 // 消息结构体
+static MESSAGE messages[4];
 static MESSAGE message;
 // 图形显示结构体
 static VIDEO_UNIT video_mem[MAX_ROW * MAX_COLUMN];
@@ -21,24 +22,15 @@ static u32 snake_ball = 80 * 5 + 60;
 static u8 snake_dire = 3;
 static const int direction[4] = {-MAX_COLUMN, MAX_COLUMN, -1, 1};
 
-// 函数起始标志
+
 void _start() {
-    MESSAGE temp[2];
-    // 初始化
-    // snake_init();
-    sys_terminal_write(&temp[0], 0, "hello world \n", pid_snake);
-    // sys_set_timer(pid_snake, SNAKE_SPEED);
-    // // 1. 获取消息
-    // sys_sendrec(RECEIVE, ANY, &message, pid_snake);
-    sys_terminal_write(&temp[1], 0, " YISHI OS !!! \n", pid_snake);
-
-    // 主循环
-    while (1) {
-        // 2. 交给消息处理函数
-        // snake_handler();
-    }
-
-    return;
+    
+    pid_snake = sys_get_pid();
+    sys_terminal_clear(&messages[0], 0, pid_snake);
+    sys_terminal_write(&messages[1], 0, "hello world !!! \n", pid_snake);
+    sys_terminal_write(&messages[2], 0, "  YISHI OS !!! \n", pid_snake);
+    while (1)
+        ;
 }
 
 // 初始化
