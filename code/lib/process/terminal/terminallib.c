@@ -14,13 +14,14 @@ void terminal_init(TERMINAL* terminal) {
 
 // 初始化 终端的显示内容
 void terminal_init_screen(TERMINAL* terminal) {
+    terminal->terminal_ID = tty_count;
+    terminal->console = &console_table[tty_count];
     int mem_in_word = VIDEO_MEM_SIZE >> 1;
     int mem_size = mem_in_word / TERMINAL_NUM;
-    terminal->console.original_addr = (u32)tty_count * mem_size;
-    terminal->console.mem_limit = mem_size;
-    terminal->console.current_start_addr = terminal->console.original_addr;
-    terminal->console.cursor = terminal->console.original_addr;
-    terminal->terminal_ID = tty_count;
+    terminal->console->original_addr = (u32)tty_count * mem_size;
+    terminal->console->mem_limit = mem_size;
+    terminal->console->current_start_addr = terminal->console->original_addr;
+    terminal->console->cursor = terminal->console->original_addr;
     tty_count++;
 }
 
@@ -49,14 +50,6 @@ void terminal_handler(TERMINAL* terminal, KEYMAP_RESULT result) {
     if (result.type == KEYBOARD_TYPE_ASCII) {
         // 处理特殊字符
         switch (result.data) {
-            // case 'a':
-            //     terminal_disp_int(terminal, terminal->in_head);
-            //     terminal_disp_char(terminal,' ');
-            //     terminal_disp_int(terminal, terminal->in_tail);
-            //     terminal_disp_char(terminal,' ');
-            //     terminal_disp_int(terminal, terminal->in_count);
-            //     terminal_disp_char(terminal,' ');
-            //     break;
             case '\n':
             case 0x0d:
                 // 回车符
@@ -107,19 +100,19 @@ void terminal_handler(TERMINAL* terminal, KEYMAP_RESULT result) {
 
             case KEYBOARD_FUNC_UP:
                 // 向上滚动屏幕
-                if (terminal->console.current_start_addr >
-                    terminal->console.original_addr) {
-                    terminal->console.current_start_addr -= 80;
+                if (terminal->console->current_start_addr >
+                    terminal->console->original_addr) {
+                    terminal->console->current_start_addr -= 80;
                     terminal_draw_screen(terminal);
                 }
                 break;
 
             case KEYBOARD_FUNC_DOWN:
                 // 向下滚动屏幕
-                if (terminal->console.current_start_addr <
-                    (terminal->console.original_addr +
-                     terminal->console.mem_limit)) {
-                    terminal->console.current_start_addr += 80;
+                if (terminal->console->current_start_addr <
+                    (terminal->console->original_addr +
+                     terminal->console->mem_limit)) {
+                    terminal->console->current_start_addr += 80;
                     terminal_draw_screen(terminal);
                 }
                 break;
@@ -130,7 +123,7 @@ void terminal_handler(TERMINAL* terminal, KEYMAP_RESULT result) {
                 if (terminal->in_head != terminal->in_tail) {
                     terminal->in_head--;
                     terminal->in_head %= TTY_BUFFER_NUM;
-                    terminal->console.cursor--;
+                    terminal->console->cursor--;
                     terminal_set_cursor(terminal);
                 }
                 break;
@@ -142,7 +135,7 @@ void terminal_handler(TERMINAL* terminal, KEYMAP_RESULT result) {
                     terminal->in_count) {
                     terminal->in_head++;
                     terminal->in_head %= TTY_BUFFER_NUM;
-                    terminal->console.cursor++;
+                    terminal->console->cursor++;
                     terminal_set_cursor(terminal);
                 }
                 break;
@@ -159,14 +152,14 @@ void terminal_draw_screen(TERMINAL* terminal) {
     //设置起始位置
     out_byte(CRT_CTRL_ADDR_REG, START_ADDR_H);
     out_byte(CRT_CTRL_DATA_REG,
-             (terminal->console.current_start_addr >> 8) & 0xFF);
+             (terminal->console->current_start_addr >> 8) & 0xFF);
     out_byte(CRT_CTRL_ADDR_REG, START_ADDR_L);
-    out_byte(CRT_CTRL_DATA_REG, (terminal->console.current_start_addr) & 0xFF);
+    out_byte(CRT_CTRL_DATA_REG, (terminal->console->current_start_addr) & 0xFF);
     //设置光标位置
     out_byte(CRT_CTRL_ADDR_REG, CURSOR_H);
-    out_byte(CRT_CTRL_DATA_REG, (terminal->console.cursor >> 8) & 0xFF);
+    out_byte(CRT_CTRL_DATA_REG, (terminal->console->cursor >> 8) & 0xFF);
     out_byte(CRT_CTRL_ADDR_REG, CURSOR_L);
-    out_byte(CRT_CTRL_DATA_REG, (terminal->console.cursor) & 0xFF);
+    out_byte(CRT_CTRL_DATA_REG, (terminal->console->cursor) & 0xFF);
     enable_int();
 }
 
@@ -175,9 +168,9 @@ void terminal_set_cursor(TERMINAL* terminal) {
     disable_int();
     // 设置光标位置
     out_byte(CRT_CTRL_ADDR_REG, CURSOR_H);
-    out_byte(CRT_CTRL_DATA_REG, (terminal->console.cursor >> 8) & 0xFF);
+    out_byte(CRT_CTRL_DATA_REG, (terminal->console->cursor >> 8) & 0xFF);
     out_byte(CRT_CTRL_ADDR_REG, CURSOR_L);
-    out_byte(CRT_CTRL_DATA_REG, (terminal->console.cursor) & 0xFF);
+    out_byte(CRT_CTRL_DATA_REG, (terminal->console->cursor) & 0xFF);
     enable_int();
 }
 
@@ -193,7 +186,7 @@ void terminal_disp_char(TERMINAL* terminal, char data) {
     // 把字符填充到显存中并修改光标
     // 1. 根据光标得到要显示的位置
     u8* video_mem_position =
-        (u8*)(VIDEO_MEM_BASE + terminal->console.cursor * 2);
+        (u8*)(VIDEO_MEM_BASE + terminal->console->cursor * 2);
 
     // 2. 填充字符和颜色
     // disp_int(data);
@@ -202,16 +195,16 @@ void terminal_disp_char(TERMINAL* terminal, char data) {
         case 0x0D:
             // 回车符
             // 换行
-            terminal->console.cursor += TERMINAL_WIDTH;
-            terminal->console.cursor -=
-                ((terminal->console.cursor - terminal->console.original_addr) %
-                 TERMINAL_WIDTH);
+            terminal->console->cursor += TERMINAL_WIDTH;
+            terminal->console->cursor -= ((terminal->console->cursor -
+                                           terminal->console->original_addr) %
+                                          TERMINAL_WIDTH);
             // 打印提示符
             video_mem_position =
-                (u8*)(VIDEO_MEM_BASE + terminal->console.cursor * 2);
+                (u8*)(VIDEO_MEM_BASE + terminal->console->cursor * 2);
             *video_mem_position++ = '>';
             *video_mem_position = DEFAULT_CHAR_COLOR;
-            terminal->console.cursor++;
+            terminal->console->cursor++;
             break;
 
         case '\b':
@@ -222,19 +215,20 @@ void terminal_disp_char(TERMINAL* terminal, char data) {
                 // 缓冲区非空,即此条命令有未被消除的部分
                 video_mem_position--;
                 *video_mem_position = BLANK_CHAR_COLOR;
-                terminal->console.cursor--;
+                terminal->console->cursor--;
             }
             break;
 
         default:
             *video_mem_position++ = data;
             *video_mem_position = DEFAULT_CHAR_COLOR;
-            terminal->console.cursor++;
+            terminal->console->cursor++;
             break;
     }
     // 3. 修改光标位置
     terminal_set_cursor(terminal);
 }
+
 void terminal_disp_str(TERMINAL* terminal, char* data) {
     // 输入的参数为字符串起始位置,字符串终结符为0
     while (*data != 0) {
@@ -242,6 +236,7 @@ void terminal_disp_str(TERMINAL* terminal, char* data) {
         data++;
     }
 }
+
 void terminal_disp_int(TERMINAL* terminal, int data) {
     char message[20] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
                         0, 0, 0, 0, 0, 0, 0, 0, 0, 0};

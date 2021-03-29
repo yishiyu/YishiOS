@@ -4,6 +4,7 @@
 
 #include "keyboardserver.h"
 #include "terminal.h"
+#include "output.h"
 
 void empty_function();
 

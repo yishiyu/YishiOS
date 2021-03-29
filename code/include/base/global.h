@@ -71,7 +71,8 @@ extern PROCESS* p_proc_pause_head;
 extern PROCESS p_proc_pause_tail;
 
 // 当前终端号
-extern int t_present_terminal;
+extern int t_present_terminal;  
+
 
 //中断处理函数指针数组
 extern irq_handler irq_table[];
@@ -85,6 +86,7 @@ extern KEYMAP_BUFFER key_buffer;
 extern KEYMAP_RESULT_BUFFER key_result_buffer;
 
 // 终端结构体表
-extern TERMINAL terminal_console_table[];
+extern TERMINAL terminal_table[];
+extern CONSOLE console_table[];
 
 #endif

@@ -124,7 +124,7 @@ typedef struct s_proc {
 
     // 0 --> ready to handle an interupt
     // 1 --> handling an interupt
-    // 操作系统通过把这一位从0设为1来通知中断的发生 
+    // 操作系统通过把这一位从0设为1来通知中断的发生
     int has_int_msg;
 
     // 希望发信息给该进程的进程的链表
@@ -141,6 +141,7 @@ typedef struct s_task {
     int stacksize;
     char name[16];
     int priority;
+    u32 pid;
 } TASK;
 
 // 键盘缓冲区结构体
@@ -184,16 +185,17 @@ typedef struct terminal {
     int in_count;
     int terminal_ID;
     //控制台
-    CONSOLE console;
-
+    CONSOLE* console;
 } TERMINAL;
 
-// 改自Minix
-struct mess1 {
-    int m1i1;
-    int m1i2;
-    int m1i3;
-    int m1i4;
+// 以下内容改自Minix
+// output子系统信息结构体, 信息类型为OUTPUT_SYSTEM (0)
+struct OUTPUT_MESSAGE {
+    char function;     // 执行的功能 --> 显示字符==0 特殊功能==1
+    CONSOLE* console;  // 要输出的控制台指针
+    u32 pid;  // 发送进程的pid,用于确定要显示字符的内存地址
+    char* data;  // 要显示字符的指针
+    char disp_func;     // 执行的具体功能
 };
 struct mess2 {
     void* m2p1;
@@ -212,11 +214,11 @@ struct mess3 {
     void* m3p2;
 };
 
-typedef struct mess{
+typedef struct mess {
     int source;
     int type;
     union {
-        struct mess1 m1;
+        struct OUTPUT_MESSAGE output_message;
         struct mess2 m2;
         struct mess3 m3;
     } u;

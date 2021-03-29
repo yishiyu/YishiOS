@@ -39,25 +39,23 @@ KEYMAP_RESULT sys_read_keyboard() {
     return result;
 }
 
-void sys_terminal_write(int terminal_index, char* data, int pid) {
-    asm_syscall(SYS_TERMIBAL_WRITE, (u32)terminal_index, (u32)data, (u32)pid,
-                0);
+void sys_terminal_write(int console_index, char* data, int pid) {
+    MESSAGE message;
+    message.source = pid;
+    message.type = SERVER_OUTPUT;
+    message.u.output_message.console = &console_table[console_index];
+    message.u.output_message.data = data;
+    message.u.output_message.function = OUTPUT_MESSTYPE_DISP;
+    message.u.output_message.pid = pid;
+    asm_syscall(SYS_SENDREC, SEND, OUTPUT_SYSTEM, &message, (u32)pid);
 }
 
 int sys_sendrec(int function, int src_dest, MESSAGE* m, int pid) {
-    disp_str("point syscall.c sys_sendrec 0,src_dest == ");
-    disp_int(src_dest);
-    disp_str(" pid == ");
-    disp_int(pid);
-    disp_str("\n");
-    pause();
     return (int)asm_syscall(SYS_SENDREC, (u32)function, (u32)src_dest, (u32)m,
                             (u32)pid);
 }
 
-u32 sys_get_ticks(){
-    return asm_syscall(SYS_GET_TICKS,0,0,0,0);
-}
+u32 sys_get_ticks() { return asm_syscall(SYS_GET_TICKS, 0, 0, 0, 0); }
 
 //=================最终工作的函数======================
 // 本函数工作在内核态
@@ -84,17 +82,7 @@ u32 kernel_read_keyboard() {
     return *((u32*)(result));
 }
 
-// 工作在内核态
-u32 kernel_terminal_write(int terminal_index, char* data, int pid) {
-    char *kernel_data = (char*)va2la(pid, (void*)data);
-    TERMINAL* terminal = &terminal_console_table[terminal_index];
-    terminal_disp_str(terminal, kernel_data);
-    return 0;
-}
-
 // 相关函数太多了,单独写在一个文件中 ---- ipc.c (inter process communication)
 // u32 kernel_sendrec(int function, int src_dest, MESSAGE* m, int pid);
 
-u32 kernel_get_ticks(){
-    return ticks;
-}
+u32 kernel_get_ticks() { return ticks; }

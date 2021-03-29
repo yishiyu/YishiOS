@@ -21,7 +21,8 @@ DASM	= ndisasm
 CC		= gcc
 LD		= ld
 INCLUDE_PATH = -I include/base/ -I include/display -I include/interupt -I include/process \
-								 -I include/syscall -I include/process/keyboardserver -I include/process/terminal
+								 -I include/syscall -I include/process/keyboardserver -I include/process/terminal \
+								 -I include/process/output
 ASM_BOOT_FLAGS	= -I boot/include/
 ASM_KERNEL_FLAGS	=$(INCLUDE_PATH) -f elf
 C_FLAGS		= $(INCLUDE_PATH) -c -fno-builtin -m32 -fno-stack-protector -g
@@ -40,7 +41,7 @@ OBJS		= kernel/kernel.o kernel/global.o kernel/c_kernel.o \
 						lib/process/keyboardserver/keymap.o lib/process/terminal/terminal.o \
 						lib/process/keyboardserver/keyboardserver.o lib/process/terminal/terminallib.o \
 						lib/syscall/ipc.o lib/syscall/syscalllib.o \
-						lib/process/kerneltask.o
+						lib/process/kerneltask.o lib/process/output/output.o
 DASM_OUTPUT	= kernel.bin.asm
 CALL_TREE = calltree.png
 
@@ -163,4 +164,7 @@ lib/syscall/syscalllib.o : lib/syscall/syscalllib.c
 	$(CC) $(C_FLAGS) -o $@ $<
 
 lib/process/kerneltask.o : lib/process/kerneltask.c
+	$(CC) $(C_FLAGS) -o $@ $<
+
+lib/process/output/output.o : lib/process/output/output.c
 	$(CC) $(C_FLAGS) -o $@ $<

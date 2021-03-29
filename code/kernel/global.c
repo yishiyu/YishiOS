@@ -39,8 +39,8 @@ u32 k_reenter;
 u32 ticks;
 
 //  空白PCB存储结构
-int PCB_USED=0;
-int PCB_stack_status[MAX_PROCESS_NUM]={0};
+int PCB_USED = PID_STACK_BASE;
+int PCB_stack_status[MAX_PROCESS_NUM] = {0};
 PROCESS PCB_stack[MAX_PROCESS_NUM];
 
 // 进程调度指针
@@ -59,7 +59,7 @@ irq_handler irq_table[IRQ_NUM];
 
 //系统调用处理函数指针数组
 system_call sys_call_table[SYS_CALL_NUM] = {kernel_read_keyboard,
-                                            kernel_terminal_write,kernel_sendrec,kernel_get_ticks};
+                                            kernel_sendrec, kernel_get_ticks};
 
 //系统预定义进程初始状态
 //其中的终端即终端队列中的第一个成员,即默认就绪队列中的终端指针指向第一个终端
@@ -73,15 +73,19 @@ system_call sys_call_table[SYS_CALL_NUM] = {kernel_read_keyboard,
 
 // 任务级进程
 TASK task_table[TASK_NUM] = {
+    {output_server, STACK_OUTPUT_SYSTEM, "output_server",
+     PRIORITY_OUTPUT_SERVER, PID_OUTPUT_SERVER},
     {keyboard_server, STACK_KEYBOARD_SERVER, "keyboard_server",
-     PRIORITY_KEYBOARD_SERVER},
-    {tty_0, STACK_TERMINAL, "terminal_0", PRIORITY_TERMINAL},
-    {tty_1, STACK_TERMINAL, "terminal_1", PRIORITY_TERMINAL}};
+     PRIORITY_KEYBOARD_SERVER, PID_KEYBOARD_SERVER},
+    {tty_0, STACK_TERMINAL, "terminal_0", PRIORITY_TERMINAL, PID_TTY0},
+    {tty_1, STACK_TERMINAL, "terminal_1", PRIORITY_TERMINAL, PID_TTY1}};
 
-TASK empty_task={empty_function,STACK_EMPTY_TASK,"empty_task",PRIORITY_EMPTY_TASK};
+TASK empty_task = {empty_function, STACK_EMPTY_TASK, "empty_task",
+                   PRIORITY_EMPTY_TASK};
 PROCESS PCB_empty_task;
 
 KEYMAP_BUFFER key_buffer;
 KEYMAP_RESULT_BUFFER key_result_buffer;
 
-TERMINAL terminal_console_table[TERMINAL_NUM];
+TERMINAL terminal_table[TERMINAL_NUM];
+CONSOLE console_table[TERMINAL_NUM];

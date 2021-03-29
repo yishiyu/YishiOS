@@ -1,4 +1,3 @@
-
 #include "proc.h"
 
 // 本文件调试开关
@@ -22,6 +21,7 @@ void restart();
 // 初始化所有系统任务,终端任务,同时在就绪队列中设置一个指针指向第一个终端
 int start_proc() {
     disp_clear_screen();
+
     // ======================初始化系统进程==================
     // 指向系统为初始进程留下的栈空间
     // 加上栈总长是为了使得该指针指向栈顶(最高地址)
@@ -38,14 +38,18 @@ int start_proc() {
 
     for (int i = 0; i < TASK_NUM; i++) {
         // 获取一个新的PCB
-        u32 PID = get_pcb(&temp_proc);
+        // u32 PID = get_pcb(&temp_proc);
 
-        if (PID == -1) {
-            disp_str("point proc.c start_proc, no enough pcb");
-            pause();
-            while (1)
-                ;
-        }
+        // if (PID == -1) {
+        //     disp_str("point proc.c start_proc, no enough pcb");
+        //     pause();
+        //     while (1)
+        //         ;
+        // }
+        // 不需要从空pcb栈中获取的空pcb了,直接使用系统预留的pid及对应的pcb初始化
+        u32 PID = p_task[i].pid;
+        temp_proc = &PCB_stack[PID];
+        PCB_stack_status[PID]=1;
 
         // 初始化PCB
         init_pcb(&p_task[i], temp_proc, PID, p_task_stack, selector_ldt);
