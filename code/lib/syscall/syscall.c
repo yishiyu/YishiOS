@@ -4,38 +4,35 @@
 
 //===============用户可以调用的系统调用==================
 // 显示一个字符串
-void sys_terminal_write(int console_index, char* data, int pid) {
-    MESSAGE message;
-    message.source = pid;
-    message.type = SERVER_OUTPUT;
-    message.u.output_message.console_index = console_index;
-    message.u.output_message.data = data;
-    message.u.output_message.function = OUTPUT_MESSTYPE_DISP;
-    message.u.output_message.pid = pid;
-    asm_syscall(SYS_SENDREC, SEND, OUTPUT_SYSTEM, (u32)&message, (u32)pid);
+void sys_terminal_write(MESSAGE *message,int console_index, char* data, int pid) {
+    message->source = pid;
+    message->type = SERVER_OUTPUT;
+    message->u.output_message.console_index = console_index;
+    message->u.output_message.data = data;
+    message->u.output_message.function = OUTPUT_MESSTYPE_DISP;
+    message->u.output_message.pid = pid;
+    asm_syscall(SYS_SENDREC, SEND, OUTPUT_SYSTEM, (u32)message, (u32)pid);
 }
 // 屏幕下滚至清空
-void sys_terminal_clear(int console_index, int pid) {
-    MESSAGE message;
-    message.source = pid;
-    message.type = SERVER_OUTPUT;
-    message.u.output_message.console_index = console_index;
-    message.u.output_message.function = OUTPUT_MESSTYPE_FUNC;
-    message.u.output_message.pid = pid;
-    message.u.output_message.disp_func = OUTPUT_DISP_FUNC_CLEAR;
-    asm_syscall(SYS_SENDREC, SEND, OUTPUT_SYSTEM, (u32)&message, (u32)pid);
+void sys_terminal_clear(MESSAGE *message,int console_index, int pid) {
+    message->source = pid;
+    message->type = SERVER_OUTPUT;
+    message->u.output_message.console_index = console_index;
+    message->u.output_message.function = OUTPUT_MESSTYPE_FUNC;
+    message->u.output_message.pid = pid;
+    message->u.output_message.disp_func = OUTPUT_DISP_FUNC_CLEAR;
+    asm_syscall(SYS_SENDREC, SEND, OUTPUT_SYSTEM, (u32)message, (u32)pid);
 }
 // 根据一块内存刷新界面
-void sys_terminal_draw(int console_index, char* data, int pid){
-    MESSAGE message;
-    message.source = pid;
-    message.type = SERVER_OUTPUT;
-    message.u.output_message.console_index = console_index;
-    message.u.output_message.data = data;
-    message.u.output_message.function = OUTPUT_MESSTYPE_FUNC;
-    message.u.output_message.pid = pid;
-    message.u.output_message.disp_func = OUTPUT_DISP_FUNC_DRAW;
-    asm_syscall(SYS_SENDREC, SEND, OUTPUT_SYSTEM, (u32)&message, (u32)pid);
+void sys_terminal_draw(MESSAGE *message,int console_index, char* data, int pid) {
+    message->source = pid;
+    message->type = SERVER_OUTPUT;
+    message->u.output_message.console_index = console_index;
+    message->u.output_message.data = data;
+    message->u.output_message.function = OUTPUT_MESSTYPE_FUNC;
+    message->u.output_message.pid = pid;
+    message->u.output_message.disp_func = OUTPUT_DISP_FUNC_DRAW;
+    asm_syscall(SYS_SENDREC, SEND, OUTPUT_SYSTEM, (u32)message, (u32)pid);
 }
 
 int sys_sendrec(int function, int src_dest, MESSAGE* m, int pid) {

@@ -11,9 +11,9 @@
 
 //===============用户可以调用的系统调用==================
 // 屏幕显示用的系统调用
-void sys_terminal_write(int console_index, char* data, int pid);
-void sys_terminal_clear(int console_index, int pid);
-void sys_terminal_draw(int console_index, char* data, int pid);
+void sys_terminal_write(MESSAGE *message,int console_index, char* data, int pid);
+void sys_terminal_clear(MESSAGE *message,int console_index, int pid);
+void sys_terminal_draw(MESSAGE *message,int console_index, char* data, int pid);
 
 int sys_sendrec(int function, int src_dest, MESSAGE* m, int pid);
 u32 sys_get_ticks();

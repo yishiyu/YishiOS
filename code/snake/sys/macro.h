@@ -2,6 +2,9 @@
 #ifndef YISHIOS_MACRO_H
 #define YISHIOS_MACRO_H
 
+// 最大进程数
+#define MAX_PROCESS_NUM 10
+
 // 终端缓冲区大小
 #define TTY_BUFFER_NUM 256
 
@@ -10,11 +13,12 @@
 #define SYS_CALL_VECTOR 0x90
 
 // 系统调用表
-// 系统调用中只有两个是宏内核的方式实现,其他的用IPC实现
+// 系统调用中三个是宏内核的方式实现,其他的用IPC实现
 // 需要与global.c声明的系统调用表顺序保持一致
 #define SYS_SENDREC 0
 #define SYS_GET_TICKS 1
 #define SYS_GET_PID 2
+#define SYS_SET_TIMER 3
 
 // 终端字符颜色
 #define DEFAULT_CHAR_COLOR (MAKE_COLOR(BLACK, WHITE))
@@ -29,6 +33,7 @@
 #define BLUE 0x1    /* 0001 */
 #define FLASH 0x80  /* 1000 0000 */
 #define BRIGHT 0x08 /* 0000 1000 */
+// x底y字
 #define MAKE_COLOR(x, y) ((x << 4) | y)
 
 // 进程间通信相关定义

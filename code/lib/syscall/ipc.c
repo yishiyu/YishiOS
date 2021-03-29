@@ -59,8 +59,7 @@ int msg_send(int current, int dest, MESSAGE* m) {
         (destiny->recv_from == current || destiny->recv_from == ANY)) {
         // 1.1 把消息送给目标
         // 相当于在目标进程内部产生返回值
-        phys_copy(va2la(dest, destiny->message), va2la(current, m),
-                  sizeof(MESSAGE));
+        phys_copy(va2la(dest, destiny->message), m, sizeof(MESSAGE));
 
         // 1.2 把目标从阻塞状态唤醒
         destiny->message = 0;
@@ -113,7 +112,7 @@ int msg_receive(int current, int src, MESSAGE* m) {
         p_who_wanna_recv->has_int_msg = 0;
 
         // 1.1 把该消息附在该进程上
-        phys_copy(va2la(current, m), &msg, sizeof(MESSAGE));
+        phys_copy(m, &msg, sizeof(MESSAGE));
 
         // 1.2 该中断消息已成功送达
         p_who_wanna_recv->has_int_msg = 0;
@@ -166,8 +165,7 @@ int msg_receive(int current, int src, MESSAGE* m) {
         }
 
         // A.2 把消息结构体复制过去
-        phys_copy(va2la(current, m), va2la(p_from->pid, p_from->message),
-                  sizeof(MESSAGE));
+        phys_copy(m, p_from->message, sizeof(MESSAGE));
 
         // A.3 把目标源唤醒
         p_from->message = 0;
