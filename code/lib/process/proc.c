@@ -74,6 +74,9 @@ int start_proc() {
     p_proc_pause_head = &p_proc_pause_tail;
     p_proc_wait_head = &p_proc_wait_tail;
 
+    //------------------------------------------初始化空进程--------------------------------------
+    init_pcb(&empty_task,&PCB_empty_task,EMPTY_TASK_PID,p_task_stack,selector_ldt);
+
     //===============系统初始化完成,进入系统进程=================
     k_reenter = 0;
     ticks = 0;
@@ -162,3 +165,4 @@ int get_pcb(PROCESS** proc) {
     // 触发错误
     return -1;
 }
+

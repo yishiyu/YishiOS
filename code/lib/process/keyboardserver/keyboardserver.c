@@ -1,5 +1,21 @@
 #include "keyboardserver.h"
 
+//#define __DEBUG_KEYBOARD_SERVER__
+
+#ifndef __YISHIOS_DEBUG__
+#define pause()
+#define disp_int(str)
+#define disp_str(str)
+#else
+#ifndef __DEBUG_KEYBOARD_SERVER__
+#define pause()
+#define disp_int(str)
+#define disp_str(str)
+#else
+extern void pause();
+#endif
+#endif
+
 // 静态变量 ,用于记录键盘状态
 static int code_with_E0;
 static int shift_l;

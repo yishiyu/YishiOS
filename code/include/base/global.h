@@ -53,6 +53,8 @@ extern u32 ticks;
 // extern TASK tty_task_table[];
 // 所有任务级进程
 extern TASK task_table[];
+extern TASK empty_task;
+extern PROCESS PCB_empty_task;
 
 // 把原本乱七八糟的进程表统一为三个链表
 // 同时使用一个栈来存放预定义好的进程链表节点

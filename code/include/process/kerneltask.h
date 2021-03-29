@@ -5,5 +5,6 @@
 #include "keyboardserver.h"
 #include "terminal.h"
 
+void empty_function();
 
 #endif

@@ -1,7 +1,7 @@
 // 防止各种中断处理
 #include "irqhandler.h"
 
-//#define __DEBUG_IRQHANDLER__
+// #define __DEBUG_IRQHANDLER__
 
 #ifndef __YISHIOS_DEBUG__
 #define pause()
@@ -38,9 +38,28 @@ void clock_handler(int irq) {
 
 // 进程调度函数
 void schedule() {
-    disp_str("point irqhandler.c schedule 1 \n");
+    disp_str("point irqhandler.c schedule 0 \n");
     pause();
     PROCESS* temp;
+
+    // 首先检查当前进程是不是空进程
+    // 如果是的话,把就绪队列指针指向就绪队列尾空指针
+    // 否则进行进程调度
+    if (is_empty_process) {
+        disp_str("point irqhandler.c schedule 1 \n");
+        pause();
+        p_proc_ready_head == &p_proc_ready_tail;
+    }
+
+    // 如果就绪队列和挂起队列同时为空,则使用空进程
+    if (is_ready_empty && is_pause_empty) {
+        disp_str("point irqhandler.c schedule 2,PCB_empty_task.name == ");
+        disp_str(PCB_empty_task.p_name);
+        disp_str("\n");
+        pause();
+        p_proc_ready_head = &PCB_empty_task;
+        return;
+    }
 
     // 普通调度,直接调取下一个待执行进程
     if (is_ready_empty) {
@@ -53,7 +72,7 @@ void schedule() {
             p_proc_pause_head = p_proc_pause_head->next_pcb;
         } while (!is_pause_empty);
 
-        disp_str("point irqhandler.c schedule 7 \n");
+        disp_str("point irqhandler.c schedule 3 \n");
         pause();
 
         // 交换两个链表
@@ -61,10 +80,10 @@ void schedule() {
         (p_proc_pause_tail.pre_pcb)->next_pcb = &p_proc_ready_tail;
         p_proc_ready_tail.pre_pcb = p_proc_pause_tail.pre_pcb;
 
-        disp_str("point irqhandler.c schedule 8 \n");
+        disp_str("point irqhandler.c schedule 4 \n");
         pause();
     } else if (!is_ready_one_left) {
-        disp_str("point irqhandler.c schedule 2 \n");
+        disp_str("point irqhandler.c schedule 5 \n");
         pause();
 
         // 就绪链表中还有剩余进程
@@ -79,7 +98,7 @@ void schedule() {
             p_proc_pause_tail.pre_pcb = temp;
             temp->next_pcb = &p_proc_pause_tail;
         }
-        disp_str("point irqhandler.c schedule 3 \n");
+        disp_str("point irqhandler.c schedule 6 \n");
         pause();
 
     } else {
@@ -99,7 +118,7 @@ void schedule() {
             p_proc_pause_tail.pre_pcb = temp;
             temp->next_pcb = &p_proc_pause_tail;
         }
-        disp_str("point irqhandler.c schedule 4 \n");
+        disp_str("point irqhandler.c schedule 7 \n");
         pause();
 
         // 重新为其分配时间片
@@ -109,7 +128,7 @@ void schedule() {
             p_proc_pause_head = p_proc_pause_head->next_pcb;
         } while (!is_pause_empty);
 
-        disp_str("point irqhandler.c schedule 5 \n");
+        disp_str("point irqhandler.c schedule 8 \n");
         pause();
 
         // 交换两个链表
@@ -117,7 +136,7 @@ void schedule() {
         (p_proc_pause_tail.pre_pcb)->next_pcb = &p_proc_ready_tail;
         p_proc_ready_tail.pre_pcb = p_proc_pause_tail.pre_pcb;
 
-        disp_str("point irqhandler.c schedule 6 \n");
+        disp_str("point irqhandler.c schedule  9\n");
         pause();
     }
 }

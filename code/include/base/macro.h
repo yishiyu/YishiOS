@@ -44,12 +44,14 @@
 //不同任务的优先级(即占有周期数)
 #define PRIORITY_KEYBOARD_SERVER 5
 #define PRIORITY_TERMINAL 5
+#define PRIORITY_EMPTY_TASK 2
 
 //系统初始任务分配的堆栈大小: 各32kb
 #define STACK_KEYBOARD_SERVER 0x8000
 #define STACK_TERMINAL 0x8000
+#define STACK_EMPTY_TASK 0x100
 #define BASE_TASKS_STACK_SIZE \
-    (STACK_KEYBOARD_SERVER + TERMINAL_NUM * STACK_TERMINAL)
+    (STACK_KEYBOARD_SERVER + TERMINAL_NUM * STACK_TERMINAL + STACK_EMPTY_TASK)
 
 //定义内核代码,数据,显存选择子
 #define SELECTOR_KERNEL_CS SELECTOR_FLAT_C
@@ -238,7 +240,9 @@
 // #define TASK_FS	3
 // #define TASK_MM	4
 #define ANY (MAX_PROCESS_NUM + 10)
+// 注意这两个,一个是不接受信息状态,一个是空进程
 #define NO_TASK (MAX_PROCESS_NUM + 20)
+#define EMPTY_TASK_PID (MAX_PROCESS_NUM + 30)
 
 // 消息类型
 #define HARD_INT 0

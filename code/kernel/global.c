@@ -78,6 +78,9 @@ TASK task_table[TASK_NUM] = {
     {tty_0, STACK_TERMINAL, "terminal_0", PRIORITY_TERMINAL},
     {tty_1, STACK_TERMINAL, "terminal_1", PRIORITY_TERMINAL}};
 
+TASK empty_task={empty_function,STACK_EMPTY_TASK,"empty_task",PRIORITY_EMPTY_TASK};
+PROCESS PCB_empty_task;
+
 KEYMAP_BUFFER key_buffer;
 KEYMAP_RESULT_BUFFER key_result_buffer;
 

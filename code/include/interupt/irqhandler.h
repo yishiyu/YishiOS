@@ -13,6 +13,7 @@
 #define is_wait_one_left (p_proc_wait_head->next_pcb == &p_proc_wait_tail)
 #define is_pause_empty (p_proc_pause_head == &p_proc_pause_tail)
 #define is_pause_one_left (p_proc_pause_head->next_pcb == &p_proc_pause_tail)
+#define is_empty_process (p_proc_ready_head == &PCB_empty_task)
 
 // 时钟中断处理
 void clock_handler(int irq);
