@@ -2,8 +2,9 @@
 # Makefile
 ##################################################
 
+.PHONY : all
 
-.PHONY : run
+all : run clean
 
 run : boot.bin loader.bin
 	# 写入MBR
@@ -21,3 +22,6 @@ boot.bin : boot.asm
 # Loader
 loader.bin : loader.asm
 	nasm -o loader.bin loader.asm 
+
+clean : 
+	rm ./boot.bin ./loader.bin 

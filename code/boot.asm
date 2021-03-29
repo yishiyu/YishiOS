@@ -1,10 +1,14 @@
-
+;=======================================
+;	MBR 引导程序
+;	从ext2硬盘中的根目录上寻找并加载loader.bin  
+;	加载loader.bin并跳转
+;=======================================
 	org	07c00h									; 告诉编译器程序加载到7c00处
 															; 之所以是7c00和bios有关
 	jmp boot_start
 
-%include "BOOT.inc"
-%include "EXT2.inc"
+%include "boot.inc"
+%include "Ext2.inc"
 
 	;用来读取硬盘的数据结构
 	disk_address_packet:
@@ -17,11 +21,11 @@
 				dd	SuperBlock_LBA_L			   ; [ 8 ] LBA. Low  32-bits.
 				dd	SuperBlock_LBA_H			  ; [12] LBA. High 32-bits.
 
-	BootMessage:						;加载信息,统一为10字节长
-				db	"Booting   "
-				db	"Loading   "
-				db	"No Loader "
-	BootMessage_Length	equ 10
+	BootMessage:						;加载信息,统一为12字节长
+				db	"Booting     "
+				db	"Loader Found"
+				db	"No Loader   "
+	BootMessage_Length	equ 12
 	Loader_Name:	db	"loader.bin"
 	Loader_Name_Length: equ	$-Loader_Name
 
