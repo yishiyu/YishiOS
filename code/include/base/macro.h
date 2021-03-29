@@ -35,7 +35,7 @@
 //键盘处理进程,tty任务
 //键盘结果缓冲区大小
 // tty任务缓冲区大小
-#define BASE_TASKS_NUM 2
+#define BASE_TASKS_NUM 3
 #define TERMINAL_NUM 2
 #define TASK_NUM (BASE_TASKS_NUM + TERMINAL_NUM)
 #define KEY_RESULT_NUM 128
@@ -44,16 +44,18 @@
 //不同任务的优先级(即占有周期数)
 #define PRIORITY_OUTPUT_SERVER 5
 #define PRIORITY_INTPUT_SERVER 5
+#define PRIORITY_DISK_SERVER 5
 #define PRIORITY_TERMINAL 5
 #define PRIORITY_EMPTY_TASK 2
 
 //系统初始任务分配的堆栈大小: 各32kb
 #define STACK_OUTPUT_SYSTEM 0x8000
 #define STACK_INPUT_SYSTEM 0x8000
+#define STACK_DISK_SYSTEM 0x8000
 #define STACK_TERMINAL 0x8000
 #define STACK_EMPTY_TASK 0x100
-#define BASE_TASKS_STACK_SIZE                   \
-    (STACK_OUTPUT_SYSTEM + STACK_INPUT_SYSTEM + \
+#define BASE_TASKS_STACK_SIZE                                       \
+    (STACK_OUTPUT_SYSTEM + STACK_INPUT_SYSTEM + STACK_DISK_SYSTEM + \
      TERMINAL_NUM * STACK_TERMINAL + STACK_EMPTY_TASK)
 
 //定义内核代码,数据,显存选择子
@@ -238,6 +240,7 @@
 #define INTERRUPT PID_INTERRUPT
 #define OUTPUT_SYSTEM PID_OUTPUT_SERVER
 #define INPUT_SYSTEM PID_INPUT_SERVER
+#define DISK_SYSTEM PID_DISK_SERVER
 // #define TASK_TTY	0
 // #define TASK_SYS	1
 // #define TASK_WINCH	2
@@ -252,17 +255,20 @@
 #define PID_INTERRUPT -10
 #define PID_OUTPUT_SERVER 0
 #define PID_INPUT_SERVER 1
-#define PID_TTY0 2
-#define PID_TTY1 3
+#define PID_DISK_SERVER 2
+#define PID_TTY0 3
+#define PID_TTY1 4
 // 剩下可以分配的PCB的起点
-#define PID_STACK_BASE 4
+#define PID_STACK_BASE 5
 
 // 消息类型
 #define SERVER_OUTPUT PID_OUTPUT_SERVER  // 输出信息
-#define SERVER_INPUT PID_INPUT_SERVER   // 输入信息
+#define SERVER_INPUT PID_INPUT_SERVER    // 输入信息
+#define SERVER_DISK PID_DISK_SERVER      // 磁盘信息
 
 // 硬件中断类型
 #define HARD_INT_KEYBOARD 0x01  // 键盘中断
+#define HARD_INT_DISK   0x02 // 硬盘中断
 
 // OUTPUT子系统宏定义
 // OUTPUT子系统消息类型

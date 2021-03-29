@@ -26,8 +26,7 @@ void input_handler(MESSAGE* message) {
     if (message->type & HARD_INT_KEYBOARD) {
         input_keyboard(message);
     }
-    // 硬盘中断
-    
+    // 硬盘中断绝对不能放在这里,否则如果一个终端卡住了input系统,硬盘中断也会被卡住的
 }
 
 void input_server_init() {

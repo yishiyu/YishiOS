@@ -66,6 +66,8 @@ TASK task_table[TASK_NUM] = {
      PRIORITY_OUTPUT_SERVER, PID_OUTPUT_SERVER},
     {input_server, STACK_INPUT_SYSTEM, "input_server", PRIORITY_INTPUT_SERVER,
      PID_INPUT_SERVER},
+    {disk_server, STACK_DISK_SYSTEM, "disk_server", PRIORITY_DISK_SERVER,
+     PID_DISK_SERVER},
     {tty_0, STACK_TERMINAL, "terminal_0", PRIORITY_TERMINAL, PID_TTY0},
     {tty_1, STACK_TERMINAL, "terminal_1", PRIORITY_TERMINAL, PID_TTY1}};
 

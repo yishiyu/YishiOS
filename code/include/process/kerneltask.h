@@ -2,10 +2,11 @@
 #ifndef YISHIOS_KERNEL_TASK_H
 #define YISHIOS_KERNEL_TASK_H
 
-#include "keymap.h"
-#include "terminal.h"
-#include "output.h"
+#include "disk.h"
 #include "input.h"
+#include "keymap.h"
+#include "output.h"
+#include "terminal.h"
 
 void empty_function();
 
