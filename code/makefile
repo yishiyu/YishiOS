@@ -22,7 +22,8 @@ CC		= gcc
 LD		= ld
 INCLUDE_PATH = -I include/base/ -I include/display -I include/interupt -I include/process \
 								 -I include/syscall -I include/process/terminal -I include/process/filesystem\
-								 -I include/process/output -I include/process/input -I include/process/disk
+								 -I include/process/output -I include/process/input -I include/process/disk \
+								 -I include/process/memory
 ASM_BOOT_FLAGS	= -I boot/include/
 ASM_KERNEL_FLAGS	=$(INCLUDE_PATH) -f elf
 C_FLAGS		= $(INCLUDE_PATH) -c -fno-builtin -m32 -fno-stack-protector -g
@@ -36,14 +37,14 @@ YISHI_BOOT	= boot/boot.bin boot/loader.bin
 YISHI_KERNEL	= kernel/kernel.bin
 GDB_KERNEL = kernel_gdb.bin
 OBJS		= objs/kernel.o objs/global.o objs/c_kernel.o \
-						objs/proc.o objs/memory.o objs/display.o objs/port.o objs/func.o objs/irqhandler.o \
+						objs/proc.o objs/mem.o objs/display.o objs/port.o objs/func.o objs/irqhandler.o \
 						objs/initirq.o objs/syscall.o objs/syscallasm.o \
 						objs/keymap.o objs/terminal.o \
 						objs/terminallib.o \
 						objs/ipc.o objs/syscalllib.o objs/input_keyboard.o \
 						objs/kerneltask.o objs/output.o objs/input.o \
 						objs/disk.o objs/disklib.o objs/string.o \
-						objs/filesystem.o
+						objs/filesystem.o objs/memory.o
 DASM_OUTPUT	= kernel.bin.asm
 CALL_TREE = calltree.png
 
@@ -125,7 +126,8 @@ objs/global.o : kernel/global.c
 objs/func.o : lib/base/func.c
 	$(CC) $(C_FLAGS) -o $@ $<
 
-objs/memory.o : lib/base/memory.asm
+# 内存操作函数
+objs/mem.o : lib/base/memory.asm
 	$(ASM) $(ASM_KERNEL_FLAGS) -o $@ $<
 
 objs/port.o : lib/base/port.asm
@@ -186,4 +188,8 @@ objs/string.o : lib/base/string.c
 	$(CC) $(C_FLAGS) -o $@ $<
 
 objs/filesystem.o : lib/process/filesystem/filesystem.c
+	$(CC) $(C_FLAGS) -o $@ $<
+
+# 内存管理模块
+objs/memory.o : lib/process/memory/memory.c
 	$(CC) $(C_FLAGS) -o $@ $<

@@ -233,7 +233,7 @@ struct DISK_MESSAGE {
     u32 pid;          // 信息来源进程
     char* buffer;     // 缓冲区指针
     u32 sector_head;  // 操作的起始位置
-    int bytes_count;  //读取的字节数
+    int bytes_count;  // 读取的字节数
     u8 result;        // 磁盘操作的结果
 };
 struct FS_MESSAGE {
@@ -245,6 +245,13 @@ struct FS_MESSAGE {
     u8 result;                   //返回值结果
     char* file_name;             // 文件名字
 };
+struct MEM_MESSAGE {
+    u8 function;        // 执行的操作类型
+    u32 pid;     // 信息来源进程
+    struct inode file;  // 目标文件
+    // 创建子进程: -1: 创建失败  0~MAX_PRO_NUM : 子进程pid
+    int result;          //返回值结果
+};
 
 typedef struct mess {
     int source;
@@ -254,6 +261,7 @@ typedef struct mess {
         struct INPUT_MESSAGE input_message;
         struct DISK_MESSAGE disk_message;
         struct FS_MESSAGE fs_message;
+        struct MEM_MESSAGE mem_message;
     } u;
 } MESSAGE;
 

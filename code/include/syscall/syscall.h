@@ -5,7 +5,7 @@
 #include "global.h"
 #include "irqhandler.h"
 #include "keymap.h"
-#include "memory.h"
+#include "mem.h"
 #include "struct.h"
 #include "terminallib.h"
 

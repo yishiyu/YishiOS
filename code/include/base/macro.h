@@ -35,7 +35,7 @@
 //键盘处理进程,tty任务
 //键盘结果缓冲区大小
 // tty任务缓冲区大小
-#define BASE_TASKS_NUM 4
+#define BASE_TASKS_NUM 5
 #define TERMINAL_NUM 2
 #define TASK_NUM (BASE_TASKS_NUM + TERMINAL_NUM)
 #define TTY_BUFFER_NUM 256
@@ -45,6 +45,7 @@
 #define PRIORITY_INTPUT_SERVER 5
 #define PRIORITY_DISK_SERVER 5
 #define PRIORITY_FS_SERVER 5
+#define PRIORITY_MEM_SERVER 5
 #define PRIORITY_TERMINAL 5
 #define PRIORITY_EMPTY_TASK 2
 
@@ -52,12 +53,14 @@
 #define STACK_OUTPUT_SYSTEM 0x8000
 #define STACK_INPUT_SYSTEM 0x8000
 #define STACK_DISK_SYSTEM 0x8000
-#define STACK_FILE_FYSTEM 0x8000
+#define STACK_FILE_SYSTEM 0x8000
+#define STACK_MEM_SYSTEM 0x8000
 #define STACK_TERMINAL 0x8000
 #define STACK_EMPTY_TASK 0x100
-#define BASE_TASKS_STACK_SIZE                                       \
-    (STACK_OUTPUT_SYSTEM + STACK_INPUT_SYSTEM + STACK_DISK_SYSTEM + \
-     STACK_FILE_FYSTEM + TERMINAL_NUM * STACK_TERMINAL + STACK_EMPTY_TASK)
+#define BASE_TASKS_STACK_SIZE                                               \
+    (STACK_OUTPUT_SYSTEM + STACK_INPUT_SYSTEM + STACK_DISK_SYSTEM +         \
+     STACK_FILE_SYSTEM + STACK_MEM_SYSTEM + TERMINAL_NUM * STACK_TERMINAL + \
+     STACK_EMPTY_TASK)
 
 //定义内核代码,数据,显存选择子
 #define SELECTOR_KERNEL_CS SELECTOR_FLAT_C
@@ -247,6 +250,7 @@
 #define INPUT_SYSTEM PID_INPUT_SERVER
 #define DISK_SYSTEM PID_DISK_SERVER
 #define FILE_SYSTEM PID_FS_SERVER
+#define MEM_SYSTEM PID_MEM_SERVER
 // #define TASK_TTY	0
 // #define TASK_SYS	1
 // #define TASK_WINCH	2
@@ -262,10 +266,11 @@
 #define PID_INPUT_SERVER 1
 #define PID_DISK_SERVER 2
 #define PID_FS_SERVER 3
-#define PID_TTY0 4
-#define PID_TTY1 5
+#define PID_MEM_SERVER 4
+#define PID_TTY0 5
+#define PID_TTY1 6
 // 剩下可以分配的PCB的起点
-#define PID_STACK_BASE 6
+#define PID_STACK_BASE 7
 #define PID_EMTPY_TASK (MAX_PROCESS_NUM + 30)
 
 // 消息类型
@@ -273,6 +278,7 @@
 #define SERVER_INPUT PID_INPUT_SERVER    // 输入信息
 #define SERVER_DISK PID_DISK_SERVER      // 磁盘信息
 #define SERVER_FS PID_FS_SERVER          // 文件系统的消息
+#define SERVER_MEM PID_MEM_SERVER        // 内存管理信息
 
 // 硬件中断类型
 #define HARD_INT_KEYBOARD 0x01  // 键盘中断

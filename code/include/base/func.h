@@ -5,7 +5,7 @@
 
 #include "display.h"
 #include "global.h"
-#include "memory.h"
+#include "mem.h"
 
 // 中断处理函数
 // 具体实现在kernel.asm中

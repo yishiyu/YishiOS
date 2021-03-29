@@ -2,8 +2,8 @@
 // 内存操作函数
 // ======================================================================
 
-#ifndef YISHIOS_MEMORY_H
-#define YISHIOS_MEMORY_H
+#ifndef YISHIOS_MEMFUNC_H
+#define YISHIOS_MEMFUNC_H
 
 #define phys_copy memcpy
 #define phys_set memset
