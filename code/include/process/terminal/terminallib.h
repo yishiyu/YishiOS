@@ -21,7 +21,7 @@ extern int disp_pos;
 // 相当于类中的成员函数
 void terminal_init(TERMINAL* terminal);
 void terminal_init_screen(TERMINAL* terminal);
-void terminal_main(TERMINAL* terminal);
+void terminal_main(TERMINAL* terminal, int terminal_pid);
 void terminal_handler(TERMINAL* terminal, KEYMAP_RESULT result);
 void terminal_draw_screen(TERMINAL* terminal);
 void terminal_set_cursor(TERMINAL* terminal);

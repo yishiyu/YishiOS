@@ -2,9 +2,10 @@
 #ifndef YISHIOS_KERNEL_TASK_H
 #define YISHIOS_KERNEL_TASK_H
 
-#include "keyboardserver.h"
+#include "keymap.h"
 #include "terminal.h"
 #include "output.h"
+#include "input.h"
 
 void empty_function();
 

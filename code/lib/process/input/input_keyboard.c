@@ -1,20 +1,4 @@
-#include "keyboardserver.h"
-
-//#define __DEBUG_KEYBOARD_SERVER__
-
-#ifndef __YISHIOS_DEBUG__
-#define pause()
-#define disp_int(str)
-#define disp_str(str)
-#else
-#ifndef __DEBUG_KEYBOARD_SERVER__
-#define pause()
-#define disp_int(str)
-#define disp_str(str)
-#else
-extern void pause();
-#endif
-#endif
+#include "input.h"
 
 // 静态变量 ,用于记录键盘状态
 static int code_with_E0;
@@ -28,37 +12,29 @@ static int caps_lock;
 static int num_lock;
 static int scroll_lock;
 static int column;
+static KEYMAP_RESULT result;
 
-//子函数
-u8 keyboard_server_get_keyboard();
-void keyboard_server_decode();
-void keyboard_server_save();
-void keyboard_server_handle();
-// 这两个函数来自syscall.asm ,用于控制中断的开启和关闭
-extern void enable_int();
-extern void disable_int();
+// 子函数
+u8 input_keyboard_get_code();
+void input_keyboard_decode();
+void input_keyboard_func();
+void input_keyboard_deliver();
 
-// 全局变量
-KEYMAP_RESULT result;  // 结果结构体
-
-// 处理键盘信息的进程,负责处理系统热键
-// 此进程属于系统任务级,可以直接调用内核函数
-// 作为减少读取键盘中断耗费资源的一种方式
-void keyboard_server() {
-    // 初始化结果缓冲区
-    key_result_buffer.key_head = 0;
-    key_result_buffer.key_tail = 0;
-    key_result_buffer.key_count = 0;
-    while (1) {
-        // 暂且不处理任何系统快捷键,对所有结果直接保存
-        keyboard_server_decode();
-        keyboard_server_handle();
-        keyboard_server_save();
-    }
+void input_keyboard(MESSAGE* message) {
+    // 由于进程在发送的时候会阻塞
+    // 所以虽然这个MESSAGE变量是静态申请的,也不用担心会用到多个地方
+    // 同一时间,input子系统只会向一个进程发送信息
+    //从原始键盘缓冲区中取数据,译码后链接在数据的后面,发送给目标进程
+    // 可能同时发生了多个键盘中断,需要不断读取并传递键盘消息,直到键盘缓冲区处理完
+    do {
+        input_keyboard_decode();
+        input_keyboard_func();
+        input_keyboard_deliver();
+    } while (result.type != KEYBOARD_TYPE_EMPTY);
 }
 
 // 从键盘缓冲区读取信息
-u8 keyboard_server_get_keyboard() {
+u8 input_keyboard_get_code() {
     u8 scancode;
     if (!key_buffer.key_flag[key_buffer.key_tail]) {
         scancode = 0xff;
@@ -76,7 +52,7 @@ u8 keyboard_server_get_keyboard() {
 }
 
 // 对从键盘得到的信息进行译码
-void keyboard_server_decode() {
+void input_keyboard_decode() {
     u8 scancode;
     int key_row;  // 键盘码表的行列坐标
     int key_column;
@@ -84,7 +60,7 @@ void keyboard_server_decode() {
     int make;  // 判断是否为make code.  1为make code,0 为break code
 
     // 读取一次数据
-    scancode = keyboard_server_get_keyboard();
+    scancode = input_keyboard_get_code();
 
     // 读到空数据
     if (scancode == 0xff) {
@@ -97,7 +73,7 @@ void keyboard_server_decode() {
         // 这个主要获取方向键
         key_column = 2;
 
-        scancode = keyboard_server_get_keyboard();
+        scancode = input_keyboard_get_code();
         // 判断是make code还是break code
         make = (scancode & FLAG_BREAK ? 0 : 1);
         // 确定行
@@ -175,7 +151,7 @@ void keyboard_server_decode() {
 }
 
 // 处理键盘事件
-void keyboard_server_handle() {
+void input_keyboard_func() {
     if (result.type != KEYBOARD_TYPE_FUNC) {
         return;
     }
@@ -186,11 +162,12 @@ void keyboard_server_handle() {
         t_present_terminal += 1;
         t_present_terminal %= TERMINAL_NUM;
         enable_int();
+        return;
     }
 }
 
-// 保存译码结果
-void keyboard_server_save() {
+// 向上传递消息
+void input_keyboard_deliver() {
     // 如果读取类型为空数据,直接返回
     if (result.type == KEYBOARD_TYPE_EMPTY) {
         return;
@@ -203,10 +180,18 @@ void keyboard_server_save() {
     //     u8 key_tail;
     //     int key_count;
     // } KEYMAP_RESULT_BUFFER;
-    if (key_result_buffer.key_count < KEY_RESULT_NUM) {
-        key_result_buffer.result_buf[key_result_buffer.key_head] = result;
-        key_result_buffer.key_head =
-            (key_result_buffer.key_head + 1) % KEY_RESULT_NUM;
-        key_result_buffer.key_count++;
-    }
+    // if (key_result_buffer.key_count < KEY_RESULT_NUM) {
+    //     key_result_buffer.result_buf[key_result_buffer.key_head] = result;
+    //     key_result_buffer.key_head =
+    //         (key_result_buffer.key_head + 1) % KEY_RESULT_NUM;
+    //     key_result_buffer.key_count++;
+    // }
+    MESSAGE terminal_message;
+    terminal_message.source = INPUT_SYSTEM;
+    terminal_message.type = SERVER_INPUT;
+    terminal_message.u.input_message.input_source = HARD_INT_KEYBOARD;
+    terminal_message.u.input_message.keyboard_result = result;
+    sys_sendrec(SEND, t_present_terminal + BASE_TASKS_NUM, &terminal_message,
+                PID_INPUT_SERVER);
+    return;
 }

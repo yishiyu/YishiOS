@@ -5,6 +5,7 @@
 #ifndef YISHIOS_PROC_H
 #define YISHIOS_PROC_H
 
+#include "global.h"
 #include "func.h"
 #include "initirq.h"
 

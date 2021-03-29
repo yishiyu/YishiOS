@@ -58,34 +58,23 @@ int t_present_terminal;
 irq_handler irq_table[IRQ_NUM];
 
 //系统调用处理函数指针数组
-system_call sys_call_table[SYS_CALL_NUM] = {kernel_read_keyboard,
-                                            kernel_sendrec, kernel_get_ticks};
-
-//系统预定义进程初始状态
-//其中的终端即终端队列中的第一个成员,即默认就绪队列中的终端指针指向第一个终端
-// TASK task_table[BASE_TASKS_NUM] = {{keyboard_server, STACK_KEYBOARD_SERVER,
-//                                     "keyboard_server",
-//                                     PRIORITY_KEYBOARD_SERVER}};
-// 系统终端进程初始状态
-// TASK tty_task_table[TERMINAL_NUM] = {
-//     {tty_0, STACK_TERMINAL, "terminal_0", PRIORITY_TERMINAL},
-//     {tty_1, STACK_TERMINAL, "terminal_1", PRIORITY_TERMINAL}};
+system_call sys_call_table[SYS_CALL_NUM] = {kernel_sendrec, kernel_get_ticks};
 
 // 任务级进程
 TASK task_table[TASK_NUM] = {
     {output_server, STACK_OUTPUT_SYSTEM, "output_server",
      PRIORITY_OUTPUT_SERVER, PID_OUTPUT_SERVER},
-    {keyboard_server, STACK_KEYBOARD_SERVER, "keyboard_server",
-     PRIORITY_KEYBOARD_SERVER, PID_KEYBOARD_SERVER},
+    {input_server, STACK_INPUT_SYSTEM, "input_server", PRIORITY_INTPUT_SERVER,
+     PID_INPUT_SERVER},
     {tty_0, STACK_TERMINAL, "terminal_0", PRIORITY_TERMINAL, PID_TTY0},
     {tty_1, STACK_TERMINAL, "terminal_1", PRIORITY_TERMINAL, PID_TTY1}};
 
 TASK empty_task = {empty_function, STACK_EMPTY_TASK, "empty_task",
-                   PRIORITY_EMPTY_TASK};
+                   PRIORITY_EMPTY_TASK, EMPTY_TASK_PID};
 PROCESS PCB_empty_task;
 
 KEYMAP_BUFFER key_buffer;
-KEYMAP_RESULT_BUFFER key_result_buffer;
+// KEYMAP_RESULT_BUFFER key_result_buffer;
 
 TERMINAL terminal_table[TERMINAL_NUM];
 CONSOLE console_table[TERMINAL_NUM];

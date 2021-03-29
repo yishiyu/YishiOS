@@ -21,8 +21,8 @@ DASM	= ndisasm
 CC		= gcc
 LD		= ld
 INCLUDE_PATH = -I include/base/ -I include/display -I include/interupt -I include/process \
-								 -I include/syscall -I include/process/keyboardserver -I include/process/terminal \
-								 -I include/process/output
+								 -I include/syscall -I include/process/terminal \
+								 -I include/process/output -I include/process/input
 ASM_BOOT_FLAGS	= -I boot/include/
 ASM_KERNEL_FLAGS	=$(INCLUDE_PATH) -f elf
 C_FLAGS		= $(INCLUDE_PATH) -c -fno-builtin -m32 -fno-stack-protector -g
@@ -38,10 +38,10 @@ GDB_KERNEL = kernel_gdb.bin
 OBJS		= kernel/kernel.o kernel/global.o kernel/c_kernel.o \
 						lib/proc.o lib/memory.o lib/display.o lib/port.o lib/func.o lib/irqhandler.o \
 						lib/initirq.o lib/syscall/syscall.o lib/syscall/syscallasm.o \
-						lib/process/keyboardserver/keymap.o lib/process/terminal/terminal.o \
-						lib/process/keyboardserver/keyboardserver.o lib/process/terminal/terminallib.o \
-						lib/syscall/ipc.o lib/syscall/syscalllib.o \
-						lib/process/kerneltask.o lib/process/output/output.o
+						lib/process/input/keymap.o lib/process/terminal/terminal.o \
+						lib/process/terminal/terminallib.o \
+						lib/syscall/ipc.o lib/syscall/syscalllib.o lib/process/input/input_keyboard.o \
+						lib/process/kerneltask.o lib/process/output/output.o lib/process/input/input.o
 DASM_OUTPUT	= kernel.bin.asm
 CALL_TREE = calltree.png
 
@@ -147,11 +147,8 @@ lib/syscall/syscallasm.o : lib/syscall/syscall.asm
 
 lib/process/terminal/terminal.o : lib/process/terminal/terminal.c
 	$(CC) $(C_FLAGS) -o $@ $<
-
-lib/process/keyboardserver/keyboardserver.o : lib/process/keyboardserver/keyboardserver.c
-	$(CC) $(C_FLAGS) -o $@ $<
 	
-lib/process/keyboardserver/keymap.o : lib/process/keyboardserver/keymap.c
+lib/process/input/keymap.o : lib/process/input/keymap.c
 	$(CC) $(C_FLAGS) -o $@ $<
 
 lib/process/terminal/terminallib.o : lib/process/terminal/terminallib.c
@@ -167,4 +164,10 @@ lib/process/kerneltask.o : lib/process/kerneltask.c
 	$(CC) $(C_FLAGS) -o $@ $<
 
 lib/process/output/output.o : lib/process/output/output.c
+	$(CC) $(C_FLAGS) -o $@ $<
+
+lib/process/input/input.o : lib/process/input/input.c
+	$(CC) $(C_FLAGS) -o $@ $<
+
+lib/process/input/input_keyboard.o : lib/process/input/input_keyboard.c
 	$(CC) $(C_FLAGS) -o $@ $<

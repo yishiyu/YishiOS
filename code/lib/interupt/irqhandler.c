@@ -1,22 +1,6 @@
 // 防止各种中断处理
 #include "irqhandler.h"
 
-// #define __DEBUG_IRQHANDLER__
-
-#ifndef __YISHIOS_DEBUG__
-#define pause()
-#define disp_int(str)
-#define disp_str(str)
-#else
-#ifndef __DEBUG_IRQHANDLER__
-#define pause()
-#define disp_int(str)
-#define disp_str(str)
-#else
-extern void pause();
-#endif
-#endif
-
 // 之所以加了个参数,是因为才处理中断的时候把中断号压栈了
 // 具体情况看include/base/kernel.inc 中关于中断处理函数的宏定义
 void clock_handler(int irq) {
@@ -38,25 +22,17 @@ void clock_handler(int irq) {
 
 // 进程调度函数
 void schedule() {
-    disp_str("point irqhandler.c schedule 0 \n");
-    pause();
     PROCESS* temp;
 
     // 首先检查当前进程是不是空进程
     // 如果是的话,把就绪队列指针指向就绪队列尾空指针
     // 否则进行进程调度
     if (is_empty_process) {
-        disp_str("point irqhandler.c schedule 1 \n");
-        pause();
-        p_proc_ready_head == &p_proc_ready_tail;
+        p_proc_ready_head = &p_proc_ready_tail;
     }
 
     // 如果就绪队列和挂起队列同时为空,则使用空进程
     if (is_ready_empty && is_pause_empty) {
-        disp_str("point irqhandler.c schedule 2,PCB_empty_task.name == ");
-        disp_str(PCB_empty_task.p_name);
-        disp_str("\n");
-        pause();
         p_proc_ready_head = &PCB_empty_task;
         return;
     }
@@ -72,36 +48,12 @@ void schedule() {
             p_proc_pause_head = p_proc_pause_head->next_pcb;
         } while (!is_pause_empty);
 
-        disp_str("point irqhandler.c schedule 3 \n");
-        pause();
-
         // 交换两个链表
         p_proc_ready_head = temp;
         (p_proc_pause_tail.pre_pcb)->next_pcb = &p_proc_ready_tail;
         p_proc_ready_tail.pre_pcb = p_proc_pause_tail.pre_pcb;
 
-        disp_str("point irqhandler.c schedule 4 \n");
-        pause();
-    } else if (!is_ready_one_left) {
-        disp_str("point irqhandler.c schedule 5 \n");
-        pause();
-
-        // 就绪链表中还有剩余进程
-        temp = p_proc_ready_head;
-        p_proc_ready_head = p_proc_ready_head->next_pcb;
-        if (is_pause_empty) {
-            p_proc_pause_head = temp;
-            p_proc_pause_tail.pre_pcb = temp;
-            temp->next_pcb = &p_proc_pause_tail;
-        } else {
-            (p_proc_pause_tail.pre_pcb)->next_pcb = temp;
-            p_proc_pause_tail.pre_pcb = temp;
-            temp->next_pcb = &p_proc_pause_tail;
-        }
-        disp_str("point irqhandler.c schedule 6 \n");
-        pause();
-
-    } else {
+    } else if (is_ready_one_left) {
         // 就绪队列执行完毕,需要把挂起队列转换为新的就绪队列
         // 按道理来说,挂起队列中应该至少有一个进程,否则会出现错误
         // 而由于有系统本身的进程存在,所以这一点基本不用考虑
@@ -114,12 +66,11 @@ void schedule() {
             p_proc_pause_tail.pre_pcb = temp;
             temp->next_pcb = &p_proc_pause_tail;
         } else {
+            temp->pre_pcb = p_proc_pause_tail.pre_pcb;
+            temp->next_pcb = &p_proc_pause_tail;
             (p_proc_pause_tail.pre_pcb)->next_pcb = temp;
             p_proc_pause_tail.pre_pcb = temp;
-            temp->next_pcb = &p_proc_pause_tail;
         }
-        disp_str("point irqhandler.c schedule 7 \n");
-        pause();
 
         // 重新为其分配时间片
         temp = p_proc_pause_head;
@@ -128,19 +79,30 @@ void schedule() {
             p_proc_pause_head = p_proc_pause_head->next_pcb;
         } while (!is_pause_empty);
 
-        disp_str("point irqhandler.c schedule 8 \n");
-        pause();
-
         // 交换两个链表
         p_proc_ready_head = temp;
         (p_proc_pause_tail.pre_pcb)->next_pcb = &p_proc_ready_tail;
         p_proc_ready_tail.pre_pcb = p_proc_pause_tail.pre_pcb;
-
-        disp_str("point irqhandler.c schedule  9\n");
-        pause();
+    } else {
+        // 就绪链表中还有剩余进程
+        // 1. 取下一个可运行进程
+        temp = p_proc_ready_head;
+        p_proc_ready_head = p_proc_ready_head->next_pcb;
+        // 2. 把当前进程移入挂起队列
+        if (is_pause_empty) {
+            p_proc_pause_head = temp;
+            p_proc_pause_tail.pre_pcb = temp;
+            temp->next_pcb = &p_proc_pause_tail;
+        } else {
+            temp->pre_pcb = p_proc_pause_tail.pre_pcb;
+            temp->next_pcb = &p_proc_pause_tail;
+            (p_proc_pause_tail.pre_pcb)->next_pcb = temp;
+            p_proc_pause_tail.pre_pcb = temp;
+        }
     }
 }
 
+// 键盘中断处理
 void keyboard_handler(int irq) {
     u8 scan_code = in_byte(0x60);
 
@@ -169,5 +131,8 @@ void keyboard_handler(int irq) {
         key_buffer.key_head++;
         key_buffer.key_head %= KEY_BUF_SIZE;
         key_buffer.key_count++;
+
+        // 通知input子系统
+        inform_int(PID_INPUT_SERVER, HARD_INT_KEYBOARD);
     }
 }

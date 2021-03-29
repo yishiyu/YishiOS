@@ -4,7 +4,7 @@
 void output_server() {
     MESSAGE output_message;
     while (1) {
-        sys_sendrec(RECEIVE, ANY, &output_message, 0);
+        sys_sendrec(RECEIVE, ANY, &output_message, PID_OUTPUT_SERVER);
         output_handler(&output_message);
     }
 }

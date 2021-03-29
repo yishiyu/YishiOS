@@ -3,6 +3,7 @@
 #define YISHIOS_GLOBAL_H
 
 #include "kerneltask.h"
+#include "keymap.h"
 #include "macro.h"
 #include "port.h"
 #include "struct.h"
@@ -28,7 +29,7 @@ extern TSS tss;
 //系统初始进程PCB
 // extern PROCESS proc_table[];
 //系统终端进程表
-//extern PROCESS terminal_table[];
+// extern PROCESS terminal_table[];
 
 //预留给系统初始进程的栈
 extern char task_stack[];
@@ -71,8 +72,7 @@ extern PROCESS* p_proc_pause_head;
 extern PROCESS p_proc_pause_tail;
 
 // 当前终端号
-extern int t_present_terminal;  
-
+extern int t_present_terminal;
 
 //中断处理函数指针数组
 extern irq_handler irq_table[];
@@ -83,7 +83,7 @@ extern system_call sys_call_table[];
 //键盘输入缓冲区
 //键盘处理结果结构体缓冲区
 extern KEYMAP_BUFFER key_buffer;
-extern KEYMAP_RESULT_BUFFER key_result_buffer;
+// extern KEYMAP_RESULT_BUFFER key_result_buffer;
 
 // 终端结构体表
 extern TERMINAL terminal_table[];

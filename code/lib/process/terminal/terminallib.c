@@ -26,7 +26,7 @@ void terminal_init_screen(TERMINAL* terminal) {
 }
 
 // 终端的主函数
-void terminal_main(TERMINAL* terminal) {
+void terminal_main(TERMINAL* terminal, int terminal_pid) {
     int start = 1;
     while (start) {
         if (t_present_terminal == terminal->terminal_ID) {
@@ -37,10 +37,10 @@ void terminal_main(TERMINAL* terminal) {
             start = 0;
         }
     }
+    MESSAGE message;
     while (1) {
-        if (t_present_terminal == terminal->terminal_ID) {
-            terminal_handler(terminal, sys_read_keyboard());
-        }
+        sys_sendrec(RECEIVE, PID_INPUT_SERVER, &message, terminal_pid);
+        terminal_handler(terminal, message.u.input_message.keyboard_result);
     }
 }
 

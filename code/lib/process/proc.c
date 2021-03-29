@@ -5,14 +5,14 @@
 
 // 逻辑关系: 任何一个没定义,就消除函数定义
 #ifndef __YISHIOS_DEBUG__
-#define pause()  
-#define disp_int(str)  
-#define disp_str(str)  
+#define pause()
+#define disp_int(str)
+#define disp_str(str)
 #else
 #ifndef __DEBUG_PROC__
-#define pause()  
-#define disp_int(str)  
-#define disp_str(str)  
+#define pause()
+#define disp_int(str)
+#define disp_str(str)
 #endif
 #endif
 
@@ -32,24 +32,17 @@ int start_proc() {
     // 临时指针
     PROCESS* pre_proc;
 
+    // 有一个非常重要的地方,使用进程队列的时候一定要规范地赋值指针,否则会给后面埋不少坑
+
     //-----------------------------------初始化就绪队列--------------------------------
     TASK* p_task = task_table;
     PROCESS* temp_proc;
 
     for (int i = 0; i < TASK_NUM; i++) {
-        // 获取一个新的PCB
-        // u32 PID = get_pcb(&temp_proc);
-
-        // if (PID == -1) {
-        //     disp_str("point proc.c start_proc, no enough pcb");
-        //     pause();
-        //     while (1)
-        //         ;
-        // }
         // 不需要从空pcb栈中获取的空pcb了,直接使用系统预留的pid及对应的pcb初始化
         u32 PID = p_task[i].pid;
         temp_proc = &PCB_stack[PID];
-        PCB_stack_status[PID]=1;
+        PCB_stack_status[PID] = 1;
 
         // 初始化PCB
         init_pcb(&p_task[i], temp_proc, PID, p_task_stack, selector_ldt);
@@ -59,8 +52,8 @@ int start_proc() {
             p_proc_ready_head = temp_proc;
             pre_proc = temp_proc;
         } else {
-            temp_proc->pre_pcb = pre_proc;
             pre_proc->next_pcb = temp_proc;
+            temp_proc->pre_pcb = pre_proc;
             pre_proc = temp_proc;
         }
 
@@ -79,7 +72,9 @@ int start_proc() {
     p_proc_wait_head = &p_proc_wait_tail;
 
     //------------------------------------------初始化空进程--------------------------------------
-    init_pcb(&empty_task,&PCB_empty_task,EMPTY_TASK_PID,p_task_stack,selector_ldt);
+    init_pcb(&empty_task, &PCB_empty_task, EMPTY_TASK_PID, p_task_stack,
+             selector_ldt);
+    PCB_empty_task.next_pcb = &p_proc_ready_tail;
 
     //===============系统初始化完成,进入系统进程=================
     k_reenter = 0;
@@ -138,6 +133,15 @@ void init_pcb(TASK* task, PROCESS* proc, u32 pid, char* stack,
     // 允许中断,IO优先级为2,也就是说只允许内核级和任务级进程进行I/O操作
     proc->regs.eflags = 0x1202;
     proc->priority = proc->ticks = task->priority;
+
+    // 初始化IPC相关的标志位
+    proc->flags = RUNNING;
+    proc->has_int_msg = 0;
+    proc->message = 0;
+    proc->recv_from = NO_TASK;
+    proc->recv_from = NO_TASK;
+    proc->sending_to_this = 0;
+    proc->next_sending = 0;
 }
 
 // 从预定义的PCB中取得一个空节点,如果没有多余节点,直接触发系统错误
@@ -157,7 +161,7 @@ int get_pcb(PROCESS** proc) {
             disp_int(PCB_stack_status[pid]);
             disp_str("\n");
             pause();
-            
+
             if (PCB_stack_status[pid] == 0) {
                 PCB_stack_status[pid] = 1;
                 PCB_USED++;
@@ -169,4 +173,3 @@ int get_pcb(PROCESS** proc) {
     // 触发错误
     return -1;
 }
-

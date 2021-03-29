@@ -5,6 +5,7 @@
 #include "display.h"
 #include "global.h"
 #include "terminal.h"
+#include "syscall.h"
 
 // 辅助宏定义
 #define is_ready_empty (p_proc_ready_head == &p_proc_ready_tail)

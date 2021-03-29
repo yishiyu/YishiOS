@@ -113,7 +113,7 @@ typedef struct s_proc {
     // 0 --> 正常执行
     // 2 --> 发送信息阻塞中
     // 4 --> 接收信息阻塞中
-    int flags;
+    u32 flags;
 
     // 本进程准备发送的信息或等待接收的信息
     // 尝试发送信息的对象
@@ -194,14 +194,12 @@ struct OUTPUT_MESSAGE {
     char function;     // 执行的功能 --> 显示字符==0 特殊功能==1
     CONSOLE* console;  // 要输出的控制台指针
     u32 pid;  // 发送进程的pid,用于确定要显示字符的内存地址
-    char* data;  // 要显示字符的指针
-    char disp_func;     // 执行的具体功能
+    char* data;      // 要显示字符的指针
+    char disp_func;  // 执行的具体功能
 };
-struct mess2 {
-    void* m2p1;
-    void* m2p2;
-    void* m2p3;
-    void* m2p4;
+struct INPUT_MESSAGE {
+    int input_source;  // input输入源
+    KEYMAP_RESULT keyboard_result;
 };
 struct mess3 {
     int m3i1;
@@ -219,7 +217,7 @@ typedef struct mess {
     int type;
     union {
         struct OUTPUT_MESSAGE output_message;
-        struct mess2 m2;
+        struct INPUT_MESSAGE input_message;
         struct mess3 m3;
     } u;
 } MESSAGE;

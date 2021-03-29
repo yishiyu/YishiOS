@@ -43,17 +43,17 @@
 
 //不同任务的优先级(即占有周期数)
 #define PRIORITY_OUTPUT_SERVER 5
-#define PRIORITY_KEYBOARD_SERVER 5
+#define PRIORITY_INTPUT_SERVER 5
 #define PRIORITY_TERMINAL 5
 #define PRIORITY_EMPTY_TASK 2
 
 //系统初始任务分配的堆栈大小: 各32kb
 #define STACK_OUTPUT_SYSTEM 0x8000
-#define STACK_KEYBOARD_SERVER 0x8000
+#define STACK_INPUT_SYSTEM 0x8000
 #define STACK_TERMINAL 0x8000
 #define STACK_EMPTY_TASK 0x100
-#define BASE_TASKS_STACK_SIZE                      \
-    (STACK_OUTPUT_SYSTEM + STACK_KEYBOARD_SERVER + \
+#define BASE_TASKS_STACK_SIZE                   \
+    (STACK_OUTPUT_SYSTEM + STACK_INPUT_SYSTEM + \
      TERMINAL_NUM * STACK_TERMINAL + STACK_EMPTY_TASK)
 
 //定义内核代码,数据,显存选择子
@@ -176,13 +176,13 @@
 #define IRQ_KEYBOARD 1
 
 // 系统调用的个数及其对应的中断号
-#define SYS_CALL_NUM 3
+#define SYS_CALL_NUM 2
 #define SYS_CALL_VECTOR 0x90
 
 // 系统调用表
-#define SYS_READ_KEYBOARD 0
-#define SYS_SENDREC 1
-#define SYS_GET_TICKS 2
+// 需要与global.c声明的系统调用表顺序保持一致
+#define SYS_SENDREC 0
+#define SYS_GET_TICKS 1
 
 // 键盘缓冲区大小
 #define KEY_BUF_SIZE 128
@@ -235,8 +235,9 @@
 
 // 发送/期待信息来源类型
 // #define INVALID_DRIVER	-20
-#define INTERRUPT -10
-#define OUTPUT_SYSTEM 0
+#define INTERRUPT PID_INTERRUPT
+#define OUTPUT_SYSTEM PID_OUTPUT_SERVER
+#define INPUT_SYSTEM PID_INPUT_SERVER
 // #define TASK_TTY	0
 // #define TASK_SYS	1
 // #define TASK_WINCH	2
@@ -248,18 +249,20 @@
 #define EMPTY_TASK_PID (MAX_PROCESS_NUM + 30)
 
 // 系统预定义的进程的PID(永远绑定,便于实现其他系统调用)
+#define PID_INTERRUPT -10
 #define PID_OUTPUT_SERVER 0
-#define PID_KEYBOARD_SERVER 1
+#define PID_INPUT_SERVER 1
 #define PID_TTY0 2
 #define PID_TTY1 3
 // 剩下可以分配的PCB的起点
 #define PID_STACK_BASE 4
 
-
 // 消息类型
-#define HARD_INT 0          // 硬件中断
-#define SERVER_OUTPUT 1     // 输出信息
+#define SERVER_OUTPUT PID_OUTPUT_SERVER  // 输出信息
+#define SERVER_INPUT PID_INPUT_SERVER   // 输入信息
 
+// 硬件中断类型
+#define HARD_INT_KEYBOARD 0x01  // 键盘中断
 
 // OUTPUT子系统宏定义
 // OUTPUT子系统消息类型
@@ -272,11 +275,8 @@
 #define OUTPUT_DISP_FUNC_DOWN 1
 #define OUTPUT_DISP_FUNC_LEFT 2
 #define OUTPUT_DISP_FUNC_RIGHT 3
-#define OUTPUT_DISP_FUNC_DRAW 4         // 调整至指定控制台
-#define OUTPUT_DISP_FUNC_CLEAR 5        // 清空屏幕
-#define OUTPUT_DISP_FUNC_RESET 6        // 清空整个控制台
-
-
-
+#define OUTPUT_DISP_FUNC_DRAW 4   // 调整至指定控制台
+#define OUTPUT_DISP_FUNC_CLEAR 5  // 清空屏幕
+#define OUTPUT_DISP_FUNC_RESET 6  // 清空整个控制台
 
 #endif
