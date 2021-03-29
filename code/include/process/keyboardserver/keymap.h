@@ -11,6 +11,10 @@
 #define KEYBOARD_TYPE_FUNC 2   // 功能按钮
 
 // 功能按钮
+#define KEYBOARD_FUNC_UP 0
+#define KEYBOARD_FUNC_DOWN 1
+#define KEYBOARD_FUNC_LEFT 2
+#define KEYBOARD_FUNC_RIGHT 3
 #define KEYBOARD_FUNC_SHIFT 4
 #define KEYBOARD_FUNC_CTRL 5
 #define KEYBOARD_FUNC_ALT 6
@@ -37,7 +41,6 @@ extern u32 keymap[];
 #define DOWN 0x01
 #define LEFT 0x02
 #define RIGHT 0x03
-
 
 // 宏定义
 // by Orange's OS 于渊

@@ -26,6 +26,16 @@ void terminal_init_screen(TERMINAL* terminal) {
 
 // 终端的主函数
 void terminal_main(TERMINAL* terminal) {
+    int start = 1;
+    while(start) {
+        if (t_present_terminal == terminal->terminal_ID) {
+            //一个终端启动 后打印终端信息
+            char* message = "Terminal n\n";
+            message[9] = (char)(terminal->terminal_ID) + '0';
+            terminal_disp_str(terminal,message);
+            start = 0;
+        }
+    }
     while (1) {
         if (t_present_terminal == terminal->terminal_ID) {
             terminal_handler(terminal, sys_read_keyboard());
@@ -33,11 +43,39 @@ void terminal_main(TERMINAL* terminal) {
     }
 }
 
-// 处理接收到的命令
+// 处理接收到的字符
 void terminal_handler(TERMINAL* terminal, KEYMAP_RESULT result) {
     // 处理普通字符
     if (result.type == KEYBOARD_TYPE_ASCII) {
-        disp_char(result.data);
+        // 处理特殊字符
+        switch (result.data) {
+            case '\n':
+            case 0x0d:
+                // 回车符
+                terminal_command_handler(terminal);
+                break;
+
+            case '\b':
+                if (terminal->in_head != terminal->in_tail) {
+                    // 缓冲区中非空
+                    terminal->in_head--;
+                    terminal->in_head %= TTY_BUFFER_NUM;
+                    terminal->in_count--;
+                }
+                break;
+
+            default:
+                // 可显示字符
+                // 添加字符到中断结构体命令缓冲区
+                terminal->in_buf[terminal->in_head] = result.data;
+                terminal->in_head++;
+                terminal->in_head %= TTY_BUFFER_NUM;
+                terminal->in_count++;
+
+                break;
+        }
+        // 回显字符
+        terminal_disp_char(terminal, result.data);
     }
 
     // 处理特殊命令
@@ -47,6 +85,15 @@ void terminal_handler(TERMINAL* terminal, KEYMAP_RESULT result) {
                 // 切换终端后重新刷新屏幕
                 terminal_draw_screen(terminal);
                 break;
+
+            case KEYBOARD_FUNC_UP:
+                // 向上滚动屏幕
+                break;
+
+            case KEYBOARD_FUNC_DOWN:
+                // 向下滚动屏幕
+                break;
+
             default:
                 break;
         }
@@ -79,3 +126,64 @@ void terminal_set_cursor(TERMINAL* terminal) {
     out_byte(CRT_CTRL_DATA_REG, (terminal->console.cursor) & 0xFF);
     enable_int();
 }
+
+// 处理命令
+void terminal_command_handler(TERMINAL* terminal) {
+    // 暂时简单地把缓冲区清空
+    terminal->in_tail = terminal->in_head;
+    terminal->in_count = 0;
+}
+
+// 屏幕显示函数
+void terminal_disp_char(TERMINAL* terminal, char data) {
+    // 把字符填充到显存中并修改光标
+    // 1. 根据光标得到要显示的位置
+    u8* video_mem_position =
+        (u8*)(VIDEO_MEM_BASE + terminal->console.cursor * 2);
+
+    // 2. 填充字符和颜色
+    // disp_int(data);
+    switch (data) {
+        case '\n':
+        case 0x0D:
+            // 回车符
+            // 换行
+            terminal->console.cursor += TERMINAL_WIDTH;
+            terminal->console.cursor -=
+                ((terminal->console.cursor - terminal->console.original_addr) %
+                 TERMINAL_WIDTH);
+            // 打印提示符
+            video_mem_position =
+                (u8*)(VIDEO_MEM_BASE + terminal->console.cursor * 2);
+            *video_mem_position++ = '>';
+            *video_mem_position = DEFAULT_CHAR_COLOR;
+            terminal->console.cursor++;
+            break;
+
+        case '\b':
+            // 退格符
+            if (terminal->in_head != terminal->in_tail) {
+                // 缓冲区非空,即此条命令有未被消除的部分
+                video_mem_position--;
+                *video_mem_position = BLANK_CHAR_COLOR;
+                terminal->console.cursor--;
+            }
+            break;
+
+        default:
+            *video_mem_position++ = data;
+            *video_mem_position = DEFAULT_CHAR_COLOR;
+            terminal->console.cursor++;
+            break;
+    }
+    // 3. 修改光标位置
+    terminal_set_cursor(terminal);
+}
+void terminal_disp_str(TERMINAL* terminal, char* data) {
+    // 输入的参数为字符串起始位置,字符串终结符为0
+    while (*data != 0) {
+        terminal_disp_char(terminal, *data);
+        data++;
+    }
+}
+void terminal_disp_int(TERMINAL* terminal) {}

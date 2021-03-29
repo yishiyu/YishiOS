@@ -25,7 +25,6 @@
 #define PRIORITY_KEYBOARD_SERVER 5
 #define PRIORITY_TERMINAL 5
 
-
 //系统初始任务分配的堆栈大小: 各32kb
 #define STACK_KEYBOARD_SERVER 0x8000
 #define STACK_TERMINAL 0x8000
@@ -159,11 +158,29 @@
 #define KEY_BUF_SIZE 128
 
 // 终端显示部分
-#define VIDEO_MEM_SIZE 0x8000	/* 32K: B8000H -> BFFFFH */
-#define	CRT_CTRL_ADDR_REG	0x3D4	/* CRT Controller Registers - Addr Register */
-#define	CRT_CTRL_DATA_REG	0x3D5	/* CRT Controller Registers - Data Register */
-#define	START_ADDR_H	0xC	/* reg index of video mem start addr (MSB) */
-#define	START_ADDR_L	0xD	/* reg index of video mem start addr (LSB) */
-#define	CURSOR_H	0xE	/* reg index of cursor position (MSB) */
-#define	CURSOR_L	0xF	/* reg index of cursor position (LSB) */
+#define VIDEO_MEM_SIZE 0x8000   /* 32K: B8000H -> BFFFFH */
+#define VIDEO_MEM_BASE 0xB8000  /* base of color video memory */
+#define CRT_CTRL_ADDR_REG 0x3D4 /* CRT Controller Registers - Addr Register */
+#define CRT_CTRL_DATA_REG 0x3D5 /* CRT Controller Registers - Data Register */
+#define START_ADDR_H 0xC        /* reg index of video mem start addr (MSB) */
+#define START_ADDR_L 0xD        /* reg index of video mem start addr (LSB) */
+#define CURSOR_H 0xE            /* reg index of cursor position (MSB) */
+#define CURSOR_L 0xF            /* reg index of cursor position (LSB) */
+
+// 终端字符颜色
+#define DEFAULT_CHAR_COLOR (MAKE_COLOR(BLACK, WHITE))
+#define BLANK_CHAR_COLOR (MAKE_COLOR(BLACK,BLACK))
+#define GRAY_CHAR (MAKE_COLOR(BLACK, BLACK) | BRIGHT)
+#define RED_CHAR (MAKE_COLOR(BLUE, RED) | BRIGHT)
+// 字符颜色
+#define BLACK 0x0                       /* 0000 */
+#define WHITE 0x7                       /* 0111 */
+#define RED 0x4                         /* 0100 */
+#define GREEN 0x2                       /* 0010 */
+#define BLUE 0x1                        /* 0001 */
+#define FLASH 0x80                      /* 1000 0000 */
+#define BRIGHT 0x08                     /* 0000 1000 */
+#define MAKE_COLOR(x, y) ((x << 4) | y)
+// 终端参数 设置
+#define TERMINAL_WIDTH 80
 #endif
