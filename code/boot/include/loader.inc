@@ -10,7 +10,7 @@ Loader_Phy_Address equ Loader_Base * 0x10 + Loader_Offset
 
 ; Kernel.bin 直接加载地址
 ; kernel直接加载在 0x70000 ~ 0x90000
-; 重新放置后分配的空间为 0x10000 ~ 0x90000 
+; 重新放置后分配的空间为 0x10000 ~ 0x70000 
 Kernel_File_Base		equ	0x7000
 Kernel_File_Offset		equ	0
 Kernel_File_Phy_Addr	equ	Kernel_File_Base * 0x10

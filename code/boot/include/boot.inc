@@ -4,10 +4,11 @@
 
 
 ; 栈底,从这个位置向低地址生长,BIOS ROM使用的最高地址为500h,只要不覆盖到那里就不会有问题 
+; 修改后只要不碰到loader就没问题,loader约为6kb,这一部分空间为28kb+,问题不大
 Stack_Base	equ	07c00h			
 
 ; Loader 目标内存地址
-Loader_Base	equ 09000h		 
+Loader_Base	equ 09000h
 Loader_Offset equ 00h
 
 ;超级块 目标内存地址

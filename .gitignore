@@ -1,6 +1,3 @@
-# 忽略vscode配置文件
-.vscode/
-
 # 忽略生成的二进制文件
 *.bin
 *.com

@@ -24,20 +24,22 @@ INCLUDE_PATH = -I include/base/ -I include/display -I include/interupt -I includ
 								 -I include/syscall -I include/process/keyboardserver -I include/process/terminal
 ASM_BOOT_FLAGS	= -I boot/include/
 ASM_KERNEL_FLAGS	=$(INCLUDE_PATH) -f elf
-C_FLAGS		= $(INCLUDE_PATH) -c -fno-builtin -m32 -fno-stack-protector
+C_FLAGS		= $(INCLUDE_PATH) -c -fno-builtin -m32 -fno-stack-protector -g
 LD_FLAGS		= -s -Ttext $(ENTRYPOINT) -m elf_i386
-DASM_FLAGS	= -u -o $(ENTRYPOINT) -e $(ENTRYOFFSET)
+DASM_FLAGS	= -u -o $(ENTRYPOINT) -e $(ENTRYOFFSET) -g
+LD_GDB_FLAGS = -Ttext $(ENTRYPOINT) -m elf_i386
 
 # 生成目标文件的宏定义
 # OBJS: 中间文件,需要通过LD命令进一步链接成最终的目标文件
 YISHI_BOOT	= boot/boot.bin boot/loader.bin
 YISHI_KERNEL	= kernel/kernel.bin
+GDB_KERNEL = kernel_gdb.bin
 OBJS		= kernel/kernel.o kernel/global.o kernel/c_kernel.o \
 						lib/proc.o lib/memory.o lib/display.o lib/port.o lib/func.o lib/irqhandler.o \
 						lib/initirq.o lib/syscall/syscall.o lib/syscall/syscallasm.o \
 						lib/process/keyboardserver/keymap.o lib/process/terminal/terminal.o \
 						lib/process/keyboardserver/keyboardserver.o lib/process/terminal/terminallib.o \
-						lib/process/terminal/terminallibasm.o lib/syscall/ipc.o lib/syscall/syscalllib.o \
+						lib/syscall/ipc.o lib/syscall/syscalllib.o \
 						lib/process/kerneltask.o
 DASM_OUTPUT	= kernel.bin.asm
 CALL_TREE = calltree.png
@@ -50,6 +52,9 @@ CALL_TREE = calltree.png
 run	:	image 
 	bochs -f bochsrc
 
+gdb : 
+	gdb $(GDB_KERNEL)
+
 # 生成函数调用关系图
 calltree : 
 	cflow $(INCLUDE_PATH)  -T $(CALL_TREE_FILE) | tee temp | tree2dotx | dot -Tpng -o $(CALL_TREE)
@@ -58,7 +63,7 @@ calltree :
 
 
 # 引导文件 内核文件
-everything : $(YISHI_BOOT) $(YISHI_KERNEL)
+everything : $(YISHI_BOOT) $(YISHI_KERNEL) $(GDB_KERNEL)
 
 # 删除所有中间文件
 clean :
@@ -66,7 +71,7 @@ clean :
 
 # 清楚所有文件(包括中间文件和最终目标文件)
 realclean :
-	rm -f $(OBJS) $(YISHI_BOOT) $(YISHI_KERNEL) $(CALL_TREE)
+	rm -f $(OBJS) $(YISHI_BOOT) $(YISHI_KERNEL) $(CALL_TREE) $(GDB_KERNEL)
 
 # 把内核反汇编
 disasm :
@@ -93,6 +98,9 @@ image : final buildimg
 # 根据中间文件链接生成最终文件
 $(YISHI_KERNEL) : $(OBJS)
 	$(LD) $(LD_FLAGS) -o $(YISHI_KERNEL) $(OBJS)
+
+$(GDB_KERNEL) : $(OBJS)
+	$(LD) $(LD_GDB_FLAGS) -o $(GDB_KERNEL) $(OBJS)
 
 boot/boot.bin : boot/boot.asm boot/include/boot.inc boot/include/Ext2.inc
 	$(ASM) $(ASM_BOOT_FLAGS) -o $@ $<
@@ -147,9 +155,6 @@ lib/process/keyboardserver/keymap.o : lib/process/keyboardserver/keymap.c
 
 lib/process/terminal/terminallib.o : lib/process/terminal/terminallib.c
 	$(CC) $(C_FLAGS) -o $@ $<
-
-lib/process/terminal/terminallibasm.o : lib/process/terminal/terminallib.asm
-	$(ASM) $(ASM_KERNEL_FLAGS) -o $@ $<
 
 lib/syscall/ipc.o : lib/syscall/ipc.c
 	$(CC) $(C_FLAGS) -o $@ $<
