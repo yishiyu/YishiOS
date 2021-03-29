@@ -26,10 +26,15 @@ void tty_0() {
     // terminal_draw_screen(terminal);
     // terminal_main(terminal);
     MESSAGE temp;
+    temp.source = 1;
+    temp.type = 0;
     while (1) {
-        disp_str("point terminal.c tty_0 0 \n");
+        disp_str("point terminal.c tty_0 0, msg sended, type == ");
+        disp_int(temp.type);
+        disp_str("\n");
         pause();
         sys_sendrec(SEND, 2, &temp, 1);
+        temp.type++;
     }
 }
 
@@ -41,8 +46,12 @@ void tty_1() {
     // terminal_main(terminal);
     MESSAGE temp;
     while (1) {
-        disp_str("point terminal.c tty_1 0 \n");
-        pause();
         sys_sendrec(RECEIVE, 1, &temp, 2);
+        disp_str("point terminal.c tty_1 0, msg received, source == ");
+        disp_int(temp.source);
+        disp_str("type == ");
+        disp_int(temp.type);
+        disp_str("\n");
+        pause();
     }
 }

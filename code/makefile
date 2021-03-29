@@ -34,10 +34,10 @@ YISHI_BOOT	= boot/boot.bin boot/loader.bin
 YISHI_KERNEL	= kernel/kernel.bin
 OBJS		= kernel/kernel.o kernel/global.o kernel/c_kernel.o \
 						lib/proc.o lib/memory.o lib/display.o lib/port.o lib/func.o lib/irqhandler.o \
-						lib/initirq.o lib/syscall/syscall.o lib/syscall/syscalllib.o \
+						lib/initirq.o lib/syscall/syscall.o lib/syscall/syscallasm.o \
 						lib/process/keyboardserver/keymap.o lib/process/terminal/terminal.o \
 						lib/process/keyboardserver/keyboardserver.o lib/process/terminal/terminallib.o \
-						lib/process/terminal/terminallibasm.o lib/syscall/ipc.o
+						lib/process/terminal/terminallibasm.o lib/syscall/ipc.o lib/syscall/syscalllib.o
 DASM_OUTPUT	= kernel.bin.asm
 CALL_TREE = calltree.png
 
@@ -132,7 +132,7 @@ lib/initirq.o : lib/interupt/initirq.c
 lib/syscall/syscall.o : lib/syscall/syscall.c
 	$(CC) $(C_FLAGS) -o $@ $<
 
-lib/syscall/syscalllib.o : lib/syscall/syscall.asm
+lib/syscall/syscallasm.o : lib/syscall/syscall.asm
 	$(ASM) $(ASM_KERNEL_FLAGS) -o $@ $<
 
 lib/process/terminal/terminal.o : lib/process/terminal/terminal.c
@@ -151,4 +151,7 @@ lib/process/terminal/terminallibasm.o : lib/process/terminal/terminallib.asm
 	$(ASM) $(ASM_KERNEL_FLAGS) -o $@ $<
 
 lib/syscall/ipc.o : lib/syscall/ipc.c
+	$(CC) $(C_FLAGS) -o $@ $<
+
+lib/syscall/syscalllib.o : lib/syscall/syscalllib.c
 	$(CC) $(C_FLAGS) -o $@ $<

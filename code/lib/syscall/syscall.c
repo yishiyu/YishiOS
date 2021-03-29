@@ -2,7 +2,7 @@
 #include "syscall.h"
 #include "display.h"
 
-#define __DEBUG_SYSCALL__
+//#define __DEBUG_SYSCALL__
 
 #ifndef __YISHIOS_DEBUG__
 #define pause()
@@ -20,37 +20,39 @@ extern void pause();
 
 //===============用户可以调用的系统调用==================
 // 本函数工作在用户态,是用户态调用内核态函数的中间函数
-// 键盘缓冲区结构体
-// typedef struct s_keymap_result_buffer {
-//     KEYMAP_RESULT result_buf[KEY_RESULT_NUM];
-//     u8 key_head;
-//     u8 key_tail;
-//     int key_count;
-// } KEYMAP_RESULT_BUFFER;
 KEYMAP_RESULT sys_read_keyboard() {
+    // 键盘缓冲区结构体
+    // typedef struct s_keymap_result_buffer {
+    //     KEYMAP_RESULT result_buf[KEY_RESULT_NUM];
+    //     u8 key_head;
+    //     u8 key_tail;
+    //     int key_count;
+    // } KEYMAP_RESULT_BUFFER;
     // 结果结构体
     KEYMAP_RESULT result;
 
     // 跳入内核态
-    u32 temp = asm_read_keyboard();
+    u32 temp = asm_syscall(SYS_READ_KEYBOARD, 0, 0, 0, 0);
     result.type = (char)(temp >> 8);
     result.data = (char)temp;
 
     return result;
 }
 
-void sys_terminal_write(int terminal_index, char* data){
-    asm_terminal_write(terminal_index, data);
+void sys_terminal_write(int terminal_index, char* data, int pid) {
+    asm_syscall(SYS_TERMIBAL_WRITE, (u32)terminal_index, (u32)data, (u32)pid,
+                0);
 }
 
-int sys_sendrec(int function, int src_dest, MESSAGE* m, int pid){
+int sys_sendrec(int function, int src_dest, MESSAGE* m, int pid) {
     disp_str("point syscall.c sys_sendrec 0,src_dest == ");
     disp_int(src_dest);
     disp_str(" pid == ");
     disp_int(pid);
     disp_str("\n");
     pause();
-    return (int)asm_sendrec(function, src_dest,m,pid);
+    return (int)asm_syscall(SYS_SENDREC, (u32)function, (u32)src_dest, (u32)m,
+                            (u32)pid);
 }
 
 //=================最终工作的函数======================
@@ -79,9 +81,10 @@ u32 kernel_read_keyboard() {
 }
 
 // 工作在内核态
-u32 kernel_terminal_write(int terminal_index, char* data) {
+u32 kernel_terminal_write(int terminal_index, char* data, int pid) {
+    char *kernel_data = (char*)va2la(pid, (void*)data);
     TERMINAL* terminal = &terminal_console_table[terminal_index];
-    terminal_disp_str(terminal,data);
+    terminal_disp_str(terminal, kernel_data);
     return 0;
 }
 

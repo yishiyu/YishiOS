@@ -19,8 +19,8 @@ extern void pause();
 #endif
 
 // 子函数
-void* va2la(int pid, void* va);
-int ldt_seg_linear(int pid, int seg_index);
+extern int ldt_seg_linear(int pid, int seg_index);
+extern void* va2la(int pid, void* va);
 void reset_msg(MESSAGE* p) { memset(p, 0, sizeof(MESSAGE)); }
 int deadlock(int src, int dest);
 int block(int pid);
@@ -232,22 +232,6 @@ int msg_receive(int current, int src, MESSAGE* m) {
     return 0;
 }
 
-// 把虚拟地址转化成线性地址
-// 函数默认传进来的参数是正确的
-// virtual address to linear address
-void* va2la(int pid, void* va) {
-    u32 seg_base = ldt_seg_linear(pid, INDEX_LDT_RW);
-    u32 la = seg_base + (u32)va;
-
-    return (void*)la;
-}
-
-// 计算给定进程某个段的线性地址
-int ldt_seg_linear(int pid, int seg_index) {
-    DESCRIPTOR* des = &(PCB_stack[pid].ldts[seg_index]);
-    return des->base_high << 24 | des->base_mid << 16 | des->base_low;
-}
-
 // 判断死锁的发生
 // 非死锁的时候返回 0
 // 发送请求死锁时返回 1
@@ -402,8 +386,8 @@ int unblock(int pid) {
     disp_str("point ipc.c unblock 7\n");
     pause();
     // 2. 调用调度函数
-    schedule();
-    disp_str("point ipc.c unblock 8\n");
-    pause();
+    // 唤醒一个进程并不需要执行进程调度,继续执行当前进程即可
+    // schedule();
+
     return 0;
 }

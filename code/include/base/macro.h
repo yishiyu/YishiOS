@@ -174,6 +174,11 @@
 #define SYS_CALL_NUM 3
 #define SYS_CALL_VECTOR 0x90
 
+// 系统调用表
+#define SYS_READ_KEYBOARD 0
+#define SYS_TERMIBAL_WRITE 1
+#define SYS_SENDREC 2
+
 // 键盘缓冲区大小
 #define KEY_BUF_SIZE 128
 
@@ -225,7 +230,7 @@
 
 // 期待信息来源类型
 // #define INVALID_DRIVER	-20
-#define INTERRUPT	-10
+#define INTERRUPT -10
 // #define TASK_TTY	0
 // #define TASK_SYS	1
 // #define TASK_WINCH	2

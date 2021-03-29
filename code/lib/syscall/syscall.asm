@@ -1,48 +1,24 @@
 ; 实现系统调用必须的汇编部分
 
-; 键盘系统调用的调用号
-SYS_READ_KEYBOARD   equ     0
-SYS_TERMIBAL_WRITE    equ     1
-SYS_SENDREC equ 2
-
 ; 系统调用的中断号
 SYS_CALL_VECTOR equ 0x90
 
-global asm_read_keyboard
-global asm_terminal_write
-global asm_sendrec
+global asm_syscall
 global enable_int
 global disable_int
 global pause
 
 ;=========================
-; 读取键盘函数
+; 系统调用通用函数,用于触发中断
+;  最多传递五个参数,其中第一个为系统调用号
+;  asm_syscall(int sys_vector, u32 para0,u32 para1,u32 para2, u32 para3);
 ;=========================
-asm_read_keyboard:
-    mov eax, SYS_READ_KEYBOARD
-    int SYS_CALL_VECTOR
-    ret
-    
-;=========================
-; 终端写入函数
-;=========================
-asm_terminal_write:
-    mov eax, SYS_TERMIBAL_WRITE
-    mov ebx, [esp + 4]
-    mov ecx, [esp + 8]
-    int SYS_CALL_VECTOR
-    ret
-
-;=========================
-; 进程间通信函数
-;   asm_sendrec(int function, int src_dest, MESSAGE* m, int pid);
-;=========================
-asm_sendrec:
-    mov eax, SYS_SENDREC
-    mov ebx, [esp + 4]
-    mov ecx, [esp + 8]
-    mov edx, [esp + 12]
-    mov edi, [esp + 16]
+asm_syscall:
+    mov eax, [esp + 4]
+    mov ebx, [esp + 8]
+    mov ecx, [esp + 12]
+    mov edx, [esp + 16]
+    mov edi, [esp + 20]
     int SYS_CALL_VECTOR
     ret
 
