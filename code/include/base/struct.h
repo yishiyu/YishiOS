@@ -132,6 +132,9 @@ typedef struct s_proc {
     // 用于产生链表结构的指针
     struct s_proc* next_sending;
 
+    // 父进程pid
+    int parent_pid;
+
 } PROCESS;
 
 // 这个结构体用来定义系统初始进程
@@ -165,7 +168,6 @@ typedef struct console {
     u32 original_addr;       // 当前控制台对应的显存位置
     u32 mem_limit;           //当前控制台显存大小
     u32 cursor;              // 光标
-
 } CONSOLE;
 
 // 文件描述符
@@ -233,7 +235,7 @@ struct DISK_MESSAGE {
     u32 pid;          // 信息来源进程
     char* buffer;     // 缓冲区指针
     u32 sector_head;  // 操作的起始位置
-    int bytes_count;  // 读取的字节数
+    int bytes_count;  //读取的字节数
     u8 result;        // 磁盘操作的结果
 };
 struct FS_MESSAGE {
@@ -247,10 +249,10 @@ struct FS_MESSAGE {
 };
 struct MEM_MESSAGE {
     u8 function;        // 执行的操作类型
-    u32 pid;     // 信息来源进程
+    u32 pid;            // 信息来源进程
     struct inode file;  // 目标文件
     // 创建子进程: -1: 创建失败  0~MAX_PRO_NUM : 子进程pid
-    int result;          //返回值结果
+    int result;  //返回值结果
 };
 
 typedef struct mess {

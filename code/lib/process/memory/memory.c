@@ -20,13 +20,13 @@ void mem_server() {
         int result = 0;
 
         switch (message.u.fs_message.function) {
-            case MEM_EXECUTE:
-                // 运行一个程序
-                break;
+            // case MEM_EXECUTE:
+            //     // 运行一个程序
+            //     break;
 
-            case MEM_EXEIT:
-                // 运行一个程序
-                break;
+            // case MEM_EXEIT:
+            //     // 运行一个程序
+            //     break;
             default:
                 break;
         }

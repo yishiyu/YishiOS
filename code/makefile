@@ -31,6 +31,7 @@ LD_FLAGS		= -s -Ttext $(ENTRYPOINT) -m elf_i386
 DASM_FLAGS	= -u -o $(ENTRYPOINT) -e $(ENTRYOFFSET) -g
 LD_GDB_FLAGS = -Ttext $(ENTRYPOINT) -m elf_i386
 
+
 # 生成目标文件的宏定义
 # OBJS: 中间文件,需要通过LD命令进一步链接成最终的目标文件
 YISHI_BOOT	= boot/boot.bin boot/loader.bin
@@ -48,7 +49,10 @@ OBJS		= objs/kernel.o objs/global.o objs/c_kernel.o \
 DASM_OUTPUT	= kernel.bin.asm
 CALL_TREE = calltree.png
 
-
+# 生成贪吃蛇游戏
+SNAKE_GAME = snake/snake.bin
+LD_SNAKE_FLAGS = -s -m elf_i386
+ 
 # 声明所有支持的命令
 .PHONY : run everything clean realclean disasm final buildimg image calltree
 
@@ -69,7 +73,7 @@ calltree :
 	rm ./temp
 
 # 引导文件 内核文件
-everything : $(YISHI_BOOT) $(YISHI_KERNEL) $(GDB_KERNEL)
+everything : $(YISHI_BOOT) $(YISHI_KERNEL) $(GDB_KERNEL) $(SNAKE_GAME)
 
 # 删除所有中间文件
 clean :
@@ -85,7 +89,7 @@ disasm :
 
 
 # 仅生成最终的目标文件
-final : everything
+final : everything 
 
 
 # 把生成的文件写入 复制进硬盘
@@ -96,6 +100,7 @@ buildimg :
 	sudo mount ./c.img /mnt/bean
 	sudo cp ./boot/loader.bin /mnt/bean
 	sudo cp ./kernel/kernel.bin /mnt/bean
+	sudo cp ./snake/snake.bin /mnt/bean
 	sudo umount /mnt/bean
 
 # 生成 目标镜像
@@ -107,6 +112,9 @@ $(YISHI_KERNEL) : $(OBJS)
 
 $(GDB_KERNEL) : $(OBJS)
 	$(LD) $(LD_GDB_FLAGS) -o $(GDB_KERNEL) $(OBJS)
+
+$(SNAKE_GAME) : $(OBJS)
+	$(LD) $(LD_SNAKE_FLAGS) -o $(SNAKE_GAME) $(OBJS)
 
 boot/boot.bin : boot/boot.asm boot/include/boot.inc boot/include/Ext2.inc
 	$(ASM) $(ASM_BOOT_FLAGS) -o $@ $<
@@ -192,4 +200,7 @@ objs/filesystem.o : lib/process/filesystem/filesystem.c
 
 # 内存管理模块
 objs/memory.o : lib/process/memory/memory.c
+	$(CC) $(C_FLAGS) -o $@ $<
+
+snake/snake.o : snake/snake.c  
 	$(CC) $(C_FLAGS) -o $@ $<
