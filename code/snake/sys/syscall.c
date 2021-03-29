@@ -1,6 +1,5 @@
 // 直接调用的系统调用
 #include "syscall.h"
-#include "display.h"
 
 //===============用户可以调用的系统调用==================
 // 显示一个字符串
@@ -8,7 +7,7 @@ void sys_terminal_write(int console_index, char* data, int pid) {
     MESSAGE message;
     message.source = pid;
     message.type = SERVER_OUTPUT;
-    message.u.output_message.console = &console_table[console_index];
+    // message.u.output_message.console = &console_table[console_index];
     message.u.output_message.data = data;
     message.u.output_message.function = OUTPUT_MESSTYPE_DISP;
     message.u.output_message.pid = pid;
@@ -19,7 +18,7 @@ void sys_terminal_clear(int console_index, int pid) {
     MESSAGE message;
     message.source = pid;
     message.type = SERVER_OUTPUT;
-    message.u.output_message.console = &console_table[console_index];
+    // message.u.output_message.console = &console_table[console_index];
     message.u.output_message.function = OUTPUT_MESSTYPE_FUNC;
     message.u.output_message.pid = pid;
     message.u.output_message.disp_func = OUTPUT_DISP_FUNC_CLEAR;
@@ -30,7 +29,7 @@ void sys_terminal_draw(int console_index, char* data, int pid){
     MESSAGE message;
     message.source = pid;
     message.type = SERVER_OUTPUT;
-    message.u.output_message.console = &console_table[console_index];
+    // message.u.output_message.console = &console_table[console_index];
     message.u.output_message.data = data;
     message.u.output_message.function = OUTPUT_MESSTYPE_FUNC;
     message.u.output_message.pid = pid;
@@ -66,11 +65,3 @@ int sys_get_diskinfo(char* buffer, int count, int pid) {
 }
 
 u32 sys_get_pid() { return asm_syscall(SYS_GET_PID, 0, 0, 0, 0); }
-
-
-
-//=================最终工作的函数======================
-// IPC相关函数单独放在一个文件中
-
-u32 kernel_get_ticks() { return ticks; }
-u32 kernel_get_pid() { return p_proc_ready_head->pid; }

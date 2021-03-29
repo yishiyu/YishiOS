@@ -7,10 +7,6 @@
 # 需要和loader.inc中的Kernel_Enter_point保持一致
 ENTRYPOINT	= 	0x1000
 
-# Yishi OS 的entry point在kernel.bin中的偏移
-# 在对kernel.bin进行反汇编的时候会用到
-# 取决于 ENTRYPOINT
-ENTRYOFFSET	=   0x400
 
 # 分析函数调用关系时传入的文件名
 export CALL_TREE_FILE = ./kernel/kernel.c
@@ -28,7 +24,6 @@ ASM_BOOT_FLAGS	= -I boot/include/
 ASM_KERNEL_FLAGS	=$(INCLUDE_PATH) -f elf
 C_FLAGS		= $(INCLUDE_PATH) -c -fno-builtin -m32 -fno-stack-protector -g
 LD_FLAGS		= -s -Ttext $(ENTRYPOINT) -m elf_i386
-DASM_FLAGS	= -u -o $(ENTRYPOINT) -e $(ENTRYOFFSET) -g
 LD_GDB_FLAGS = -Ttext $(ENTRYPOINT) -m elf_i386
 
 
@@ -49,12 +44,11 @@ OBJS		= objs/kernel.o objs/global.o objs/c_kernel.o \
 DASM_OUTPUT	= kernel.bin.asm
 CALL_TREE = calltree.png
 
-# 生成贪吃蛇游戏
-SNAKE_GAME = snake/snake.bin
-LD_SNAKE_FLAGS = -s -m elf_i386
- 
+# 要生成的其他文件(贪吃蛇游戏)
+OTHERS =  build_snake
+
 # 声明所有支持的命令
-.PHONY : run everything clean realclean disasm final buildimg image calltree
+.PHONY : run everything clean realclean final buildimg image calltree
 
 # 默认启动点,有调试模式
 run_debug	:	image 
@@ -73,19 +67,15 @@ calltree :
 	rm ./temp
 
 # 引导文件 内核文件
-everything : $(YISHI_BOOT) $(YISHI_KERNEL) $(GDB_KERNEL) $(SNAKE_GAME)
+everything : $(YISHI_BOOT) $(YISHI_KERNEL) $(GDB_KERNEL) $(OTHERS)
 
 # 删除所有中间文件
 clean :
 	rm -f $(OBJS) $(CALL_TREE)
 
-# 清楚所有文件(包括中间文件和最终目标文件)
+# 清除所有文件(包括中间文件和最终目标文件)
 realclean :
 	rm -f $(OBJS) $(YISHI_BOOT) $(YISHI_KERNEL) $(CALL_TREE) $(GDB_KERNEL)
-
-# 把内核反汇编
-disasm :
-	$(DASM) $(DASM_FLAGS) $(YISHI_KERNEL) > $(DASM_OUTPUT)
 
 
 # 仅生成最终的目标文件
@@ -113,8 +103,9 @@ $(YISHI_KERNEL) : $(OBJS)
 $(GDB_KERNEL) : $(OBJS)
 	$(LD) $(LD_GDB_FLAGS) -o $(GDB_KERNEL) $(OBJS)
 
-$(SNAKE_GAME) : $(OBJS)
-	$(LD) $(LD_SNAKE_FLAGS) -o $(SNAKE_GAME) $(OBJS)
+# 生成其他文件 
+build_snake : 
+	cd snake && make build_snake
 
 boot/boot.bin : boot/boot.asm boot/include/boot.inc boot/include/Ext2.inc
 	$(ASM) $(ASM_BOOT_FLAGS) -o $@ $<
@@ -200,7 +191,4 @@ objs/filesystem.o : lib/process/filesystem/filesystem.c
 
 # 内存管理模块
 objs/memory.o : lib/process/memory/memory.c
-	$(CC) $(C_FLAGS) -o $@ $<
-
-snake/snake.o : snake/snake.c  
 	$(CC) $(C_FLAGS) -o $@ $<

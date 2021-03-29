@@ -2,7 +2,8 @@
 #include "snake.h"
 #include "syscall.h"
 
-void main() {
+// 函数起始标志
+void _start() {
     while (1)
         ;
     return;
