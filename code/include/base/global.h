@@ -71,4 +71,7 @@ extern TASK tty_task_table[];
 extern KEYMAP_BUFFER key_buffer;
 extern KEYMAP_RESULT_BUFFER key_result_buffer;
 
+// 终端结构体表
+extern TERMINAL terminal_console_table[];
+
 #endif

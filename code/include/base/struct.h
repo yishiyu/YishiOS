@@ -135,4 +135,27 @@ typedef struct s_keymap_result_buffer {
     int key_count;
 } KEYMAP_RESULT_BUFFER;
 
+// 终端中的数据,相当于类中的成员变量
+//控制台结构体
+typedef struct console {
+    u32 current_start_addr;  // 当前控制台显存起始地址
+    u32 original_addr;       // 当前控制台对应的显存位置
+    u32 mem_limit;           //当前控制台显存大小
+    u32 cursor;              // 光标
+
+} CONSOLE;
+
+// 终端结构体
+typedef struct terminal {
+    //待处理的命令缓冲区
+    char in_buf[TTY_BUFFER_NUM];
+    int in_head;
+    int in_tail;
+    int in_count;
+    int terminal_ID;
+    //控制台
+    CONSOLE console;
+
+} TERMINAL;
+
 #endif

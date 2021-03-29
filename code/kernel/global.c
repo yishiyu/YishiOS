@@ -48,12 +48,11 @@ int ticks;
 PROCESS* p_proc_ready;
 int t_present_terminal;
 
-
 //中断处理函数指针数组
 irq_handler irq_table[IRQ_NUM];
 
 //系统调用处理函数指针数组
-system_call sys_call_table[SYS_CALL_NUM] = {kernel_read_keyboard};
+system_call sys_call_table[SYS_CALL_NUM] = {kernel_read_keyboard,kernel_terminal_write};
 
 //系统预定义进程初始状态
 //其中的终端即终端队列中的第一个成员,即默认就绪队列中的终端指针指向第一个终端
@@ -61,8 +60,10 @@ TASK task_table[BASE_TASKS_NUM] = {
     {keyboard_server, STACK_KEYBOARD_SERVER, "keyboard_server"}};
 
 // 系统终端进程初始状态
-TASK tty_task_table[TERMINAL_NUM] = {{tty_1, STACK_TERMINAL, "terminal_1"},
-                                     {tty_2, STACK_TERMINAL, "terminal_2"}};
+TASK tty_task_table[TERMINAL_NUM] = {{tty_0, STACK_TERMINAL, "terminal_0"},
+                                     {tty_1, STACK_TERMINAL, "terminal_1"}};
 
 KEYMAP_BUFFER key_buffer;
 KEYMAP_RESULT_BUFFER key_result_buffer;
+
+TERMINAL terminal_console_table[TERMINAL_NUM];

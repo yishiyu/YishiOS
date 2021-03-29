@@ -151,7 +151,7 @@
 #define IRQ_KEYBOARD 1
 
 // 系统调用的个数及其对应的中断号
-#define SYS_CALL_NUM 1
+#define SYS_CALL_NUM 2
 #define SYS_CALL_VECTOR 0x90
 
 // 键盘缓冲区大小
@@ -183,4 +183,5 @@
 #define MAKE_COLOR(x, y) ((x << 4) | y)
 // 终端参数 设置
 #define TERMINAL_WIDTH 80
+
 #endif

@@ -23,6 +23,10 @@ KEYMAP_RESULT sys_read_keyboard() {
     return result;
 }
 
+void sys_terminal_write(int terminal_index, char* data){
+    asm_terminal_write(terminal_index, data);
+}
+
 //=================最终工作的函数======================
 // 本函数工作在内核态
 u32 kernel_read_keyboard() {
@@ -46,4 +50,11 @@ u32 kernel_read_keyboard() {
 
     // 这个转换可真是个花活...需要考虑到系统是小端存储
     return *((u32*)(result));
+}
+
+// 工作在内核态
+u32 kernel_terminal_write(int terminal_index, char* data) {
+    TERMINAL* terminal = &terminal_console_table[terminal_index];
+    terminal_disp_str(terminal,data);
+    return 0;
 }

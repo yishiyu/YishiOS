@@ -2,11 +2,13 @@
 
 ; 键盘系统调用的调用号
 SYS_READ_KEYBOARD   equ     0
+SYS_TERMIBAL_WRITE    equ     1
 
 ; 系统调用的中断号
 SYS_CALL_VECTOR equ 0x90
 
 global asm_read_keyboard
+global asm_terminal_write
 global enable_int
 global disable_int
 global pause
@@ -19,6 +21,16 @@ asm_read_keyboard:
     int SYS_CALL_VECTOR
     ret
     
+;=========================
+; 终端写入函数
+;=========================
+asm_terminal_write:
+    mov eax, SYS_TERMIBAL_WRITE
+    mov ebx, [esp + 4]
+    mov ecx, [esp + 8]
+    int SYS_CALL_VECTOR
+    ret
+
 
 ;========================
 ; 控制中断

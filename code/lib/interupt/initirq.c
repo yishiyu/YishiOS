@@ -21,4 +21,6 @@ void init_IRQ() {
     key_buffer.key_tail = 0;
     put_irq_handler(IRQ_KEYBOARD, keyboard_handler);
     enable_irq(IRQ_KEYBOARD);
+
+    
 }
