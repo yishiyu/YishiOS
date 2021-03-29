@@ -197,19 +197,19 @@ struct OUTPUT_MESSAGE {
     char* data;      // 要显示字符的指针
     char disp_func;  // 执行的具体功能
 };
+// input子系统信息
 struct INPUT_MESSAGE {
     int input_source;  // input输入源
     KEYMAP_RESULT keyboard_result;
 };
-struct mess3 {
-    int m3i1;
-    int m3i2;
-    int m3i3;
-    int m3i4;
-    u64 m3l1;
-    u64 m3l2;
-    void* m3p1;
-    void* m3p2;
+// 硬盘操作信息
+struct DISK_MESSAGE {
+    u8 function;      // 执行的操作类型
+    u32 pid;          // 信息来源进程
+    char* buffer;     // 缓冲区指针
+    u32 sector;       // 操作的起点扇区
+    u32 bytes_count;  //读取的字节数
+    u8 result;        // 磁盘操作的结果
 };
 
 typedef struct mess {
@@ -218,7 +218,7 @@ typedef struct mess {
     union {
         struct OUTPUT_MESSAGE output_message;
         struct INPUT_MESSAGE input_message;
-        struct mess3 m3;
+        struct DISK_MESSAGE disk_message;
     } u;
 } MESSAGE;
 

@@ -3,7 +3,7 @@
 #include "initirq.h"
 
 void init_IRQ() {
-    // 打开最基本的中断
+    // 打开主片上的中断
     //=======================打开时钟中断========================
     // 初始化 8253 PIT
     // 8253 PIT 芯片用于控制时钟中断,这里设置了时钟中断发生的频率
@@ -22,4 +22,11 @@ void init_IRQ() {
     key_buffer.key_tail = 0;
     put_irq_handler(IRQ_KEYBOARD, keyboard_handler);
     enable_irq(IRQ_KEYBOARD);
+
+    // 打开从片上的中断
+    enable_irq(IRQ_SLAVE);
+
+    //=======================打开磁盘中断========================
+    put_irq_handler(IRQ_DISK, disk_handler);
+    enable_irq(IRQ_DISK);
 }

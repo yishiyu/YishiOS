@@ -72,7 +72,7 @@ int start_proc() {
     p_proc_wait_head = &p_proc_wait_tail;
 
     //------------------------------------------初始化空进程--------------------------------------
-    init_pcb(&empty_task, &PCB_empty_task, EMPTY_TASK_PID, p_task_stack,
+    init_pcb(&empty_task, &PCB_empty_task, PID_EMTPY_TASK, p_task_stack,
              selector_ldt);
     PCB_empty_task.next_pcb = &p_proc_ready_tail;
 

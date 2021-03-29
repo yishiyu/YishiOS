@@ -6,6 +6,7 @@
 #include "global.h"
 #include "terminal.h"
 #include "syscall.h"
+#include "disk.h"
 
 // 辅助宏定义
 #define is_ready_empty (p_proc_ready_head == &p_proc_ready_tail)
@@ -22,5 +23,8 @@ void schedule();
 
 // 键盘中断处理
 void keyboard_handler(int irq);
+
+// 磁盘中断处理
+void disk_handler(int irq);
 
 #endif

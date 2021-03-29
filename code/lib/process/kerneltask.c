@@ -1,11 +1,8 @@
 #include "kerneltask.h"
-
-
+#include "disk.h"
+#include "memory.h"
 
 void empty_function() {
-    while (1){
-        int i=0;
-        int j=1;
-        int k=2;
+    while (1) {
     }
 }

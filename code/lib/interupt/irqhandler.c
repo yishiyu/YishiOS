@@ -136,3 +136,12 @@ void keyboard_handler(int irq) {
         inform_int(PID_INPUT_SERVER, HARD_INT_KEYBOARD);
     }
 }
+
+// 磁盘中断处理
+void disk_handler(int irq) {
+    // 获取磁盘状态
+    disk_status = in_byte(REG_STATUS);
+
+    // 通知磁盘服务器
+    inform_int(PID_DISK_SERVER, HARD_INT_DISK);
+}

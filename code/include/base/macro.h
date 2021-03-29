@@ -176,6 +176,8 @@
 #define IRQ_NUM 16
 #define IRQ_CLOCK 0
 #define IRQ_KEYBOARD 1
+#define IRQ_SLAVE 2
+#define IRQ_DISK 14
 
 // 系统调用的个数及其对应的中断号
 #define SYS_CALL_NUM 2
@@ -249,7 +251,6 @@
 #define ANY (MAX_PROCESS_NUM + 10)
 // 注意这两个,一个是不接受信息状态,一个是空进程
 #define NO_TASK (MAX_PROCESS_NUM + 20)
-#define EMPTY_TASK_PID (MAX_PROCESS_NUM + 30)
 
 // 系统预定义的进程的PID(永远绑定,便于实现其他系统调用)
 #define PID_INTERRUPT -10
@@ -260,6 +261,7 @@
 #define PID_TTY1 4
 // 剩下可以分配的PCB的起点
 #define PID_STACK_BASE 5
+#define PID_EMTPY_TASK (MAX_PROCESS_NUM + 30)
 
 // 消息类型
 #define SERVER_OUTPUT PID_OUTPUT_SERVER  // 输出信息

@@ -42,7 +42,7 @@ OBJS		= kernel/kernel.o kernel/global.o kernel/c_kernel.o \
 						lib/process/terminal/terminallib.o \
 						lib/syscall/ipc.o lib/syscall/syscalllib.o lib/process/input/input_keyboard.o \
 						lib/process/kerneltask.o lib/process/output/output.o lib/process/input/input.o \
-						lib/process/disk/disk.o
+						lib/process/disk/disk.o lib/process/disk/disklib.o
 DASM_OUTPUT	= kernel.bin.asm
 CALL_TREE = calltree.png
 
@@ -175,3 +175,6 @@ lib/process/input/input_keyboard.o : lib/process/input/input_keyboard.c
 
 lib/process/disk/disk.o : lib/process/disk/disk.c
 	$(CC) $(C_FLAGS) -o $@ $<
+
+lib/process/disk/disklib.o : lib/process/disk/disk.asm
+	$(ASM) $(ASM_KERNEL_FLAGS) -o $@ $<
