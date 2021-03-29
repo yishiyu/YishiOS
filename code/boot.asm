@@ -19,7 +19,11 @@
 
 	BootMessage:						;加载信息,统一为10字节长
 				db	"Booting   "
-	BootMessage_Length	equ $-BootMessage
+				db	"Loading   "
+				db	"No Loader "
+	BootMessage_Length	equ 10
+	Loader_Name:	db	"loader.bin"
+	Loader_Name_Length: equ	$-Loader_Name
 
 boot_start:
 	;读取硬盘中的Boot Sector到内存中
@@ -43,7 +47,6 @@ boot_start:
 	mov	word	[disk_address_packet + 6],	GroupDescriptors_Base
 	mov	dword	[disk_address_packet + 8],	GroupDescriptors_LBA_L
 	mov	dword	[disk_address_packet + 12],	GroupDescriptors_LBA_H
-	xchg bx,bx
 	call	read_sector
 
 	;读取Inode Table(具体位置从Group Desriptors中获取)
@@ -54,12 +57,109 @@ boot_start:
 	mov	eax,	dword [GroupDescriptors_Offset + 8]				;获取inode table首地址,单位为block
 	add eax,eax
 	mov bx, cs
-	mov	ds,	bx
+	mov	ds,	bx																						 ;一定要记得把ds寄存器恢复!!!!!找了半天出错原因!!!(其实完全可以用es寄存器...傻了...)
 	mov	dword	[disk_address_packet + 8],	eax						 ;高地址依然为0
 
-	xchg bx,bx
 	call	read_sector
-	xchg bx,bx
+	
+	;根据Inode Table读取根目录(ext2系统2号inode保留为根目录inode)
+	; inode 40-99 bytes 描述指向数据的block号(60bytes 描述了15个block)
+	;前12个block为直接索引
+	;第13个block为一级索引
+	;第14个block为二级索引
+	;低15个block为三级索引
+
+	;读取根目录
+
+	mov word	[disk_address_packet + 4],	RootDir_Offset
+	mov	word	[disk_address_packet + 6],	RootDir_Base
+	;InodeTable 的基地址
+	;第二个inode中inode_block的偏移
+	mov	bx,InodeTable_Base
+	mov	es,bx
+	mov	bx,Inode_Length + Inode_Block
+	mov	eax,[es:bx]
+	add eax,eax
+	mov	dword	[disk_address_packet + 8],	eax
+	mov	dword	[disk_address_packet + 12],	0
+	;只搜索根目录前12个block
+	mov	cx,	12
+	
+	;bx = inode中inode_block数据的地址
+	;cx = 剩余未搜索block数量
+	;es = InodeTable的基地址
+
+	;读取根目录的一个block,减少block计数并修改数据结构
+root_dir_read:
+	cmp	cx, 0
+	je	loader_not_found
+	call	read_sector
+	dec cx
+	add bx,4
+	mov	eax,[es:bx]
+	add eax,eax
+	mov	dword	[disk_address_packet + 8],	eax
+
+	;搜索当前读取到的block
+root_dir_search:
+	; bx = 在当前根目录中读取指针的偏移
+	; ds:si = 正确的文件名字
+	; gs:bx = 当前磁盘上目录项
+	pusha
+	mov si,Loader_Name
+	mov eax, RootDir_Base
+	mov gs,eax
+	mov bx, RootDir_Offset
+
+root_file_match:
+
+	; 对比名字长度
+file_length_cmp:
+	xor cx,cx
+	mov cl, Loader_Name_Length
+	cmp cl, byte [gs:bx+Name_Len_Offset]
+	jnz file_not_match
+
+	mov si,Loader_Name
+	push bx
+	; 对比名字
+file_name_cmp:
+	; 阿西吧了,这个losb有副作用会使si寄存器加1
+	; 我说为啥总是第一个字符匹配上了后面就错了
+	lodsb				; ds:si -> al
+	;只有bx能当做基址寄存器
+	cmp al,  byte[gs:bx+File_Name_Offset]
+	jnz file_name_cmp_end
+	dec cl
+	jz file_name_cmp_end
+	inc bx
+	jmp file_name_cmp
+file_name_cmp_end:
+	;离开对比名字这一段之前必须恢复bx
+	pop bx
+	cmp cl, 0
+	jnz file_not_match
+	jmp loader_found
+
+
+file_not_match:
+	add bx, word [gs:bx+Record_Length_Offset]
+	cmp bx,1024
+	jl root_file_match
+	popa
+	jmp root_dir_read
+
+
+loader_not_found:
+	mov	dh,	2
+	call disp_str
+	jmp	$
+
+loader_found:
+	mov	dh,	1
+	call	disp_str
+	jmp $
+
 
 
 ;======================================
@@ -67,11 +167,13 @@ boot_start:
 ;	清空80×50的屏幕为黑底白字
 ;======================================
 clear_screen:
+	pusha
 	mov	ax,	0600h
 	mov	bx,	07h
 	mov	cx,	0
 	mov	dx,	0184fh
 	int 10h
+	popa
 	ret
 
 ;======================================
@@ -80,6 +182,7 @@ clear_screen:
 ;	dh=显示信息的偏移
 ;======================================
 disp_str:
+	pusha
 	mov	ax,	BootMessage_Length
 	mul	dh
 	add	ax,	BootMessage
@@ -91,29 +194,23 @@ disp_str:
 	mov	bx,	07h
 	mov	dl,	0
 	int	10h	
+	popa
 	ret
 
 ;======================================
 ;	read_sector
 ;	调用前需要设置好disk_address_packet结构体
 ;	使用前后寄存器会发生改变,为了节省空间不再管这个了
-; Exit:
-;     - es:bx -> data read
-; registers changed:
-;     - eax, ebx, dl, si, es
 ;======================================
 read_sector:
+	pusha
 	xor	ebx, ebx
 	mov	ah, 042h
 	mov	dl, 080h			; c 盘盘符
 	mov	si, disk_address_packet
 	int	0x13
-
-	mov	ax, [disk_address_packet + 6]
-	mov	es, ax
-	mov	bx, [disk_address_packet + 4]
+	popa
 	ret
-
 
 
 times 	510-($-$$)	db	0					; 填充剩下的空间，使生成的二进制代码恰好为512字节

@@ -10,3 +10,9 @@ SuperBlock_LBA_H	equ 00h
 GroupDescriptors_LBA_L      equ 04h
 GroupDescriptors_LBA_H      equ 00h
 
+; 记录目录项中的数据结构偏移
+Inode_Number_Offset    equ 0
+Record_Length_Offset   equ 4
+Name_Len_Offset    equ 6
+File_Type_Offset   equ 7
+File_Name_Offset   equ 8
