@@ -168,6 +168,12 @@ typedef struct console {
 
 } CONSOLE;
 
+// 文件描述符
+typedef struct file_descriptor {
+    int fd_pos;
+    struct inode* fd_inode;
+} FILE_DESCRIPTOR;
+
 // 终端结构体
 typedef struct terminal {
     //待处理的命令缓冲区
@@ -176,8 +182,13 @@ typedef struct terminal {
     int in_tail;
     int in_count;
     int terminal_ID;
+    int pid;
     //控制台
     CONSOLE* console;
+    // 文件系统相关
+    char* directory_buffer;     // 当前目录缓冲区
+    int directory_buffer_size;  //缓冲区大小
+    FILE_DESCRIPTOR* directory_fd;   //目录文件描述符
 } TERMINAL;
 
 // ext2文件系统结构
@@ -201,12 +212,6 @@ struct inode {
     u32 i_faddr;
     u32 osd2[3];
 };
-
-// 文件描述符
-typedef struct file_descriptor {
-    int fd_pos;
-    struct inode* fd_inode;
-} FILE_DESCRIPTOR;
 
 // 以下内容改自Minix
 // output子系统信息结构体, 信息类型为OUTPUT_SYSTEM (0)

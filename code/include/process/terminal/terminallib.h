@@ -3,6 +3,7 @@
 #define YISHIOS_TERMINALLIB_H
 
 #include "display.h"
+#include "filesystem.h"
 #include "global.h"
 #include "keymap.h"
 #include "macro.h"
@@ -31,5 +32,9 @@ void terminal_command_handler(TERMINAL* terminal);
 void terminal_disp_char(TERMINAL* terminal, char data);
 void terminal_disp_str(TERMINAL* terminal, char* data);
 void terminal_disp_int(TERMINAL* terminal, int data);
+
+// shell命令对应的函数
+void terminal_root(TERMINAL* terminal);
+void terminal_ls(TERMINAL* terminal);
 
 #endif

@@ -69,3 +69,17 @@ char *itoa(int n, char *s) {
     }
     return result;
 }
+
+// 字符串比较
+int strcmp(const char *s1, const char *s2) {
+    int result = *s1 - *s2;
+    // 如果字符相等,且两字符串都没有比完,则继续比较
+    while ((result == 0) && (*s1) && (*s2)) {
+        // 切换到下一个字符
+        s1++;
+        s2++;
+        // 比较
+        result = *s1 - *s2;
+    }
+    return result;
+}

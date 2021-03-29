@@ -3,13 +3,20 @@
 
 static int tty_count = 0;
 
+#pragma region 终端初始化和主循环
+
 // 初始化终端的所有内容
 void terminal_init(TERMINAL* terminal) {
+    // 1. 命令缓冲区初始化
     terminal->in_head = 0;
     terminal->in_tail = 0;
     terminal->in_count = 0;
-
+    // 2. 显存初始化
     terminal_init_screen(terminal);
+    // 文件系统初始化需要绑定内存给终端
+    // 而函数中的变量是所有调用该函数的进程所共享的
+    // 故这一步必须在终端的入口函数处初始化
+    // (因为终端的入口函数内的变量只由固定终端使用)
 }
 
 // 初始化 终端的显示内容
@@ -27,22 +34,16 @@ void terminal_init_screen(TERMINAL* terminal) {
 
 // 终端的主函数
 void terminal_main(TERMINAL* terminal, int terminal_pid) {
-    int start = 1;
-    while (start) {
-        if (t_present_terminal == terminal->terminal_ID) {
-            //一个终端启动 后打印终端信息
-            terminal_disp_str(terminal, "Terminal ");
-            terminal_disp_int(terminal, terminal->terminal_ID);
-            terminal_disp_str(terminal, "\n");
-            start = 0;
-        }
-    }
+    terminal_disp_str(terminal, "Terminal ");
+    terminal_disp_int(terminal, terminal->terminal_ID);
+    terminal_disp_str(terminal, "\n> ");
     MESSAGE message;
     while (1) {
         sys_sendrec(RECEIVE, PID_INPUT_SERVER, &message, terminal_pid);
         terminal_handler(terminal, message.u.input_message.keyboard_result);
     }
 }
+#pragma endregion
 
 // 处理接收到的字符
 void terminal_handler(TERMINAL* terminal, KEYMAP_RESULT result) {
@@ -52,10 +53,12 @@ void terminal_handler(TERMINAL* terminal, KEYMAP_RESULT result) {
         switch (result.data) {
             case '\n':
             case 0x0d:
-                // 回车符
-                terminal_command_handler(terminal);
                 // 回显字符
                 terminal_disp_char(terminal, result.data);
+                // 执行命令
+                terminal_command_handler(terminal);
+                // 显示一个提示符
+                terminal_disp_str(terminal, "\n> ");
                 break;
             case '\b':
                 // 回显字符
@@ -176,11 +179,23 @@ void terminal_set_cursor(TERMINAL* terminal) {
 
 // 处理命令
 void terminal_command_handler(TERMINAL* terminal) {
-    // 暂时简单地把缓冲区清空
+    // 1. 判断命令
+    // 暂时假设没有参数,不用先处理命令格式
+
+    // 2. 执行命令
+    char* temp = terminal->in_buf + terminal->in_tail;
+    if (strcmp(terminal->in_buf + terminal->in_tail, "root") == 0) {
+        terminal_root(terminal);
+    } else if (strcmp(terminal->in_buf + terminal->in_tail, "ls") == 0) {
+        terminal_ls(terminal);
+    }
+
+    // 3. 暂时简单地把缓冲区清空
     terminal->in_tail = terminal->in_head;
     terminal->in_count = 0;
 }
 
+#pragma region 终端显示函数
 // 屏幕显示函数
 void terminal_disp_char(TERMINAL* terminal, char data) {
     // 把字符填充到显存中并修改光标
@@ -199,12 +214,6 @@ void terminal_disp_char(TERMINAL* terminal, char data) {
             terminal->console->cursor -= ((terminal->console->cursor -
                                            terminal->console->original_addr) %
                                           TERMINAL_WIDTH);
-            // 打印提示符
-            video_mem_position =
-                (u8*)(VIDEO_MEM_BASE + terminal->console->cursor * 2);
-            *video_mem_position++ = '>';
-            *video_mem_position = DEFAULT_CHAR_COLOR;
-            terminal->console->cursor++;
             break;
 
         case '\b':
@@ -256,3 +265,67 @@ void terminal_disp_int(TERMINAL* terminal, int data) {
     // 输出字符串
     terminal_disp_str(terminal, temp);
 }
+#pragma endregion
+
+#pragma region 命令处理函数
+
+// 打开根目录并显示文件
+void terminal_root(TERMINAL* terminal) {
+    // 1. 参数准备
+    char* directory_buffer = terminal->directory_buffer;
+    DIR_ENTRY* directory_entry;
+    // 2. 请求文件系统的服务
+    MESSAGE message;
+    message.source = terminal->pid;
+    message.type = terminal->pid;
+    message.u.fs_message.pid = terminal->pid;
+    message.u.fs_message.buffer = terminal->directory_buffer;
+    message.u.fs_message.count = DIRET_BUF_SIZE;
+    message.u.fs_message.fd = terminal->directory_fd;
+    message.u.fs_message.function = FS_ROOT;
+    sys_sendrec(SEND, SERVER_FS, &message, terminal->pid);
+    sys_sendrec(RECEIVE, SERVER_FS, &message, terminal->pid);
+    // 3. 解析根目录
+    int file_size = terminal->directory_fd->fd_inode->i_size;
+    int buffer_size = terminal->directory_buffer_size;
+    int directory_limit = (file_size > buffer_size) ? buffer_size : file_size;
+    int entry_index = 0;
+    for (int i = 0; (i < 10) && (entry_index < directory_limit); i++) {
+        directory_entry =
+            (struct directory_entry*)&directory_buffer[entry_index];
+        entry_index += directory_entry->rec_len;
+        // 文件为普通文件或目录文件
+        if ((directory_entry->file_type == 1) ||
+            (directory_entry->file_type == 2)) {
+            terminal_disp_str(terminal, &(directory_entry->name));
+            terminal_disp_char(terminal, '\n');
+        }
+    }
+}
+
+// 显示当前文件夹中的文件
+void terminal_ls(TERMINAL* terminal) {
+    // 1. 参数准备
+    char* directory_buffer = terminal->directory_buffer;
+    DIR_ENTRY* directory_entry;
+
+    // 2. 解析目录
+    int file_size = terminal->directory_fd->fd_inode->i_size;
+    int buffer_size = terminal->directory_buffer_size;
+    int directory_limit = (file_size > buffer_size) ? buffer_size : file_size;
+    int entry_index = 0;
+    for (int i = 0; (i < 10) && (entry_index < directory_limit); i++) {
+        directory_entry =
+            (struct directory_entry*)&directory_buffer[entry_index];
+        entry_index += directory_entry->rec_len;
+        // 文件为普通文件或目录文件
+        if ((directory_entry->file_type == 1) ||
+            (directory_entry->file_type == 2)) {
+            terminal_disp_str(terminal, &(directory_entry->name));
+            terminal_disp_char(terminal, '\n');
+        }
+    }
+}
+
+
+#pragma endregion

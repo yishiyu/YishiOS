@@ -51,8 +51,11 @@ CALL_TREE = calltree.png
 # 声明所有支持的命令
 .PHONY : run everything clean realclean disasm final buildimg image calltree
 
-# 默认启动点
-run	:	image 
+# 默认启动点,有调试模式
+run_debug	:	image 
+	bochs -f bochsrc_debug
+
+run : image
 	bochs -f bochsrc
 
 gdb : 

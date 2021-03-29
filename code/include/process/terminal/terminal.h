@@ -6,6 +6,9 @@
 #include "global.h"
 #include "terminallib.h"
 
+// 终端宏定义
+#define DIRET_BUF_SIZE 2048
+
 // 不同的函数即不同的终端
 // 不同的终端共享相同的子函数,但是不共享数据
 

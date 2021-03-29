@@ -35,6 +35,11 @@ void FS_server() {
             case FS_ROOT:
                 // 打开根目录
                 result = FS_get_root(&message);
+                result = FS_read_file(&message);
+                break;
+            case FS_READ:
+                // 读取文件
+                result = FS_read_file(&message);
                 break;
 
             default:
@@ -49,23 +54,32 @@ void FS_server() {
 }
 
 // 打开根目录
-// 返回值含义
-// result=1 --> 成功读取
-// result=2 --> 根目录大小小于要读取的字节数,只读取根目录大小内容
+// 仅仅返回文件描述符,读取文件被分离到读取文件函数中
 int FS_get_root(MESSAGE* message) {
-    // 1. 复制文件描述符
+    // 复制文件描述符
     *(message->u.fs_message.fd->fd_inode) = FS_root_inode;
     message->u.fs_message.fd->fd_pos = 0;
 
-    // 2. 复制一部分根目录
-    // 2.1 参数准备
-    int bytes_left = message->u.fs_message.count;
-    int result = (bytes_left > FS_root_inode.i_size) ? 2 : 1;
-    bytes_left =
-        (bytes_left > FS_root_inode.i_size) ? FS_root_inode.i_size : bytes_left;
+    return 1;
+}
+
+// 读取文件(文件夹本身也是一种特殊文件)
+// 输入参数:  文件描述符指针, 读取数据量, 数据缓冲区, 进程pid
+// 函数功能: 读取指定文件到缓冲区中
+// 返回值含义: 1 --> 成功读取   0 --> 文件剩余部分不足,只读取剩余部分
+// 现在只支持读取前12个block,也就是12kb
+int FS_read_file(MESSAGE* message) {
+    // 1. 参数准备
+    // 1.1 计算文件剩余大小
+    int bytes_left = (message->u.fs_message.fd->fd_inode->i_size -
+                      message->u.fs_message.fd->fd_pos);
+    // 1.2 文件剩余部分是否足够大 | 1 --> 足够大 |  0 --> 不够大  |
+    int result = (bytes_left > message->u.fs_message.count);
+    // 1.3 取(剩余部分大小) (要读取大小)二者较小者
+    bytes_left = (result) ? message->u.fs_message.count : bytes_left;
+    // 1.4 计算缓冲区位置
     char* buffer = (char*)va2la(message->u.fs_message.pid,
                                 (void*)message->u.fs_message.buffer);
-    DIR_ENTRY* temp = (DIR_ENTRY*)&buffer;
 
     // 2.1 读取前12个block(直接索引)
     for (int block_index = 0; (bytes_left > 0) && block_index < 12;

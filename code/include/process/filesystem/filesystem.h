@@ -75,6 +75,7 @@ void FS_server();
 
 // 功能函数
 int FS_get_root(MESSAGE* message);
+int FS_read_file(MESSAGE* message);
 
 // 子函数
 int FS_get_inode(u32 inode_index, struct inode* inode_buf);
@@ -90,5 +91,6 @@ void FS_init();
 #define root_inode_index 2
 // 文件系统提供的功能
 #define FS_ROOT 0x01  // 打开根目录
+#define FS_READ 0x02   // 读取文件
 
 #endif

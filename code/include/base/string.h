@@ -10,5 +10,6 @@ char *strcpy(char *destination, const char *source);
 char *strcat(char *target, const char *source);
 int atoi(const char *s);
 char *itoa(int n, char *s);
+int strcmp(const char *s1,const char *s2);
 
 #endif
