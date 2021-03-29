@@ -4,8 +4,12 @@
 
 #include "global.h"              
 #include "display.h"
+#include "keymap.h"
 
 // 时钟中断处理
 void clock_handler(int irq);
+
+// 键盘中断处理
+void keyboard_handler(int irq);
 
 #endif

@@ -14,4 +14,11 @@ typedef void (*int_handler)();
 typedef void (*task_f)();
 typedef	void	(*irq_handler)	(int irq);
 
+//读取键盘相关
+// key_type表明读取键盘得到的数据的类型
+// key_type = 0  ==> ascii码
+// key_type = 1  ==> 特殊信息
+typedef char key_type;
+typedef char key_value;
+
 #endif

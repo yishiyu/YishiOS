@@ -141,4 +141,8 @@
 #define IRQ_CLOCK 0
 #define IRQ_KEYBOARD 1
 
+
+// 键盘缓冲区大小
+#define KEY_BUF_SIZE 128
+
 #endif

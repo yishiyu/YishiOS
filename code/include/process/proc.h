@@ -7,7 +7,7 @@
 
 
 #include "func.h"
-#include "irqhandler.h"
+#include "initirq.h"
 
 int start_proc();
 

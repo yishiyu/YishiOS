@@ -75,18 +75,11 @@ int start_proc() {
     k_reenter = 0;
     ticks = 0;
     p_proc_ready = proc_table;
+    
+    // 之所以在启动进程之前进行中断的初始化
+    // 是为了防止在设置其他内容的时候发生中断
+    init_IRQ();
 
-    // 初始化 8253 PIT
-    // 8253 PIT 芯片用于控制时钟中断,这里设置了时钟中断发生的频率
-    // 宏定义和PIT芯片的关系在macro.h文件中
-    out_byte(TIMER_MODE, RATE_GENERATOR);
-    out_byte(TIMER0, (u8)(TIMER_FREQ / HZ));
-    out_byte(TIMER0, (u8)((TIMER_FREQ / HZ) >> 8));
-
-    //在统一设置所有中断由默认处理函数处理的之后为时钟中断单独指定处理函数
-    put_irq_handler(IRQ_CLOCK, clock_handler);
-    enable_irq(IRQ_CLOCK);
-
+    // 操作系统初始化完毕,进入初始进程中
     restart();
-
 }

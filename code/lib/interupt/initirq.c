@@ -1,0 +1,22 @@
+// 初始化自己写的中断函数
+
+#include "initirq.h"
+
+void init_IRQ(){
+
+    //=======================打开时钟中断========================
+    // 初始化 8253 PIT
+    // 8253 PIT 芯片用于控制时钟中断,这里设置了时钟中断发生的频率
+    // 宏定义和PIT芯片的关系在macro.h文件中
+    out_byte(TIMER_MODE, RATE_GENERATOR);
+    out_byte(TIMER0, (u8)(TIMER_FREQ / HZ));
+    out_byte(TIMER0, (u8)((TIMER_FREQ / HZ) >> 8));
+    put_irq_handler(IRQ_CLOCK, clock_handler);
+    enable_irq(IRQ_CLOCK);
+
+    //=======================打开键盘中断========================
+    //设置键盘中断并打开开关
+    put_irq_handler(IRQ_KEYBOARD, keyboard_handler);
+    enable_irq(IRQ_KEYBOARD);
+
+}

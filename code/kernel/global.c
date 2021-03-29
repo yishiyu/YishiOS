@@ -54,3 +54,4 @@ TASK task_table[BASE_TASKS_NUM] = {{TestA, STACK_SIZE_TESTA, "TestA"},
                                    {TestB, STACK_SIZE_TESTB, "TestB"},
                                    {TestC, STACK_SIZE_TESTC, "TestC"}};
 
+KEYMAP_BUFFER key_buffer;

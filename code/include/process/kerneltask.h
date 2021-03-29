@@ -3,7 +3,6 @@
 #define YISHIOS_KERNEL_TASK_H
 
 #include "display.h"
-#include "macro.h"
 
 void TestA();
 void TestB();

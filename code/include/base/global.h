@@ -55,4 +55,7 @@ extern irq_handler irq_table[];
 //系统预定义进程初始状态
 extern TASK task_table[];
 
+//键盘输入缓冲区
+extern KEYMAP_BUFFER key_buffer;
+
 #endif
