@@ -24,8 +24,10 @@ void output_handler(MESSAGE* message) {
 
         // 调整控制台
         case OUTPUT_MESSTYPE_FUNC:
+            data = (char*)va2la(message->u.output_message.pid,
+                                message->u.output_message.data);
             output_disp_func(message->u.output_message.console,
-                             message->u.output_message.disp_func);
+                             message->u.output_message.disp_func, data);
             break;
 
         default:
@@ -70,13 +72,16 @@ void output_disp_str(CONSOLE* console, char* data) {
 }
 
 // 显示调整函数(如上下移,左右移光标等)
-void output_disp_func(CONSOLE* console, char function) {
-    switch (function) {
+void output_disp_func(CONSOLE* console, char func, char* data) {
+    u8* video_addr = (u8*)(VIDEO_MEM_BASE + console->current_start_addr * 2);  // 当前界面起始地址
+    u8* video_temp = video_addr;
+    int row = 0;                                   // 行
+    int column = 0;                                // 列
+    switch (func) {
         case OUTPUT_DISP_FUNC_UP:
             // 向上滚动屏幕
             if (console->current_start_addr > console->original_addr) {
                 console->current_start_addr -= 80;
-                output_draw_screen(console);
             }
             break;
 
@@ -85,24 +90,41 @@ void output_disp_func(CONSOLE* console, char function) {
             if (console->current_start_addr <
                 (console->original_addr + console->mem_limit)) {
                 console->current_start_addr += 80;
-                output_draw_screen(console);
             }
             break;
 
         case OUTPUT_DISP_FUNC_LEFT:
             console->cursor--;
-            output_draw_screen(console);
             break;
 
         case OUTPUT_DISP_FUNC_RIGHT:
             console->cursor++;
-            output_draw_screen(console);
             break;
 
+        case OUTPUT_DISP_FUNC_CLEAR:
+            // 屏幕下滚至清空屏幕
+            // 1. 光标移至下一行行首
+            console->cursor += TERMINAL_WIDTH;
+            console->cursor -= (console->cursor % TERMINAL_WIDTH);
+            // 2. 终端显示首地址转换
+            console->current_start_addr = console->cursor;
+            break;
+        case OUTPUT_DISP_FUNC_DRAW:
+            // 根据一块连续内存刷新界面
+            // 内存要求: (char 字符 ,char 颜色) × 80 × 25
+            // 行循环
+            for (row = 0; row < 25; row++) {
+                // 列循环
+                for (column = 0; column < 80; column++) {
+                    *(video_addr++) = *(data++);  // 赋值字符
+                    *(video_addr++) = *(data++);  // 赋值颜色
+                }
+            }
+            break;
         default:
-            output_draw_screen(console);
             break;
     }
+    output_draw_screen(console);
 }
 
 // 设置光标

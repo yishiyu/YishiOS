@@ -267,4 +267,10 @@ typedef struct mess {
     } u;
 } MESSAGE;
 
+// 显存字符单元
+typedef struct video_unit {
+    char data;
+    u8 color;
+} VIDEO_UNIT;
+
 #endif

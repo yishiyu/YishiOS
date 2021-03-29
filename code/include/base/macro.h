@@ -223,6 +223,7 @@
 #define MAKE_COLOR(x, y) ((x << 4) | y)
 // 终端参数 设置
 #define TERMINAL_WIDTH 80
+#define TERMINAL_HEIGHT 25
 
 // 系统中存在的进程的最大个数
 #define MAX_PROCESS_NUM 10
@@ -295,8 +296,8 @@
 #define OUTPUT_DISP_FUNC_DOWN 1
 #define OUTPUT_DISP_FUNC_LEFT 2
 #define OUTPUT_DISP_FUNC_RIGHT 3
-#define OUTPUT_DISP_FUNC_DRAW 4   // 调整至指定控制台
-#define OUTPUT_DISP_FUNC_CLEAR 5  // 清空屏幕
+#define OUTPUT_DISP_FUNC_DRAW 4   // 根据一块内存刷新界面
+#define OUTPUT_DISP_FUNC_CLEAR 5  // 下滚至清空屏幕
 #define OUTPUT_DISP_FUNC_RESET 6  // 清空整个控制台
 
 #endif

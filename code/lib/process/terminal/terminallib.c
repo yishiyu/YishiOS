@@ -203,6 +203,14 @@ void terminal_command_handler(TERMINAL* terminal) {
         terminal->in_tail += strlen(terminal->in_buf + terminal->in_tail);
         terminal->in_tail++;
         terminal_cd(terminal, terminal->in_buf + terminal->in_tail);
+    } else if (strcmp(terminal->in_buf + terminal->in_tail, "cls") == 0) {
+        // 屏幕下滚至清空屏幕
+        // 1. 光标移至下一行行首
+        terminal->console->cursor += TERMINAL_WIDTH;
+        terminal->console->cursor -= (terminal->console->cursor % TERMINAL_WIDTH);
+        // 2. 终端显示首地址转换
+        terminal->console->current_start_addr = terminal->console->cursor;
+        terminal_draw_screen(terminal);
     }
 
     // 3. 把缓冲区清空
