@@ -56,7 +56,8 @@ extern TASK task_table[];
 
 // 把原本乱七八糟的进程表统一为三个链表
 // 同时使用一个栈来存放预定义好的进程链表节点
-extern int PCB_stack_top;
+extern int PCB_USED;
+extern int PCB_stack_status[];
 extern PROCESS PCB_stack[];
 
 // 用于进程调度的三个队列的头尾指针和尾节点

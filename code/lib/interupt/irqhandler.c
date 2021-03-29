@@ -1,13 +1,21 @@
 // 防止各种中断处理
 #include "irqhandler.h"
 
-// 辅助宏定义
-#define is_ready_empty (p_proc_ready_head == &p_proc_ready_tail)
-#define is_ready_one_left (p_proc_ready_head->next_pcb == &p_proc_ready_tail)
-#define is_wait_empty (p_proc_wait_head == &p_proc_wait_tail)
-#define is_wait_one_left (p_proc_wait_head->next_pcb == &p_proc_wait_tail)
-#define is_pause_empty (p_proc_pause_head == &p_proc_pause_tail)
-#define is_pause_one_left (p_proc_pause_head->next_pcb == &p_proc_pause_tail)
+//#define __DEBUG_IRQHANDLER__
+
+#ifndef __YISHIOS_DEBUG__
+#define pause()
+#define disp_int(str)
+#define disp_str(str)
+#else
+#ifndef __DEBUG_IRQHANDLER__
+#define pause()
+#define disp_int(str)
+#define disp_str(str)
+#else
+extern void pause();
+#endif
+#endif
 
 // 之所以加了个参数,是因为才处理中断的时候把中断号压栈了
 // 具体情况看include/base/kernel.inc 中关于中断处理函数的宏定义
@@ -24,17 +32,39 @@ void clock_handler(int irq) {
         return;
     }
 
-    disp_str("point irqhandler.c clock_handler 1 \n");
+    // 进行一次系统调度
+    schedule();
+}
+
+// 进程调度函数
+void schedule() {
+    disp_str("point irqhandler.c schedule 1 \n");
     pause();
     PROCESS* temp;
 
     // 普通调度,直接调取下一个待执行进程
     if (is_ready_empty) {
-        // 按道理来说绝对不会出现这种情况
-        while (1)
-            ;
+        // 就绪队列为空,这种情况可能出现在进程间通信的时候阻塞当前进程之后的调度
+        // 处理方法为直接重新给挂起进程分配时间片,然后把其作为就绪队列
+        // 重新为其分配时间片
+        temp = p_proc_pause_head;
+        do {
+            p_proc_pause_head->ticks = p_proc_pause_head->priority;
+            p_proc_pause_head = p_proc_pause_head->next_pcb;
+        } while (!is_pause_empty);
+
+        disp_str("point irqhandler.c schedule 7 \n");
+        pause();
+
+        // 交换两个链表
+        p_proc_ready_head = temp;
+        (p_proc_pause_tail.pre_pcb)->next_pcb = &p_proc_ready_tail;
+        p_proc_ready_tail.pre_pcb = p_proc_pause_tail.pre_pcb;
+
+        disp_str("point irqhandler.c schedule 8 \n");
+        pause();
     } else if (!is_ready_one_left) {
-        disp_str("point irqhandler.c clock_handler 2 \n");
+        disp_str("point irqhandler.c schedule 2 \n");
         pause();
 
         // 就绪链表中还有剩余进程
@@ -49,7 +79,7 @@ void clock_handler(int irq) {
             p_proc_pause_tail.pre_pcb = temp;
             temp->next_pcb = &p_proc_pause_tail;
         }
-        disp_str("point irqhandler.c clock_handler 3 \n");
+        disp_str("point irqhandler.c schedule 3 \n");
         pause();
 
     } else {
@@ -69,7 +99,7 @@ void clock_handler(int irq) {
             p_proc_pause_tail.pre_pcb = temp;
             temp->next_pcb = &p_proc_pause_tail;
         }
-        disp_str("point irqhandler.c clock_handler 4 \n");
+        disp_str("point irqhandler.c schedule 4 \n");
         pause();
 
         // 重新为其分配时间片
@@ -79,7 +109,7 @@ void clock_handler(int irq) {
             p_proc_pause_head = p_proc_pause_head->next_pcb;
         } while (!is_pause_empty);
 
-        disp_str("point irqhandler.c clock_handler 5 \n");
+        disp_str("point irqhandler.c schedule 5 \n");
         pause();
 
         // 交换两个链表
@@ -87,7 +117,7 @@ void clock_handler(int irq) {
         (p_proc_pause_tail.pre_pcb)->next_pcb = &p_proc_ready_tail;
         p_proc_ready_tail.pre_pcb = p_proc_pause_tail.pre_pcb;
 
-        disp_str("point irqhandler.c clock_handler 6 \n");
+        disp_str("point irqhandler.c schedule 6 \n");
         pause();
     }
 }

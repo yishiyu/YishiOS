@@ -7,6 +7,10 @@
 
 // 把这个声明放在需要调试的文件的头文件中即可
 // #ifndef __YISHIOS_DEBUG__
+// #define pause()
+// #define disp_int(str)
+// #define disp_str(str)
+// #else
 // #ifndef __DEBUG_PROC__
 // #define pause()
 // #define disp_int(str)
@@ -23,6 +27,9 @@
 
 // 每个进程中允许的局部描述符表大小
 #define LDT_SIZE 2
+// 两个类型的局部描述符下标
+#define INDEX_LDT_C 0
+#define INDEX_LDT_RW 1
 
 //系统初始任务数量
 //键盘处理进程,tty任务
@@ -164,7 +171,7 @@
 #define IRQ_KEYBOARD 1
 
 // 系统调用的个数及其对应的中断号
-#define SYS_CALL_NUM 2
+#define SYS_CALL_NUM 3
 #define SYS_CALL_VECTOR 0x90
 
 // 键盘缓冲区大小
@@ -199,5 +206,35 @@
 
 // 系统中存在的进程的最大个数
 #define MAX_PROCESS_NUM 10
+
+// 进程间通信相关定义
+// 进程间通信功能代号
+#define SEND 1
+#define RECEIVE 2
+#define BOTH 3
+
+// 进程状态标志
+#define RUNNING 0x00
+#define SENDING 0x02
+#define RECEIVING 0x04
+
+// 死锁状态结果
+#define NO_DEADLOCK 0
+#define SEND_DEADLOCK 1
+#define RECV_DEADLOCK 2
+
+// 期待信息来源类型
+// #define INVALID_DRIVER	-20
+#define INTERRUPT	-10
+// #define TASK_TTY	0
+// #define TASK_SYS	1
+// #define TASK_WINCH	2
+// #define TASK_FS	3
+// #define TASK_MM	4
+#define ANY (MAX_PROCESS_NUM + 10)
+#define NO_TASK (MAX_PROCESS_NUM + 20)
+
+// 消息类型
+#define HARD_INT 0
 
 #endif

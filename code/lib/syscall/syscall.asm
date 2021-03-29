@@ -3,12 +3,14 @@
 ; 键盘系统调用的调用号
 SYS_READ_KEYBOARD   equ     0
 SYS_TERMIBAL_WRITE    equ     1
+SYS_SENDREC equ 2
 
 ; 系统调用的中断号
 SYS_CALL_VECTOR equ 0x90
 
 global asm_read_keyboard
 global asm_terminal_write
+global asm_sendrec
 global enable_int
 global disable_int
 global pause
@@ -31,6 +33,18 @@ asm_terminal_write:
     int SYS_CALL_VECTOR
     ret
 
+;=========================
+; 进程间通信函数
+;   asm_sendrec(int function, int src_dest, MESSAGE* m, int pid);
+;=========================
+asm_sendrec:
+    mov eax, SYS_SENDREC
+    mov ebx, [esp + 4]
+    mov ecx, [esp + 8]
+    mov edx, [esp + 12]
+    mov edi, [esp + 16]
+    int SYS_CALL_VECTOR
+    ret
 
 ;========================
 ; 控制中断

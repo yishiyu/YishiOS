@@ -108,6 +108,30 @@ typedef struct s_proc {
     struct s_proc* pre_pcb;
     struct s_proc* next_pcb;
 
+    // 进程间通信需要用到的数据
+    // 进程状态标志
+    // 0 --> 正常执行
+    // 2 --> 发送信息阻塞中
+    // 4 --> 接收信息阻塞中
+    int flags;
+
+    // 本进程准备发送的信息或等待接收的信息
+    // 尝试发送信息的对象
+    // 尝试接收信息的源
+    struct mess* message;
+    int recv_from;
+    int send_to;
+
+    // 0 --> ready to handle an interupt
+    // 1 --> handling an interupt
+    // 操作系统通过把这一位从0设为1来通知中断的发生 
+    int has_int_msg;
+
+    // 希望发信息给该进程的进程的链表
+    struct s_proc* sending_to_this;
+    // 用于产生链表结构的指针
+    struct s_proc* next_sending;
+
 } PROCESS;
 
 // 这个结构体用来定义系统初始进程
@@ -163,5 +187,38 @@ typedef struct terminal {
     CONSOLE console;
 
 } TERMINAL;
+
+// 改自Minix
+struct mess1 {
+    int m1i1;
+    int m1i2;
+    int m1i3;
+    int m1i4;
+};
+struct mess2 {
+    void* m2p1;
+    void* m2p2;
+    void* m2p3;
+    void* m2p4;
+};
+struct mess3 {
+    int m3i1;
+    int m3i2;
+    int m3i3;
+    int m3i4;
+    u64 m3l1;
+    u64 m3l2;
+    void* m3p1;
+    void* m3p2;
+};
+typedef struct mess{
+    int source;
+    int type;
+    union {
+        struct mess1 m1;
+        struct mess2 m2;
+        struct mess3 m3;
+    } u;
+} MESSAGE;
 
 #endif

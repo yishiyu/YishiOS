@@ -5,19 +5,6 @@
 #ifndef YISHIOS_PROC_H
 #define YISHIOS_PROC_H
 
-// 本文件调试开关 
-//#define __DEBUG_PROC__
-
-#ifndef __YISHIOS_DEBUG__
-#ifndef __DEBUG_PROC__
-#define pause()
-#define disp_int(str)
-#define disp_str(str)
-#endif
-#endif
-
-
-
 #include "func.h"
 #include "initirq.h"
 

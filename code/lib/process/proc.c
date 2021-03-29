@@ -1,6 +1,22 @@
 
 #include "proc.h"
 
+// 本文件调试开关
+// #define __DEBUG_PROC__
+
+// 逻辑关系: 任何一个没定义,就消除函数定义
+#ifndef __YISHIOS_DEBUG__
+#define pause()  
+#define disp_int(str)  
+#define disp_str(str)  
+#else
+#ifndef __DEBUG_PROC__
+#define pause()  
+#define disp_int(str)  
+#define disp_str(str)  
+#endif
+#endif
+
 void restart();
 
 // 初始化所有系统任务,终端任务,同时在就绪队列中设置一个指针指向第一个终端
@@ -12,9 +28,6 @@ int start_proc() {
     char* p_task_stack = task_stack + BASE_TASKS_STACK_SIZE;
     u16 selector_ldt = SELECTOR_LDT_FIRST;
 
-    // 进程编号
-    u32 PID = 0;
-
     // 用于暂存上一个节点的指针
     // 临时指针
     PROCESS* pre_proc;
@@ -25,7 +38,9 @@ int start_proc() {
 
     for (int i = 0; i < TASK_NUM; i++) {
         // 获取一个新的PCB
-        if (!get_pcb(&temp_proc)) {
+        u32 PID = get_pcb(&temp_proc);
+
+        if (PID == -1) {
             disp_str("point proc.c start_proc, no enough pcb");
             pause();
             while (1)
@@ -121,17 +136,29 @@ void init_pcb(TASK* task, PROCESS* proc, u32 pid, char* stack,
 // 从预定义的PCB中取得一个空节点,如果没有多余节点,直接触发系统错误
 int get_pcb(PROCESS** proc) {
     // 有多余的pcb块
-    if (PCB_stack_top < MAX_PROCESS_NUM) {
-        disp_str("point proc.c get_pcb 0 , PCB_stack_top == ");
-        disp_int(PCB_stack_top);
+    if (PCB_USED < MAX_PROCESS_NUM) {
+        disp_str("point proc.c get_pcb 0 , PCB_USED == ");
+        disp_int(PCB_USED);
         disp_str("\n");
         pause();
 
-        *proc = &PCB_stack[PCB_stack_top];
-        PCB_stack_top++;
-        return 1;
-    } else {
-        // 触发错误
-        return 0;
+        // 寻找可用的pid(即空白 PCB)
+        for (int pid = 0; pid < MAX_PROCESS_NUM; pid++) {
+            disp_str("point proc.c get_pcb 1 , pid == ");
+            disp_int(pid);
+            disp_str("  PCB_stack_status[pid] == ");
+            disp_int(PCB_stack_status[pid]);
+            disp_str("\n");
+            pause();
+            
+            if (PCB_stack_status[pid] == 0) {
+                PCB_stack_status[pid] = 1;
+                PCB_USED++;
+                *proc = &PCB_stack[pid];
+                return pid;
+            }
+        }
     }
+    // 触发错误
+    return -1;
 }

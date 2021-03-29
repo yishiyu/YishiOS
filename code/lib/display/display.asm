@@ -88,7 +88,7 @@ display_char:
 	jz	disp_end				;判断字符串是否已经显示完
 
 	cmp	al, 0Ah					; 判断当前字符是否为回车
-	jnz	disp_return
+	jnz	disp_return_end
 
 	push	eax
 	mov	eax, edi
@@ -96,13 +96,20 @@ display_char:
 	div	bl
 	and	eax, 0FFh
 	inc	eax
+
+	; 实现滚屏操作,如果越界则回滚到第一行
+	cmp eax, 20
+	jbe disp_return_go_on
+	xor eax,eax
+
+disp_return_go_on:
 	mov	bl, 160
 	mul	bl
 	mov	edi, eax
 	pop	eax
 	jmp	display_char
 
-disp_return:
+disp_return_end:
 	mov	[gs:edi], ax
 	add	edi, 2
 	jmp	display_char
@@ -141,7 +148,7 @@ display_color_char:
 	jz	disp_end				;判断字符串是否已经显示完
 
 	cmp	al, 0Ah					; 判断当前字符是否为回车
-	jnz	disp_return
+	jnz	disp_color_return
 
 	push	eax
 	mov	eax, edi

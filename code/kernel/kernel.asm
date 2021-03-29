@@ -123,13 +123,18 @@ sys_call:
 
 	push	esi
 	push 	dword [p_proc_ready_head]
+	push 	edi
 	push	edx
 	push	ecx
 	push 	ebx
 	call 	[sys_call_table + eax * 4]
-	add 	esp, 4*4
+	add 	esp, 4*5
 
 	pop	esi
+	; ; 如果是IPC系统调用,则需要注意返回的时候是否对原进程进行了阻塞
+	; ; 如果对原进程进行了阻塞,则需要注意不能修改eax,否则会对新进程造成破坏
+	; 啊当上面的东西没说,卧槽于渊大佬太秀了这个
+	; 这个esi埋伏了一手,如果发生了上述情况,修改的eax是原进程的,转入的是新进程,互不相关
 	mov 	[esi+EAXREG - P_STACKBASE], eax
 	cli
 	ret

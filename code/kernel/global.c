@@ -38,12 +38,9 @@ u32 k_reenter;
 // 用于系统计时用的变量
 int ticks;
 
-//进程任务队列
-// PROCESS proc_table[BASE_TASKS_NUM];
-//终端任务队列
-// PROCESS terminal_table[TERMINAL_NUM];
-// 预定义的进程链表节点栈
-int PCB_stack_top = 0;
+//  空白PCB存储结构
+int PCB_USED=0;
+int PCB_stack_status[MAX_PROCESS_NUM]={0};
 PROCESS PCB_stack[MAX_PROCESS_NUM];
 
 // 进程调度指针
@@ -62,7 +59,7 @@ irq_handler irq_table[IRQ_NUM];
 
 //系统调用处理函数指针数组
 system_call sys_call_table[SYS_CALL_NUM] = {kernel_read_keyboard,
-                                            kernel_terminal_write};
+                                            kernel_terminal_write,kernel_sendrec};
 
 //系统预定义进程初始状态
 //其中的终端即终端队列中的第一个成员,即默认就绪队列中的终端指针指向第一个终端
