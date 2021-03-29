@@ -127,4 +127,12 @@ typedef struct s_keyrmap_result {
     key_value data;  //键值的数据
 } KEYMAP_RESULT;
 
+// 键盘处理进程保存结果的缓冲区大小
+typedef struct s_keymap_result_buffer {
+    KEYMAP_RESULT result_buf[KEY_RESULT_NUM];
+    u8 key_head;
+    u8 key_tail;
+    int key_count;
+} KEYMAP_RESULT_BUFFER;
+
 #endif

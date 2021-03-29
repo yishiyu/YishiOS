@@ -20,7 +20,8 @@ ASM		= nasm
 DASM	= ndisasm
 CC		= gcc
 LD		= ld
-INCLUDE_PATH = -I include/base/ -I include/display -I include/interupt -I include/process -I include/syscall
+INCLUDE_PATH = -I include/base/ -I include/display -I include/interupt -I include/process \
+								 -I include/syscall -I include/process/keyboardserver -I include/process/terminal
 ASM_BOOT_FLAGS	= -I boot/include/
 ASM_KERNEL_FLAGS	=$(INCLUDE_PATH) -f elf
 C_FLAGS		= $(INCLUDE_PATH) -c -fno-builtin -m32 -fno-stack-protector
@@ -33,8 +34,8 @@ YISHI_BOOT	= boot/boot.bin boot/loader.bin
 YISHI_KERNEL	= kernel/kernel.bin
 OBJS		= kernel/kernel.o kernel/global.o kernel/c_kernel.o \
 						lib/proc.o lib/memory.o lib/display.o lib/port.o lib/func.o lib/irqhandler.o \
-						lib/kerneltask.o lib/initirq.o lib/syscall/syscall.o lib/syscall/syscalllib.o \
-						lib/syscall/keymap.o
+						lib/initirq.o lib/syscall/syscall.o lib/syscall/syscalllib.o \
+						lib/process/keyboardserver/keymap.o lib/process/terminal/terminal.o lib/process/keyboardserver/keyboardserver.o
 DASM_OUTPUT	= kernel.bin.asm
 CALL_TREE = calltree.png
 
@@ -126,14 +127,17 @@ lib/irqhandler.o : lib/interupt/irqhandler.c
 lib/initirq.o : lib/interupt/initirq.c
 	$(CC) $(C_FLAGS) -o $@ $<
 
-lib/kerneltask.o : lib/process/kerneltask.c
-	$(CC) $(C_FLAGS) -o $@ $<
-
 lib/syscall/syscall.o : lib/syscall/syscall.c
 	$(CC) $(C_FLAGS) -o $@ $<
 
 lib/syscall/syscalllib.o : lib/syscall/syscall.asm
 	$(ASM) $(ASM_KERNEL_FLAGS) -o $@ $<
 
-lib/syscall/keymap.o : lib/syscall/keymap.c	
+lib/process/terminal/terminal.o : lib/process/terminal/terminal.c
+	$(CC) $(C_FLAGS) -o $@ $<
+
+lib/process/keyboardserver/keyboardserver.o : lib/process/keyboardserver/keyboardserver.c
+	$(CC) $(C_FLAGS) -o $@ $<
+	
+lib/process/keyboardserver/keymap.o : lib/process/keyboardserver/keymap.c
 	$(CC) $(C_FLAGS) -o $@ $<

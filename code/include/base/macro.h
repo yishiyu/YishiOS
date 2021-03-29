@@ -13,7 +13,10 @@
 #define LDT_SIZE 2
 
 //系统初始任务数量
-#define BASE_TASKS_NUM 3
+//键盘处理进程,tty任务
+//键盘结果缓冲区大小
+#define BASE_TASKS_NUM 2
+#define KEY_RESULT_NUM 128
 
 //系统初始任务分配的堆栈大小: 各32kb
 #define STACK_SIZE_TESTA 0x8000

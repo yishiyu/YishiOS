@@ -60,7 +60,8 @@ u32 kernel_read_keyboard();
 extern TASK task_table[];
 
 //键盘输入缓冲区
+//键盘处理结果结构体缓冲区
 extern KEYMAP_BUFFER key_buffer;
-
+extern KEYMAP_RESULT_BUFFER key_result_buffer;
 
 #endif

@@ -52,8 +52,8 @@ irq_handler irq_table[IRQ_NUM];
 system_call sys_call_table[SYS_CALL_NUM] = {kernel_read_keyboard};
 
 //系统预定义进程初始状态
-TASK task_table[BASE_TASKS_NUM] = {{TestA, STACK_SIZE_TESTA, "TestA"},
-                                   {TestB, STACK_SIZE_TESTB, "TestB"},
-                                   {TestC, STACK_SIZE_TESTC, "TestC"}};
+TASK task_table[BASE_TASKS_NUM] = {{tty_1, STACK_SIZE_TESTA, "tty_1"},
+                                   {keyboard_server, STACK_SIZE_TESTB, "keyboard_server"}};
 
 KEYMAP_BUFFER key_buffer;
+KEYMAP_RESULT_BUFFER key_result_buffer;

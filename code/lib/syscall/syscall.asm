@@ -13,7 +13,6 @@ global asm_read_keyboard
 ;=========================
 asm_read_keyboard:
     mov eax, SYS_READ_KEYBOARD
-    xchg bx,bx
     int SYS_CALL_VECTOR
     ret
     

@@ -3,12 +3,10 @@
 #define YISHIOS_SYSCALL_H
 
 #include "global.h"
-#include "struct.h"
 #include "keymap.h"
-#include "type.h"
+#include "struct.h"
 
 //===============用户可以调用的系统调用==================
-
 // 读取键盘的系统调用
 // 返回结果为结构体
 KEYMAP_RESULT sys_read_keyboard();

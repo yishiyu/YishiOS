@@ -2,12 +2,8 @@
 #ifndef YISHIOS_KERNEL_TASK_H
 #define YISHIOS_KERNEL_TASK_H
 
-#include "display.h"
-#include "syscall.h"
-#include "keymap.h"
+#include "keyboardserver.h"
+#include "terminal.h"
 
-void TestA();
-void TestB();
-void TestC();
 
 #endif
