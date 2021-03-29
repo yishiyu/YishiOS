@@ -134,6 +134,7 @@ file_name_cmp:
 	jz file_name_cmp_end
 	inc bx
 	jmp file_name_cmp
+
 file_name_cmp_end:
 	;离开对比名字这一段之前必须恢复bx
 	pop bx
@@ -156,9 +157,22 @@ loader_not_found:
 	jmp	$
 
 loader_found:
+	;这个堆栈以后就不用了,没必要恢复栈顶指针
 	mov	dh,	1
 	call	disp_str
-	jmp $
+
+	; 好了终于能加载Loader了!!!!!!!
+	; 此时寄存器情况
+	; gs:bx => 当前目录项的指针
+
+	mov word	[disk_address_packet + 4],	Loader_Offset
+	mov	word	[disk_address_packet + 6],	Loader_Base
+	mov	eax, [gs:bx + Inode_Number_Offset]
+	add eax, eax
+	mov	dword	[disk_address_packet + 8],	eax
+
+	
+
 
 
 

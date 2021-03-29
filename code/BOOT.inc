@@ -7,7 +7,7 @@
 Stack_Base	equ	07c00h			
 
 ; Loader 目标内存地址
-Loader_Base	equ 90000h		 
+Loader_Base	equ 09000h		 
 Loader_Offset equ 00h
 
 ;超级块 目标内存地址
