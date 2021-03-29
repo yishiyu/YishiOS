@@ -29,7 +29,7 @@ OBJS = objs/snake.o objs/syscall.o  objs/syscallasm.o
 .PHONY : build clean realclean
 
 # 默认启动点
-build_snake : $(SNAKE_GAME) clean
+build_snake : $(SNAKE_GAME)
 
 clean : 
 	rm -f $(OBJS)

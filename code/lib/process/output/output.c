@@ -11,6 +11,7 @@ void output_server() {
 
 // 处理收到的信息
 void output_handler(MESSAGE* message) {
+    CONSOLE* console = &console_table[message->u.output_message.console_index];
     // 核实信息类型
     if (message->type != SERVER_OUTPUT) return;
     char* data;
@@ -19,15 +20,15 @@ void output_handler(MESSAGE* message) {
         case OUTPUT_MESSTYPE_DISP:
             data = (char*)va2la(message->u.output_message.pid,
                                 message->u.output_message.data);
-            output_disp_str(message->u.output_message.console, data);
+            output_disp_str(console, data);
             break;
 
         // 调整控制台
         case OUTPUT_MESSTYPE_FUNC:
             data = (char*)va2la(message->u.output_message.pid,
                                 message->u.output_message.data);
-            output_disp_func(message->u.output_message.console,
-                             message->u.output_message.disp_func, data);
+            output_disp_func(console, message->u.output_message.disp_func,
+                             data);
             break;
 
         default:
@@ -73,10 +74,11 @@ void output_disp_str(CONSOLE* console, char* data) {
 
 // 显示调整函数(如上下移,左右移光标等)
 void output_disp_func(CONSOLE* console, char func, char* data) {
-    u8* video_addr = (u8*)(VIDEO_MEM_BASE + console->current_start_addr * 2);  // 当前界面起始地址
+    u8* video_addr = (u8*)(VIDEO_MEM_BASE + console->current_start_addr *
+                                                2);  // 当前界面起始地址
     u8* video_temp = video_addr;
-    int row = 0;                                   // 行
-    int column = 0;                                // 列
+    int row = 0;     // 行
+    int column = 0;  // 列
     switch (func) {
         case OUTPUT_DISP_FUNC_UP:
             // 向上滚动屏幕

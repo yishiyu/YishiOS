@@ -5,8 +5,6 @@
 #include "macro.h"
 #include "type.h"
 
-
-
 typedef struct s_keyrmap_result {
     key_type type;   //键值的类型
     key_value data;  //键值的数据
@@ -69,8 +67,8 @@ struct inode {
 // 以下内容改自Minix
 // output子系统信息结构体, 信息类型为OUTPUT_SYSTEM (0)
 struct OUTPUT_MESSAGE {
-    char function;     // 执行的功能 --> 显示字符==0 特殊功能==1
-    CONSOLE* console;  // 要输出的控制台指针
+    char function;      // 执行的功能 --> 显示字符==0 特殊功能==1
+    int console_index;  // 要输出的控制台指针
     u32 pid;  // 发送进程的pid,用于确定要显示字符的内存地址
     char* data;      // 要显示字符的指针
     char disp_func;  // 执行的具体功能

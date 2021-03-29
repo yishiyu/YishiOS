@@ -72,11 +72,12 @@ everything : $(YISHI_BOOT) $(YISHI_KERNEL) $(GDB_KERNEL) $(OTHERS)
 # 删除所有中间文件
 clean :
 	rm -f $(OBJS) $(CALL_TREE)
+	cd snake && make clean
 
 # 清除所有文件(包括中间文件和最终目标文件)
 realclean :
 	rm -f $(OBJS) $(YISHI_BOOT) $(YISHI_KERNEL) $(CALL_TREE) $(GDB_KERNEL)
-
+	cd snake && make realclean
 
 # 仅生成最终的目标文件
 final : everything 
