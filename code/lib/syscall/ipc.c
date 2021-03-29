@@ -59,7 +59,7 @@ int msg_send(int current, int dest, MESSAGE* m) {
         (destiny->recv_from == current || destiny->recv_from == ANY)) {
         // 1.1 把消息送给目标
         // 相当于在目标进程内部产生返回值
-        phys_copy(va2la(dest, destiny->message), m, sizeof(MESSAGE));
+        phys_copy(destiny->message, m, sizeof(MESSAGE));
 
         // 1.2 把目标从阻塞状态唤醒
         destiny->message = 0;

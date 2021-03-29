@@ -47,6 +47,6 @@ void shedule_pcb(PROCESS* proc);
 
 // 堆栈在一块儿内存中的位置
 // 堆栈段基址 - 代码段基址 距离代码段15 * 64kb处
-#define MM_STACK_OFFSET 0xf0000
+#define MM_STACK_OFFSET 0x10000
 
 #endif

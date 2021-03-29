@@ -40,10 +40,10 @@
 void _start();
 
 // 子函数
-void snake_init();
-void snake_handler();
-void snake_refresh();
-void snake_move();
-void snake_control();
+void snake_init(MESSAGE *message);
+void snake_handler(MESSAGE *message);
+void snake_refresh(MESSAGE *message);
+void snake_move(MESSAGE *message);
+void snake_control(MESSAGE *message);
 
 #endif

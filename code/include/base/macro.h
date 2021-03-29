@@ -138,6 +138,8 @@
 #define DESEC_ATTR_DPL1 0x20       /* DPL = 1				*/
 #define DESEC_ATTR_DPL2 0x40       /* DPL = 2				*/
 #define DESEC_ATTR_DPL3 0x60       /* DPL = 3				*/
+// 界限转换成粒度为4k的时候需要移位的个数
+#define LIMIT_4K_SHIFT 12
 
 //选择子属性
 // 1. 请求优先级属性
@@ -286,7 +288,7 @@
 // 硬件中断类型
 #define HARD_INT_KEYBOARD 0x01  // 键盘中断
 #define HARD_INT_DISK 0x02      // 硬盘中断
-#define HARD_INT_CLOCK 0x04    // 时钟中断
+#define HARD_INT_CLOCK 0x04     // 时钟中断
 
 // OUTPUT子系统宏定义
 // OUTPUT子系统消息类型

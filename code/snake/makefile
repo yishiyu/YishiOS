@@ -13,7 +13,7 @@ ENTRYPOINT	= 	0x1000
 SNAKE_GAME = snake.bin
 
 # 引用路径
-INCLUDE_PATH = -I sys
+INCLUDE_PATH = -I sys/
 
 # 工具和标志位
 ASM		= nasm

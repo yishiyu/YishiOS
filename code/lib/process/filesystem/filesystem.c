@@ -116,7 +116,7 @@ int FS_read_file(MESSAGE* message) {
         // 读取一级索引块
         FS_read_disk(
             B2S(message->u.fs_message.fd->fd_inode->i_block[block_index]),
-            &FS_first_index_block, BLOCK_SIZE);
+            (char*)&FS_first_index_block, BLOCK_SIZE);
 
         // 根据一级索引块读取文件
         // 一级索引块中最多放1kb/4b = 256 个block索引号

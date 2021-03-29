@@ -2,51 +2,70 @@
 #include "snake.h"
 
 // 消息结构体
-static MESSAGE messages[4];
-static MESSAGE message;
+MESSAGE messages[10];
 // 图形显示结构体
-static VIDEO_UNIT video_mem[MAX_ROW * MAX_COLUMN];
+VIDEO_UNIT video_mem[MAX_ROW * MAX_COLUMN];
 // 进程号
-static int pid_snake = 0;
-static int pid_parent = PID_TTY0;
+int pid_snake = 0;
+int pid_parent = PID_TTY0;
 
 // 游戏数据结构
 // 贪吃蛇的位置 (循环队列)
-static u32 snake_head = 0;  // 位置队列头指针
-static u32 snake_tail = 0;  // 位置队列尾指针
-static u32 snake_now = 0;   // 当前贪吃蛇蛇头位置队列下标
-static int snake_pos[SNAKE_MAX_LENGTH] = {0};
-static u32 snake_ball = 80 * 5 + 60;
+u32 snake_head = 0;  // 位置队列头指针
+u32 snake_tail = 0;  // 位置队列尾指针
+u32 snake_now = 0;   // 当前贪吃蛇蛇头位置队列下标
+int snake_pos[SNAKE_MAX_LENGTH] = {0};
+u32 snake_ball = 80 * 5 + 60;
 
 // 控制贪吃蛇的移动方向
-static u8 snake_dire = 3;
-static const int direction[4] = {-MAX_COLUMN, MAX_COLUMN, -1, 1};
+u8 snake_dire = 3;
+const int direction[4] = {-MAX_COLUMN, MAX_COLUMN, -1, 1};
 
 // 函数起始标志
 void _start() {
     pid_snake = sys_get_pid();
-    sys_terminal_clear(&messages[0], 0, pid_snake);
-    sys_terminal_write(&messages[1], 0, "hello world !!! \n", pid_snake);
-    sys_terminal_write(&messages[2], 0, "  YISHI OS !!! \n", pid_snake);
-
-    MESSAGE temp[2];
-    // 初始化
-    // snake_init();
     sys_set_timer(pid_snake, SNAKE_SPEED);
-    sys_sendrec(RECEIVE, ANY, &message, pid_snake);
 
-    sys_terminal_write(&messages[3], 0, "  SNAKE !!! \n", pid_snake);
+    sys_terminal_write(&messages[0], 0, "hello world !!! \n", pid_snake);
+    sys_sendrec(RECEIVE, ANY, &messages[4], pid_snake);
+    // sys_set_timer(pid_snake, SNAKE_SPEED);
+    // sys_terminal_write(&messages[1], 0, "  YISHI OS !!! \n", pid_snake);
+    // sys_sendrec(RECEIVE, ANY, &messages[5], pid_snake);
+    // sys_set_timer(pid_snake, SNAKE_SPEED);
+    // sys_terminal_write(&messages[2], 0, "  test1 \n", pid_snake);
+    // sys_sendrec(RECEIVE, ANY, &messages[6], pid_snake);
+    // sys_set_timer(pid_snake, SNAKE_SPEED);
+    // sys_terminal_write(&messages[3], 0, "  test1 \n", pid_snake);
+    // sys_sendrec(RECEIVE, ANY, &messages[4], pid_snake);
+    // sys_set_timer(pid_snake, SNAKE_SPEED);
+    // sys_terminal_write(&messages[1], 0, "  test2 \n", pid_snake);
+    // sys_sendrec(RECEIVE, ANY, &messages[5], pid_snake);
+    // sys_set_timer(pid_snake, SNAKE_SPEED);
+    // sys_terminal_write(&messages[2], 0, "  test3\n", pid_snake);
+    // sys_sendrec(RECEIVE, ANY, &messages[6], pid_snake);
+    // sys_set_timer(pid_snake, SNAKE_SPEED);
+    // sys_terminal_write(&messages[3], 0, "  test4 \n", pid_snake);
+    while (1)
+        ;
+    // snake_refresh(&message);
+    // sys_sendrec(RECEIVE, ANY, &message, pid_snake);
+    // sys_terminal_write(&message, 0, "hello world !!! \n", pid_snake);
+    // snake_refresh(&message);
+    // sys_sendrec(RECEIVE, ANY, &message, pid_snake);
+    // sys_terminal_write(&message, 0, "hello world !!! \n", pid_snake);
+    // snake_refresh(&message);
     // 主循环
     while (1) {
-        // 2. 交给消息处理函数
-        // snake_handler();
+        // sys_sendrec(RECEIVE, ANY, &message, pid_snake);
+        // sys_terminal_write(&message, 0, "hello world !!! \n", pid_snake);
+        // snake_refresh(&message);
     }
 
     return;
 }
 
 // 初始化
-void snake_init() {
+void snake_init(MESSAGE *message) {
     // 初始化进程号
     pid_snake = sys_get_pid();
 
@@ -57,7 +76,7 @@ void snake_init() {
             video_mem[i * MAX_ROW + j].color = MAKE_COLOR(BLACK, WHITE);
         }
     }
-    sys_terminal_clear(&message, 0, pid_snake);
+    sys_terminal_clear(message, 0, pid_snake);
 
     // 初始化贪吃蛇为一个点
     snake_tail = 0;
@@ -71,20 +90,20 @@ void snake_init() {
     sys_set_timer(pid_snake, SNAKE_SPEED);
 
     // 刷新缓存
-    snake_refresh();
+    snake_refresh(message);
 }
 
 // 消息处理函数
-void snake_handler() {
-    switch (message.source) {
+void snake_handler(MESSAGE *message) {
+    switch (message->source) {
         case INTERRUPT:
             // 1. 时钟中断消息
-            snake_move();
+            snake_move(message);
             break;
 
         case PID_TTY0:
             // 2. 终端消息
-            snake_control();
+            snake_control(message);
             break;
 
         default:
@@ -93,12 +112,12 @@ void snake_handler() {
 }
 
 // 刷新显存
-void snake_refresh() {
-    sys_terminal_draw(&message, 0, (char*)video_mem, pid_snake);
+void snake_refresh(MESSAGE *message) {
+    sys_terminal_draw(message, 0, (char *)video_mem, pid_snake);
 }
 
 // 时钟信号处理
-void snake_move() {
+void snake_move(MESSAGE *message) {
     // // 1. 修改蛇头标志
     // video_mem[snake_pos[snake_now]].color = SNAKE_COLOR;
     // video_mem[snake_pos[snake_now]].data = SNAKE_BODY;
@@ -124,14 +143,15 @@ void snake_move() {
     // snake_head %= SNAKE_MAX_LENGTH;
 
     // 4. 刷新缓存
-    snake_refresh();
+    snake_refresh(message);
 
     // 5. 重新设置一个定时器
     sys_set_timer(pid_snake, SNAKE_SPEED);
 }
+
 // 键盘信号处理
-void snake_control() {
-    switch (message.u.input_message.keyboard_result.data) {
+void snake_control(MESSAGE *message) {
+    switch (message->u.input_message.keyboard_result.data) {
         case KEYBOARD_FUNC_UP:
             snake_dire = SNAKE_UP;
             break;

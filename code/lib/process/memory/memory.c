@@ -140,7 +140,7 @@ void free_pcb(int pid) {
 }
 #pragma endregion
 
-#pragma region n内存的申请与释放
+#pragma region 内存的申请与释放
 
 // 申请一块儿空内存
 int get_mem(u32* mem_ptr) {
@@ -222,14 +222,15 @@ void set_pcb(PROCESS* proc, char* name, u32 pid, u32 segment_base) {
     proc->pid = pid;
     // 2. 计算选择子位置和堆栈位置
     u16 selector_ldt = SELECTOR_LDT_FIRST + ((u16)pid << 3);
-    u32 segment_stack = segment_base + MM_STACK_OFFSET;
 
     // 3. 初始化ldt选择子和局部描述符表
     proc->ldt_sel = selector_ldt;
-    init_descriptor(&proc->ldts[0], segment_base, MM_BLOCK_SIZE >> 3,
-                    DESEC_ATTR_CODE_E | DESEC_ATTR_32 | DESEC_ATTR_LIMIT_4K |
+    init_descriptor(&proc->ldts[0], segment_base,
+                    (MM_BLOCK_SIZE - 1) >> LIMIT_4K_SHIFT,
+                    DESEC_ATTR_CODE_ECRO | DESEC_ATTR_32 | DESEC_ATTR_LIMIT_4K |
                         (PRIVILEGE_TASK << 5));
-    init_descriptor(&proc->ldts[1], segment_base, MM_BLOCK_SIZE >> 3,
+    init_descriptor(&proc->ldts[1], segment_base,
+                    (MM_BLOCK_SIZE - 1) >> LIMIT_4K_SHIFT,
                     DESEC_ATTR_DATA_RW | DESEC_ATTR_32 | DESEC_ATTR_LIMIT_4K |
                         (PRIVILEGE_TASK << 5));
 
@@ -243,17 +244,18 @@ void set_pcb(PROCESS* proc, char* name, u32 pid, u32 segment_base) {
     // 5. 初始化PCB中记录的进程的运行状态
     // 选择子低三位为属性,第四位开始为偏移为,单位为选择子长度
     // 使用的是内核的代码段和数据段, 但是请求优先级为任务级
-    proc->regs.cs = (8 * 0) | SELEC_TI_LOCAL | RPL_TASK;
-    proc->regs.ds = (8 * 1) | SELEC_TI_LOCAL | RPL_TASK;
-    proc->regs.es = (8 * 1) | SELEC_TI_LOCAL | RPL_TASK;
-    proc->regs.fs = (8 * 1) | SELEC_TI_LOCAL | RPL_TASK;
-    proc->regs.ss = (8 * 1) | SELEC_TI_LOCAL | RPL_TASK;
-    proc->regs.gs = (SELECTOR_KERNEL_GS & SELEC_ATTR_RPL_MASK) | RPL_TASK;
+    proc->regs.cs = (8 * 0) | SELEC_TI_LOCAL | PRIVILEGE_TASK;
+    proc->regs.ds = (8 * 1) | SELEC_TI_LOCAL | PRIVILEGE_TASK;
+    proc->regs.es = (8 * 1) | SELEC_TI_LOCAL | PRIVILEGE_TASK;
+    proc->regs.fs = (8 * 1) | SELEC_TI_LOCAL | PRIVILEGE_TASK;
+    proc->regs.ss = (8 * 1) | SELEC_TI_LOCAL | PRIVILEGE_TASK;
+    proc->regs.gs = (8 * 1) | SELEC_TI_LOCAL | PRIVILEGE_TASK;
+    // proc->regs.gs = (SELECTOR_KERNEL_GS & SELEC_ATTR_RPL_MASK) | RPL_TASK;
 
     // 6. 设置进程当前运行的PC寄存器和栈寄存器
     // 之所以没有堆,是因为操作系统还没有内存管理功能...
     proc->regs.eip = (u32)0;
-    proc->regs.esp = segment_stack;
+    proc->regs.esp = MM_STACK_OFFSET;
     // IF=1, IOPL=1
     // 允许中断,IO优先级为2,也就是说只允许内核级和任务级进程进行I/O操作
     proc->regs.eflags = 0x1202;
