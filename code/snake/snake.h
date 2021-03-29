@@ -2,17 +2,18 @@
 #ifndef GAME_SNAKE
 #define GAME_SNAKE
 
+#include "macro.h"
+#include "string.h"
 #include "struct.h"
 #include "syscall.h"
-#include "macro.h"
 
 // 字符界面行列最大值
 #define MAX_ROW (25)
 #define MAX_COLUMN (80)
-#define SNAKE_MAX_LENGTH MAX_ROW * MAX_COLUMN
+#define SNAKE_MAX_LENGTH (MAX_ROW * MAX_COLUMN)
 
 // 贪吃蛇显示设置
-#define SNAKE_COLOR MAKE_COLOR(BLACK,WHITE)
+#define SNAKE_COLOR MAKE_COLOR(BLACK, WHITE)
 #define SNAKE_HEAD ('#')
 #define SNAKE_BODY ('*')
 #define SNAKE_BLANK (' ')
@@ -40,10 +41,14 @@
 void _start();
 
 // 子函数
-void snake_init(MESSAGE *message);
-void snake_handler(MESSAGE *message);
-void snake_refresh(MESSAGE *message);
-void snake_move(MESSAGE *message);
-void snake_control(MESSAGE *message);
+void snake_init();
+void snake_handler();
+void snake_refresh();
+void snake_move();
+void snake_control();
+
+// 调试函数
+void disp_str(char* data);
+void disp_int(int count);
 
 #endif

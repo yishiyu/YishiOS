@@ -13,9 +13,9 @@ void tty_0() {
     directory_fd.fd_inode = &directory_inode;
 
     FILE_DESCRIPTOR file_fd;
-    file_fd.fd_pos=0;
+    file_fd.fd_pos = 0;
     file_fd.fd_inode = &file_inode;
-    
+
     terminal->directory_buffer = directory_buffer;
     terminal->directory_buffer_size = DIRET_BUF_SIZE;
     terminal->directory_fd = &directory_fd;
@@ -44,18 +44,20 @@ void tty_1() {
     directory_fd.fd_inode = &directory_inode;
 
     FILE_DESCRIPTOR file_fd;
-    file_fd.fd_pos=0;
+    file_fd.fd_pos = 0;
     file_fd.fd_inode = &file_inode;
 
     terminal->directory_buffer = directory_buffer;
     terminal->directory_buffer_size = DIRET_BUF_SIZE;
     terminal->directory_fd = &directory_fd;
-        terminal->file_fd = &file_fd;
+    terminal->file_fd = &file_fd;
     terminal->pid = PID_TTY1;
 
     int i = 0;
     int pid = sys_get_pid();
 
-    terminal_init(terminal);
-    terminal_main(terminal, PID_TTY1);
+    while (1)
+        ;
+    // terminal_init(terminal);
+    // terminal_main(terminal, PID_TTY1);
 }

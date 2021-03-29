@@ -77,9 +77,9 @@ int msg_send(int current, int dest, MESSAGE* m) {
         // 2.2 把发送者挂在接受者的消息链表上
         PROCESS* p;
         if (destiny->sending_to_this) {
-            p = destiny->sending_to_this;
-            while (p->sending_to_this) p = (p->sending_to_this);
-            p->sending_to_this = sender;
+            p = destiny->next_sending;
+            while (p->next_sending) p = (p->next_sending);
+            p->next_sending = sender;
         } else {
             destiny->sending_to_this = sender;
         }

@@ -4,6 +4,14 @@
 // 之所以加了个参数,是因为才处理中断的时候把中断号压栈了
 // 具体情况看include/base/kernel.inc 中关于中断处理函数的宏定义
 void clock_handler(int irq) {
+    ticks++;
+    p_proc_ready_head->ticks--;
+
+    //如果从中断进程进入其中,则此时
+    if (k_reenter != 0) {
+        return;
+    }
+
     for (int pid = 0; pid < TASK_NUM; pid++) {
         // 判断该进程是否设置了定时器
         if (timers[pid].pid != NO_TASK) {
@@ -15,14 +23,6 @@ void clock_handler(int irq) {
                 timers[pid].pid = NO_TASK;
             }
         }
-    }
-
-    ticks++;
-    p_proc_ready_head->ticks--;
-
-    //如果从中断进程进入其中,则此时
-    if (k_reenter != 0) {
-        return;
     }
 
     if (p_proc_ready_head->ticks > 0) {
@@ -47,6 +47,7 @@ void schedule() {
     // 如果就绪队列和挂起队列同时为空,则使用空进程
     if (is_ready_empty && is_pause_empty) {
         p_proc_ready_head = &PCB_empty_task;
+        p_proc_ready_tail.pre_pcb = &PCB_empty_task;
         return;
     }
 
