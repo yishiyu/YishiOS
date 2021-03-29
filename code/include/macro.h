@@ -13,13 +13,25 @@
 #define SELECTOR_KERNEL_CS SELECTOR_FLAT_C
 #define SELECTOR_KERNEL_DS SELECTOR_FLAT_RW
 
-//在Loader中定义的几个选择子
+//内核代码选择子
 //其中+3意为把最后三位设置为011,即把RPL设置为3
 //显存段设为3的目的是为了让所有优先级的程序都能访问显存
 #define SELECTOR_DUMMY 0
 #define SELECTOR_FLAT_C 0x08
 #define SELECTOR_FLAT_RW 0x10
 #define SELECTOR_VIDEO (0x18 + 3)
+//TSS段选择子
+#define	SELECTOR_TSS		0x20
+//第一个LDT选择子
+#define SELECTOR_LDT_FIRST	0x28
+
+//内核代码选择子偏移,用于在c文件中确定选择子对应的描述符数组下标
+#define	INDEX_DUMMY		0
+#define	INDEX_FLAT_C		1
+#define	INDEX_FLAT_RW		2
+#define	INDEX_VIDEO		3
+#define	INDEX_TSS		4
+#define	INDEX_LDT_FIRST		5
 
 // 8259A 中断控制器的端口定义
 #define INT_Master_CTL 0x20
@@ -61,5 +73,8 @@
 #define	PRIVILEGE_KRNL	0
 #define	PRIVILEGE_TASK	1
 #define	PRIVILEGE_USER	3
+
+//把线性地址转换成物理地址
+#define vir2phys(seg_base, vir)	(u32)(((u32)seg_base) + (u32)(vir))
 
 #endif

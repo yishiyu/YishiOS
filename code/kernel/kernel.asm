@@ -13,6 +13,7 @@
 	extern init_interupt
 	extern	spurious_irq
 	extern exception_handler
+	extern init_tss
 ;导入c文件函数结束
 
 ;导出中断处理函数
@@ -52,7 +53,8 @@
 
 
 ;文件内宏定义
-	SELECTOR_KERNEL_CS	equ	8
+	SELECTOR_KERNEL_CS	equ	08h
+	SELECTOR_TSS	equ 020h
 	; 定义默认的8259A中断处理函数
 	%macro  hwint_master    1
         push    %1
@@ -112,10 +114,14 @@ kernel_init_done:
 
 	xchg bx,bx
 
-	sti			;允许中断访问
-	hlt			;停机等待中断到来
+	call init_tss
 
-	xchg bx,bx
+	xor	eax, eax
+	mov	ax, SELECTOR_TSS
+	ltr	ax
+
+	jmp $
+
 
 ;改自Orange's OS by 于渊
 ; 8259A 中断处理

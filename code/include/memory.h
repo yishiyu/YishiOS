@@ -8,4 +8,7 @@
 //内存复制函数
 void*	memcpy(void* p_dst, void* p_src, int size);
 
+//内存赋值函数
+void memset(void* p_dst, char ch, int size);
+
 #endif

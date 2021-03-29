@@ -22,4 +22,7 @@ DESCRIPTOR	gdt[GDT_SIZE];
 u8      idt_ptr[6];
 GATE    idt[IDT_SIZE];
 
+//TSS结构体
+TSS		tss;
+
 #endif

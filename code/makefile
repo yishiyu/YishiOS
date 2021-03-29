@@ -27,7 +27,7 @@ DASM_FLAGS	= -u -o $(ENTRYPOINT) -e $(ENTRYOFFSET)
 # OBJS: 中间文件,需要通过LD命令进一步链接成最终的目标文件
 YISHI_BOOT	= boot/boot.bin boot/loader.bin
 YISHI_KERNEL	= kernel/kernel.bin
-OBJS		= kernel/kernel.o kernel/global.o kernel/c_kernel.o lib/memory.o lib/display.o lib/port.o
+OBJS		= kernel/kernel.o kernel/global.o kernel/c_kernel.o lib/memory.o lib/display.o lib/port.o lib/func.o
 DASM_OUTPUT	= kernel.bin.asm
 
 
@@ -94,6 +94,10 @@ kernel/c_kernel.o : kernel/kernel.c
 
 # 生成global.o 
 kernel/global.o : kernel/global.c
+	$(CC) $(C_FLAGS) -o $@ $<
+
+# 生成func.o
+lib/func.o : lib/func.c
 	$(CC) $(C_FLAGS) -o $@ $<
 
 # 生成memory.o
