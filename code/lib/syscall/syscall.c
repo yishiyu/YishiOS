@@ -55,6 +55,10 @@ int sys_sendrec(int function, int src_dest, MESSAGE* m, int pid) {
                             (u32)pid);
 }
 
+u32 sys_get_ticks(){
+    return asm_syscall(SYS_GET_TICKS,0,0,0,0);
+}
+
 //=================最终工作的函数======================
 // 本函数工作在内核态
 u32 kernel_read_keyboard() {
@@ -90,3 +94,7 @@ u32 kernel_terminal_write(int terminal_index, char* data, int pid) {
 
 // 相关函数太多了,单独写在一个文件中 ---- ipc.c (inter process communication)
 // u32 kernel_sendrec(int function, int src_dest, MESSAGE* m, int pid);
+
+u32 kernel_get_ticks(){
+    return ticks;
+}

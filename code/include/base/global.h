@@ -45,7 +45,7 @@ extern char task_stack[];
 extern u32 k_reenter;
 
 // 用于系统计时用的变量
-extern int ticks;
+extern u32 ticks;
 
 //系统预定义进程初始状态
 // extern TASK task_table[];

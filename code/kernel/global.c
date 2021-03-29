@@ -36,7 +36,7 @@ char task_stack[BASE_TASKS_STACK_SIZE];
 u32 k_reenter;
 
 // 用于系统计时用的变量
-int ticks;
+u32 ticks;
 
 //  空白PCB存储结构
 int PCB_USED=0;
@@ -59,7 +59,7 @@ irq_handler irq_table[IRQ_NUM];
 
 //系统调用处理函数指针数组
 system_call sys_call_table[SYS_CALL_NUM] = {kernel_read_keyboard,
-                                            kernel_terminal_write,kernel_sendrec};
+                                            kernel_terminal_write,kernel_sendrec,kernel_get_ticks};
 
 //系统预定义进程初始状态
 //其中的终端即终端队列中的第一个成员,即默认就绪队列中的终端指针指向第一个终端

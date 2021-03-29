@@ -18,6 +18,7 @@
 KEYMAP_RESULT sys_read_keyboard();
 void sys_terminal_write(int terminal_index, char* data, int pid);
 int sys_sendrec(int function, int src_dest, MESSAGE* m, int pid);
+u32 sys_get_ticks();
 
 //============系统调用中引发中断的函数部分===============
 u32 asm_syscall(int sys_vector, u32 para0,u32 para1,u32 para2, u32 para3);
@@ -26,6 +27,7 @@ u32 asm_syscall(int sys_vector, u32 para0,u32 para1,u32 para2, u32 para3);
 u32 kernel_read_keyboard();
 u32 kernel_terminal_write(int terminal_index, char* data, int pid);
 u32 kernel_sendrec(int function, int src_dest, MESSAGE* m, int pid);
+u32 kernel_get_ticks();
 
 //=====================工具函数=======================
 int ldt_seg_linear(int pid, int seg_index);
