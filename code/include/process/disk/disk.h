@@ -121,5 +121,6 @@ void port_write(u16 port, void* buf, int n);
 
 // 扇区大小
 #define SECTOR_SIZE 512
+#define SECTOR_SIZE_SHIFT 9
 
 #endif

@@ -9,6 +9,7 @@ void disk_server() {
     disk_init();
 
     while (1) {
+        memset(&disk_buffer, 0, 1024);
         sys_sendrec(RECEIVE, ANY, &message, PID_DISK_SERVER);
 
         int src = message.source;
@@ -53,8 +54,71 @@ void disk_init() {}
 void disk_open(MESSAGE* message) {}
 void disk_close(MESSAGE* message) {}
 // 读写磁盘函数
-void disk_read(MESSAGE* message) {}
-void disk_write(MESSAGE* message) {}
+void disk_read(MESSAGE* message) {
+    // 读取的起始扇区  读取的字节数   缓冲区的起始指针
+    u32 sector_head = message->u.disk_message.sector_head;
+    u32 bytes_count = message->u.disk_message.bytes_count;
+
+    // 硬盘命令
+    DISK_CMD command;
+    command.features = 0;
+    command.count = (bytes_count + SECTOR_SIZE - 1) / SECTOR_SIZE;
+    command.lba_low = sector_head & 0xff;
+    command.lba_mid = (sector_head >> 8) & 0xff;
+    command.lba_high = (sector_head >> 16) & 0xff;
+    command.device = MAKE_DEVICE_REG(1, 0, (sector_head >> 24) & 0xf);
+    command.command = ATA_READ;
+    disk_cmd_out(&command);
+
+    // 准备向调用者传送数据
+    int bytes_left = bytes_count;
+    void* la = (void*)va2la(message->u.disk_message.pid,
+                            message->u.disk_message.buffer);
+
+    while (bytes_left) {
+        int bytes = (bytes_left < SECTOR_SIZE) ? bytes_left : SECTOR_SIZE;
+        interrupt_wait();
+        // 从磁盘读取
+        port_read(REG_DATA, disk_buffer, SECTOR_SIZE);
+        phys_copy(la, (void*)va2la(PID_DISK_SERVER, disk_buffer), bytes);
+        bytes_left -= SECTOR_SIZE;
+        la += SECTOR_SIZE;
+    }
+}
+void disk_write(MESSAGE* message) {
+    // 写入的起始扇区  写入的字节数   缓冲区的起始指针
+    u32 sector_head = message->u.disk_message.sector_head;
+    u32 bytes_count = message->u.disk_message.bytes_count;
+
+    // 硬盘命令
+    DISK_CMD command;
+    command.features = 0;
+    command.count = (bytes_count + SECTOR_SIZE - 1) / SECTOR_SIZE;
+    command.lba_low = sector_head & 0xff;
+    command.lba_mid = (sector_head >> 8) & 0xff;
+    command.lba_high = (sector_head >> 16) & 0xff;
+    command.device = MAKE_DEVICE_REG(1, 0, (sector_head >> 24) & 0xf);
+    command.command = ATA_WRITE;
+    disk_cmd_out(&command);
+
+    // 准备向调用者传送数据
+    int bytes_left = bytes_count;
+    void* la = (void*)va2la(message->u.disk_message.pid,
+                            message->u.disk_message.buffer);
+
+    while (bytes_left) {
+        int bytes = (bytes_left < SECTOR_SIZE) ? bytes_left : SECTOR_SIZE;
+        // 等待硬盘响应
+        if (!waitfor(STATUS_BSY, 0, HD_TIMEOUT)) {
+            return;
+        }
+        // 向硬盘写入数据
+        port_write(REG_DATA, la, bytes);
+        interrupt_wait();
+        bytes_left -= SECTOR_SIZE;
+        la += SECTOR_SIZE;
+    }
+}
 // 获取磁盘信息函数
 void disk_info(MESSAGE* message) {
     DISK_CMD cmd;
@@ -69,7 +133,8 @@ void disk_info(MESSAGE* message) {
     // disk_status = in_byte(REG_STATUS);
     // orange书上有这一条 interrupt_wait() p328
     // 但是好像获取硬盘信息的操作不会耗费很长时间,硬盘也不会触发中断
-    // interrupt_wait();
+    // 就说感觉不太对,之前不触发这个中断的原因是从片设置有问题,硬盘中断被屏蔽了
+    interrupt_wait();
 
     port_read(REG_DATA, disk_buffer, SECTOR_SIZE);
 

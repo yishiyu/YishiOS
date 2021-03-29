@@ -207,8 +207,8 @@ struct DISK_MESSAGE {
     u8 function;      // 执行的操作类型
     u32 pid;          // 信息来源进程
     char* buffer;     // 缓冲区指针
-    u32 sector;       // 操作的起点扇区
-    u32 bytes_count;  //读取的字节数
+    u32 sector_head;   // 操作的起始位置
+    int bytes_count;  //读取的字节数
     u8 result;        // 磁盘操作的结果
 };
 

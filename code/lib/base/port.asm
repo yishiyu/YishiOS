@@ -14,6 +14,8 @@ out_byte:
 	out	dx, al
 	nop	; 一点延迟
 	nop
+	nop
+	nop
 	ret
 
 ; ========================================================================
@@ -24,5 +26,7 @@ in_byte:
 	xor	eax, eax
 	in	al, dx
 	nop	; 一点延迟
+	nop
+	nop
 	nop
 	ret

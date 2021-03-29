@@ -23,10 +23,11 @@ void init_IRQ() {
     put_irq_handler(IRQ_KEYBOARD, keyboard_handler);
     enable_irq(IRQ_KEYBOARD);
 
-    // 打开从片上的中断
-    enable_irq(IRQ_SLAVE);
-
     //=======================打开磁盘中断========================
     put_irq_handler(IRQ_DISK, disk_handler);
     enable_irq(IRQ_DISK);
+
+    // 打开从片上的中断
+    enable_irq(IRQ_SLAVE);
+
 }

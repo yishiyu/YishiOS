@@ -179,7 +179,8 @@ void disable_irq(int irq) {
         out_byte(INT_Master_CTL_MASK,
                  in_byte(INT_Master_CTL_MASK) | (1 << irq));
     } else {
-        out_byte(INT_Slave_CTL_MASK, in_byte(INT_Slave_CTL_MASK) | (1 << irq));
+        out_byte(INT_Slave_CTL_MASK,
+                 in_byte(INT_Slave_CTL_MASK) | (1 << (irq - 8)));
     }
 }
 
@@ -188,7 +189,8 @@ void enable_irq(int irq) {
         out_byte(INT_Master_CTL_MASK,
                  in_byte(INT_Master_CTL_MASK) & ~(1 << irq));
     } else {
-        out_byte(INT_Slave_CTL_MASK, in_byte(INT_Slave_CTL_MASK) & ~(1 << irq));
+        out_byte(INT_Slave_CTL_MASK,
+                 in_byte(INT_Slave_CTL_MASK) & ~(1 << (irq - 8)));
     }
 }
 

@@ -495,7 +495,7 @@ ata3: enabled=0, ioaddr1=0x168, ioaddr2=0x360, irq=9
 #ata0-master: type=disk, mode=flat, path="c.img", cylinders=0 # autodetect
 #ata0-slave: type=disk, mode=vvfat, path=/bochs/images/vvfat, journal=vvfat.redolog
 #ata0-slave: type=cdrom, path=/dev/cdrom, status=inserted
-ata0-master: type=disk, path="c.img", mode=flat
+ata0-master: type=disk, path="c.img", mode=flat 
 
 #=======================================================================
 # BOOT:

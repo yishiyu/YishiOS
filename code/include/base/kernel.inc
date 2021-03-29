@@ -82,9 +82,9 @@ TSS3_S_SP0	equ	4
 
     ; 允许8259A接收其他中断
     mov	al, EOI
-    out	INT_MASTER_CTL, al
-    nop
     out	INT_SLAVE_CTL, al
+    nop
+    out	INT_MASTER_CTL, al
     nop
     sti
 
