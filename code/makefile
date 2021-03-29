@@ -5,10 +5,17 @@
 
 .PHONY : run
 
-run : yishi.bin
-	dd if=yishi.bin of=c.img bs=512 count=1 conv=notrunc
+run : boot.bin loader.bin
+	# 写入MBR
+	dd if=boot.bin of=c.img bs=512 count=1 conv=notrunc
+	# 写入Boot Sector
+	# dd if=loader.bin of=c.img bs=512 count=2 seek=1 conv=notrunc
 	bochs -f bochsrc
 
-yishi.bin : boot.asm
-	nasm -o yishi.bin boot.asm
+# MBR
+boot.bin : boot.asm
+	nasm -o boot.bin boot.asm
 
+# Loader
+loader.bin : loader.asm
+	nasm -o loader.bin loader.asm 
