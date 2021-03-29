@@ -87,9 +87,9 @@ void FS_init();
 // 关于文件系统的宏定义
 // block号转sector号
 #define B2S(block) (block * 2)
-#define block_size (0x400)
-#define inode_size (0x80)
-#define root_inode_index 2
+#define BLOCK_SIZE (0x400)
+#define INODE_SIZE (0x80)
+#define ROOT_INODE_INDEX 2
 // 文件系统提供的功能
 #define FS_ROOT 0x01      // 打开根目录
 #define FS_READ 0x02      // 读取文件

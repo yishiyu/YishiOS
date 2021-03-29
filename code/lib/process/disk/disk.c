@@ -1,6 +1,6 @@
 #include "disk.h"
 
-#define DISK_BUFFER_SIZE SECTOR_SIZE * 2
+#define DISK_BUFFER_SIZE SECTOR_SIZE
 u8 disk_status;
 u8 disk_buffer[DISK_BUFFER_SIZE];
 
@@ -93,7 +93,7 @@ void disk_read(MESSAGE* message) {
             port_read(REG_DATA, disk_buffer, DISK_BUFFER_SIZE);
             phys_copy(la, (void*)va2la(PID_DISK_SERVER, disk_buffer), bytes);
             la += bytes;
-            command.count -= 2;
+            command.count -= 1;
             bytes_left -= bytes;
         }
     }
@@ -263,5 +263,7 @@ int waitfor(int mask, int val, int timeout) {
 // 等待磁盘中断
 void interrupt_wait() {
     MESSAGE msg;
+    msg.source = PID_DISK_SERVER;
+    msg.type = PID_DISK_SERVER;
     sys_sendrec(RECEIVE, INTERRUPT, &msg, PID_DISK_SERVER);
 }

@@ -24,7 +24,7 @@ void init_gdt() {
     //第一步 将 LOADER 中的 GDT 复制到新的 GDT 中
     //目的地址
     //源地址 把最后32位转换为无类型指针
-    //复制的字节数 16为Limit部分
+    //复制的字节数等于 16位 Limit部分
     memcpy(&gdt, (void *)(*((u32 *)(&gdt_ptr[2]))),
            *((u16 *)(&gdt_ptr[0])) + 1);
 

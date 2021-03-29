@@ -69,17 +69,17 @@ int execute(MESSAGE* message) {
     // 2. 申请一块空内存
     u32 mem_ptr = 0;
     result = get_mem(&mem_ptr);
-    if (result == 1) return -2;
+    if (result == 0) return -2;
 
-    // 3. 连接空白PCB与空内存
-    set_pcb(temp_proc, "user_proc", pid, mem_ptr);
-
-    // 4. 读取文件到缓冲区
+    // 3. 读取文件到缓冲区
     read_elf(MM_buffer,
              va2la(message->u.mem_message.pid, message->u.mem_message.file));
 
+    // 4. 连接空白PCB与空内存
+    set_pcb(temp_proc, "user_proc", pid, mem_ptr);
+
     // 5. 根据ELF重新放置文件,设置eip寄存器
-    u32 entry = replace_elf(MM_buffer,mem_ptr);
+    u32 entry = replace_elf(MM_buffer, mem_ptr);
     temp_proc->regs.eip = entry;
 
     // 6. 把PCB加入挂起队列
@@ -228,10 +228,10 @@ void set_pcb(PROCESS* proc, char* name, u32 pid, u32 segment_base) {
     proc->ldt_sel = selector_ldt;
     init_descriptor(&proc->ldts[0], segment_base, MM_BLOCK_SIZE >> 3,
                     DESEC_ATTR_CODE_E | DESEC_ATTR_32 | DESEC_ATTR_LIMIT_4K |
-                        PRIVILEGE_USER);
+                        (PRIVILEGE_TASK << 5));
     init_descriptor(&proc->ldts[1], segment_base, MM_BLOCK_SIZE >> 3,
                     DESEC_ATTR_DATA_RW | DESEC_ATTR_32 | DESEC_ATTR_LIMIT_4K |
-                        PRIVILEGE_USER);
+                        (PRIVILEGE_TASK << 5));
 
     // 4. 填充GDT中的LDT描述符
     //描述符地址, 段起始地址, 段界限, 段属性
@@ -243,17 +243,12 @@ void set_pcb(PROCESS* proc, char* name, u32 pid, u32 segment_base) {
     // 5. 初始化PCB中记录的进程的运行状态
     // 选择子低三位为属性,第四位开始为偏移为,单位为选择子长度
     // 使用的是内核的代码段和数据段, 但是请求优先级为任务级
-    proc->regs.cs = ((8 * 0) & SELEC_ATTR_RPL_MASK & SELEC_TI_MASK) |
-                    SELEC_TI_LOCAL | RPL_USER;
-    proc->regs.ds = ((8 * 1) & SELEC_ATTR_RPL_MASK & SELEC_TI_MASK) |
-                    SELEC_TI_LOCAL | RPL_USER;
-    proc->regs.es = ((8 * 1) & SELEC_ATTR_RPL_MASK & SELEC_TI_MASK) |
-                    SELEC_TI_LOCAL | RPL_USER;
-    proc->regs.fs = ((8 * 1) & SELEC_ATTR_RPL_MASK & SELEC_TI_MASK) |
-                    SELEC_TI_LOCAL | RPL_USER;
-    proc->regs.ss = ((8 * 1) & SELEC_ATTR_RPL_MASK & SELEC_TI_MASK) |
-                    SELEC_TI_LOCAL | RPL_USER;
-    proc->regs.gs = (SELECTOR_KERNEL_GS & SELEC_ATTR_RPL_MASK) | RPL_USER;
+    proc->regs.cs = (8 * 0) | SELEC_TI_LOCAL | RPL_TASK;
+    proc->regs.ds = (8 * 1) | SELEC_TI_LOCAL | RPL_TASK;
+    proc->regs.es = (8 * 1) | SELEC_TI_LOCAL | RPL_TASK;
+    proc->regs.fs = (8 * 1) | SELEC_TI_LOCAL | RPL_TASK;
+    proc->regs.ss = (8 * 1) | SELEC_TI_LOCAL | RPL_TASK;
+    proc->regs.gs = (SELECTOR_KERNEL_GS & SELEC_ATTR_RPL_MASK) | RPL_TASK;
 
     // 6. 设置进程当前运行的PC寄存器和栈寄存器
     // 之所以没有堆,是因为操作系统还没有内存管理功能...

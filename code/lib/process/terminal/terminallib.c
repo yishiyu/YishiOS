@@ -368,7 +368,8 @@ int terminal_open(TERMINAL* terminal, char* file_name) {
     message.type = terminal->pid;
     message.u.fs_message.pid = terminal->pid;
     message.u.fs_message.buffer = terminal->directory_buffer;
-    message.u.fs_message.count = 0;  // 只打开不读取
+    // 这个不仅是读取内容的数量,还是文件夹缓冲区的大小,所以不能为0
+    message.u.fs_message.count = DIRET_BUF_SIZE;
     message.u.fs_message.fd = terminal->file_fd;
     message.u.fs_message.function = FS_OPENFILE;
     message.u.fs_message.file_name = file_name;
@@ -377,13 +378,14 @@ int terminal_open(TERMINAL* terminal, char* file_name) {
 }
 
 // 运行当前打开的文件
-int terminal_run(TERMINAL* terminal){
+int terminal_run(TERMINAL* terminal) {
     MESSAGE message;
     message.source = terminal->pid;
     message.type = terminal->pid;
-    message.u.fs_message.pid = terminal->pid;
-    message.u.fs_message.fd = terminal->file_fd;
-    message.u.fs_message.function = MEM_EXECUTE;
+    message.u.mem_message.pid = terminal->pid;
+    message.u.mem_message.function = MEM_EXECUTE;
+    message.u.mem_message.result==0;
+    message.u.mem_message.file = terminal->file_fd->fd_inode;
     sys_sendrec(SEND, SERVER_MEM, &message, terminal->pid);
     sys_sendrec(RECEIVE, SERVER_MEM, &message, terminal->pid);
 }

@@ -48,6 +48,7 @@ int sys_sendrec(int function, int src_dest, MESSAGE* m, int pid) {
         return (int)asm_syscall(SYS_SENDREC, (u32)function, (u32)src_dest,
                                 (u32)m, (u32)pid);
     }
+    return 0;
 }
 
 u32 sys_get_ticks() { return asm_syscall(SYS_GET_TICKS, 0, 0, 0, 0); }

@@ -19,6 +19,7 @@ void tty_0() {
     terminal->directory_buffer = directory_buffer;
     terminal->directory_buffer_size = DIRET_BUF_SIZE;
     terminal->directory_fd = &directory_fd;
+    terminal->file_fd = &file_fd;
     terminal->pid = PID_TTY0;
 
     int i = 0;
@@ -49,6 +50,7 @@ void tty_1() {
     terminal->directory_buffer = directory_buffer;
     terminal->directory_buffer_size = DIRET_BUF_SIZE;
     terminal->directory_fd = &directory_fd;
+        terminal->file_fd = &file_fd;
     terminal->pid = PID_TTY1;
 
     int i = 0;

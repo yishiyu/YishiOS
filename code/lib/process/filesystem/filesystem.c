@@ -99,7 +99,7 @@ int FS_read_file(MESSAGE* message) {
     for (int block_index = 0; (bytes_left > 0) && block_index < 12;
          block_index++) {
         // 每次最多读取一个block
-        int bytes_to_read = (bytes_left > block_size) ? block_size : bytes_left;
+        int bytes_to_read = (bytes_left > BLOCK_SIZE) ? BLOCK_SIZE : bytes_left;
         bytes_left -= bytes_to_read;
 
         // 磁盘操作
@@ -161,7 +161,7 @@ int FS_get_inode(u32 inode_index, struct inode* inode_buf) {
     if (inode_index >= FS_superblock.s_inodes_count) return 0;
 
     phys_copy((void*)inode_buf, (void*)&FS_inode_table[inode_index - 1],
-              inode_size);
+              INODE_SIZE);
 }
 
 // 读磁盘
@@ -196,13 +196,13 @@ int FS_write_disk(u32 sector_head, char* buffer, int count) {
 void FS_init() {
     u32 block_index = 1;
     // 1. 读取超级块
-    FS_read_disk(B2S(block_index), (char*)&FS_superblock, block_size);
+    FS_read_disk(B2S(block_index), (char*)&FS_superblock, BLOCK_SIZE);
 
     // 2. 读取组描述符
     group_descriptor_count =
         (FS_superblock.s_blocks_count / FS_superblock.s_blocks_per_group);
     block_index = 2;
-    FS_read_disk(B2S(block_index), (char*)&FS_groupdescriptor, block_size);
+    FS_read_disk(B2S(block_index), (char*)&FS_groupdescriptor, BLOCK_SIZE);
 
     // static u8 FS_block_bitmap[32][1024];
     // static u8 FS_inode_bitmap[32][1024];
@@ -211,16 +211,16 @@ void FS_init() {
     // 3. 读取FS_block_bitmap, FS_inode_bitmap 和 FS_inode_table
     // 有多少个group就需要读取几次
     int inode_table_size_per_group =
-        FS_superblock.s_inodes_per_group * inode_size;
+        FS_superblock.s_inodes_per_group * INODE_SIZE;
     int inode_table_des_index = 0;
     for (int i = 0; i < group_descriptor_count; i++) {
         // 1.1 初始化FS_block_bitmap
         block_index = FS_groupdescriptor[i].bg_block_bitmap;
-        FS_read_disk(B2S(block_index), (char*)&FS_block_bitmap[i], block_size);
+        FS_read_disk(B2S(block_index), (char*)&FS_block_bitmap[i], BLOCK_SIZE);
 
         // 1.2 初始化FS_inode_bitmap
         block_index = FS_groupdescriptor[i].bg_inode_bitmap;
-        FS_read_disk(B2S(block_index), (char*)&FS_inode_bitmap[i], block_size);
+        FS_read_disk(B2S(block_index), (char*)&FS_inode_bitmap[i], BLOCK_SIZE);
 
         // 1.3 初始化FS_inode_table
         block_index = FS_groupdescriptor[i].bg_inode_table;
@@ -231,7 +231,7 @@ void FS_init() {
     }
 
     // 4. 初始化根目录inode -- FS_root_inode
-    FS_get_inode(root_inode_index, &FS_root_inode);
+    FS_get_inode(ROOT_INODE_INDEX, &FS_root_inode);
 }
 
 #pragma endregion

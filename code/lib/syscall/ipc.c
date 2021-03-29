@@ -27,10 +27,10 @@ u32 kernel_sendrec(int function, int src_dest, MESSAGE* m, int pid) {
     // function除了SEND,RECEIVE之外还有BOTH
     // 这个在用户空间通过调用两次系统调用实现
     if (function == SEND) {
-        ret = msg_send(pid, src_dest, m);
+        ret = msg_send(pid, src_dest, mla);
         if (ret != 0) return ret;
     } else if (function == RECEIVE) {
-        ret = msg_receive(pid, src_dest, m);
+        ret = msg_receive(pid, src_dest, mla);
         if (ret != 0) return ret;
     } else {
         while (1)
