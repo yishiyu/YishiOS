@@ -28,6 +28,9 @@ extern TSS tss;
 //系统初始进程PCB
 extern PROCESS proc_table[];
 
+//系统终端进程表
+extern PROCESS terminal_table[];
+
 //预留给系统初始进程的栈
 extern char task_stack[];
 
@@ -48,6 +51,7 @@ extern int ticks;
 //就绪队列头指针
 //其实当前只有一个任务队列,这个指针指向当前下一个执行的进程
 extern PROCESS* p_proc_ready;
+extern PROCESS* t_present_tty;
 
 //中断处理函数指针数组
 extern irq_handler irq_table[];
@@ -58,6 +62,9 @@ u32 kernel_read_keyboard();
 
 //系统预定义进程初始状态
 extern TASK task_table[];
+
+// 系统终端进程初始状态
+extern TASK tty_task_table[];
 
 //键盘输入缓冲区
 //键盘处理结果结构体缓冲区

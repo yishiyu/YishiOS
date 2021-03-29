@@ -15,8 +15,15 @@ static int column;
 
 //子函数
 u8 keyboard_server_get_keyboard();
-KEYMAP_RESULT keyboard_server_decode();
-void keyboard_server_save(KEYMAP_RESULT result);
+void keyboard_server_decode();
+void keyboard_server_save();
+void keyboard_server_handle();
+// 这两个函数来自syscall.asm ,用于控制中断的开启和关闭
+extern void enable_int();
+extern void disable_int();
+
+// 全局变量
+KEYMAP_RESULT result;  // 结果结构体
 
 // 处理键盘信息的进程,负责处理系统热键
 // 此进程属于系统任务级,可以直接调用内核函数
@@ -28,7 +35,9 @@ void keyboard_server() {
     key_result_buffer.key_count = 0;
     while (1) {
         // 暂且不处理任何系统快捷键,对所有结果直接保存
-        keyboard_server_save(keyboard_server_decode());
+        keyboard_server_decode();
+        keyboard_server_handle();
+        keyboard_server_save();
     }
 }
 
@@ -51,13 +60,12 @@ u8 keyboard_server_get_keyboard() {
 }
 
 // 对从键盘得到的信息进行译码
-KEYMAP_RESULT keyboard_server_decode() {
+void keyboard_server_decode() {
     u8 scancode;
     int key_row;  // 键盘码表的行列坐标
     int key_column;
     u32 key_value;
     int make;  // 判断是否为make code.  1为make code,0 为break code
-    KEYMAP_RESULT result;  // 结果结构体
 
     // 读取一次数据
     scancode = keyboard_server_get_keyboard();
@@ -108,32 +116,32 @@ KEYMAP_RESULT keyboard_server_decode() {
             case SHIFT_L:
                 shift_l = make;
                 result.type = KEYBOARD_TYPE_FUNC;
-                result.data = 0;
+                result.data = 4;
                 break;
             case SHIFT_R:
                 shift_r = make;
                 result.type = KEYBOARD_TYPE_FUNC;
-                result.data = 0;
+                result.data = 4;
                 break;
             case CTRL_L:
                 ctrl_l = make;
                 result.type = KEYBOARD_TYPE_FUNC;
-                result.data = 0;
+                result.data = 5;
                 break;
             case CTRL_R:
                 ctrl_r = make;
                 result.type = KEYBOARD_TYPE_FUNC;
-                result.data = 0;
+                result.data = 5;
                 break;
             case ALT_L:
                 alt_l = make;
                 result.type = KEYBOARD_TYPE_FUNC;
-                result.data = 0;
+                result.data = 6;
                 break;
             case ALT_R:
                 alt_r = make;
                 result.type = KEYBOARD_TYPE_FUNC;
-                result.data = 0;
+                result.data = 6;
                 break;
             // 普通的可打印字符
             default:
@@ -148,12 +156,27 @@ KEYMAP_RESULT keyboard_server_decode() {
             result.data = 0;
         }
     }
+}
 
-    return result;
+// 处理键盘事件
+void keyboard_server_handle() {
+    if (result.type != KEYBOARD_TYPE_FUNC) {
+        return;
+    }
+
+    //按下ALT键切换tty
+    if (result.data == 6) {
+        disable_int();
+        t_present_tty += 1;
+        if (t_present_tty >= terminal_table + TERMINAL_NUM) {
+            t_present_tty = terminal_table;
+        }
+        enable_int();
+    }
 }
 
 // 保存译码结果
-void keyboard_server_save(KEYMAP_RESULT result) {
+void keyboard_server_save() {
     // 如果读取类型为空数据,直接返回
     if (result.type == KEYBOARD_TYPE_EMPTY) {
         return;

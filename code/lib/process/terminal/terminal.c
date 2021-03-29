@@ -1,19 +1,33 @@
 #include "terminal.h"
 
-//后期tty任务的基础
+// 第一个终端,同时也是默认的终端
 void tty_1() {
-    KEYMAP_RESULT result;
+    KEYMAP_RESULT temp;
     while (1) {
         for (int i = 0; i < 100; i++) {
             for (int j = 0; j < 100; j++)
                 ;
         }
-        result = sys_read_keyboard();
-        if (result.type == KEYBOARD_TYPE_ASCII) {
-            disp_char(result.data);
+        temp = sys_read_keyboard();
+        if(temp.type == KEYBOARD_TYPE_ASCII){
+            disp_str("  tty1:  ");
+            disp_char(temp.data);
         }
-        if (result.type == KEYBOARD_TYPE_FUNC) {
-            disp_int((int)result.data);
+    }
+}
+
+// 第二个终端
+void tty_2() {
+    KEYMAP_RESULT temp;
+    while (1) {
+        for (int i = 0; i < 100; i++) {
+            for (int j = 0; j < 100; j++)
+                ;
+        }
+        temp = sys_read_keyboard();
+        if(temp.type == KEYBOARD_TYPE_ASCII){
+            disp_str("  tty2:  ");
+            disp_char(temp.data);
         }
     }
 }

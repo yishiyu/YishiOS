@@ -21,6 +21,7 @@ void clock_handler(int irq) {
     int greatest_ticks = 0;
 
     while (!greatest_ticks) {
+        // 处理任务队列
         for (p = proc_table; p < proc_table + BASE_TASKS_NUM; p++) {
             if (p->ticks > greatest_ticks) {
                 greatest_ticks = p->ticks;
@@ -28,10 +29,21 @@ void clock_handler(int irq) {
             }
         }
 
+        // 处理终端队列
+        // 当前只处理当前终端,这样做的话是无法做到后台运行终端的,后面再改
+        if (t_present_tty->ticks > greatest_ticks) {
+            greatest_ticks = t_present_tty->ticks;
+            p_proc_ready = t_present_tty;
+        }
+
+        // 重置时钟片分配
         if (!greatest_ticks) {
+            // 处理任务队列
             for (p = proc_table; p < proc_table + BASE_TASKS_NUM; p++) {
                 p->ticks = p->priority;
             }
+            //处理终端队列
+            t_present_tty->ticks = t_present_tty->priority;
         }
     }
 }
@@ -48,15 +60,16 @@ void keyboard_handler(int irq) {
         // 3. 头指针后移
         // 4. 修改计数器
         key_buffer.key_buf[key_buffer.key_head] = scan_code;
-        
+
         // 如果当前写入的字符是E0,则把该字符的标志位置为0,否则置为1
         // 如果上一个写入的字符是E0,则写入当前字符后把两个标志位置都置为1
-        if(scan_code==0xE0){
+        if (scan_code == 0xE0) {
             key_buffer.key_flag[key_buffer.key_head] = 0;
-        }else{
+        } else {
             key_buffer.key_flag[key_buffer.key_head] = 1;
-            if(key_buffer.key_count>0){
-                key_buffer.key_flag[(key_buffer.key_head-1)%KEY_BUF_SIZE] = 1;
+            if (key_buffer.key_count > 0) {
+                key_buffer.key_flag[(key_buffer.key_head - 1) % KEY_BUF_SIZE] =
+                    1;
             }
         }
 

@@ -15,15 +15,22 @@
 //系统初始任务数量
 //键盘处理进程,tty任务
 //键盘结果缓冲区大小
-#define BASE_TASKS_NUM 2
+// tty任务缓冲区大小
+#define BASE_TASKS_NUM 1
 #define KEY_RESULT_NUM 128
+#define TTY_BUFFER_NUM 256
+#define TERMINAL_NUM 2
+
+//不同任务的优先级(即占有周期数)
+#define PRIORITY_KEYBOARD_SERVER 10
+#define PRIORITY_TERMINAL 20
+
 
 //系统初始任务分配的堆栈大小: 各32kb
-#define STACK_SIZE_TESTA 0x8000
-#define STACK_SIZE_TESTB 0x8000
-#define STACK_SIZE_TESTC 0x8000
+#define STACK_KEYBOARD_SERVER 0x8000
+#define STACK_TERMINAL 0x8000
 #define BASE_TASKS_STACK_SIZE \
-    (STACK_SIZE_TESTA + STACK_SIZE_TESTB + STACK_SIZE_TESTC)
+    (STACK_KEYBOARD_SERVER + TERMINAL_NUM * STACK_TERMINAL)
 
 //定义内核代码,数据,显存选择子
 #define SELECTOR_KERNEL_CS SELECTOR_FLAT_C
@@ -145,12 +152,10 @@
 #define IRQ_KEYBOARD 1
 
 // 系统调用的个数及其对应的中断号
-#define SYS_CALL_NUM    1
+#define SYS_CALL_NUM 1
 #define SYS_CALL_VECTOR 0x90
 
 // 键盘缓冲区大小
 #define KEY_BUF_SIZE 128
-
-
 
 #endif

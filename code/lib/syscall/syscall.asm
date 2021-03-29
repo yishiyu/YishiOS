@@ -7,6 +7,8 @@ SYS_READ_KEYBOARD   equ     0
 SYS_CALL_VECTOR equ 0x90
 
 global asm_read_keyboard
+global enable_int
+global disable_int
 
 ;=========================
 ; 读取键盘函数

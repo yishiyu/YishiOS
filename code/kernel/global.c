@@ -21,8 +21,11 @@ GATE idt[IDT_SIZE];
 // TSS结构体
 TSS tss;
 
-//系统初始进程PCB
+//进程任务队列
+// 加1是为了留下一个指针指向终端任务
 PROCESS proc_table[BASE_TASKS_NUM];
+//终端任务队列
+PROCESS terminal_table[TERMINAL_NUM];
 
 //预留给系统初始进程的栈
 char task_stack[BASE_TASKS_STACK_SIZE];
@@ -41,9 +44,10 @@ u32 k_reenter;
 // 用于系统计时用的变量
 int ticks;
 
-//就绪队列头指针
-//其实当前只有一个任务队列,这个指针指向当前下一个执行的进程
+//就绪指针
 PROCESS* p_proc_ready;
+PROCESS* t_present_tty;
+
 
 //中断处理函数指针数组
 irq_handler irq_table[IRQ_NUM];
@@ -52,8 +56,13 @@ irq_handler irq_table[IRQ_NUM];
 system_call sys_call_table[SYS_CALL_NUM] = {kernel_read_keyboard};
 
 //系统预定义进程初始状态
-TASK task_table[BASE_TASKS_NUM] = {{tty_1, STACK_SIZE_TESTA, "tty_1"},
-                                   {keyboard_server, STACK_SIZE_TESTB, "keyboard_server"}};
+//其中的终端即终端队列中的第一个成员,即默认就绪队列中的终端指针指向第一个终端
+TASK task_table[BASE_TASKS_NUM] = {
+    {keyboard_server, STACK_KEYBOARD_SERVER, "keyboard_server"}};
+
+// 系统终端进程初始状态
+TASK tty_task_table[TERMINAL_NUM] = {{tty_1, STACK_TERMINAL, "terminal_1"},
+                                     {tty_2, STACK_TERMINAL, "terminal_2"}};
 
 KEYMAP_BUFFER key_buffer;
 KEYMAP_RESULT_BUFFER key_result_buffer;
