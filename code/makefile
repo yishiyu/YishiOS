@@ -27,7 +27,9 @@ DASM_FLAGS	= -u -o $(ENTRYPOINT) -e $(ENTRYOFFSET)
 # OBJS: 中间文件,需要通过LD命令进一步链接成最终的目标文件
 YISHI_BOOT	= boot/boot.bin boot/loader.bin
 YISHI_KERNEL	= kernel/kernel.bin
-OBJS		= kernel/kernel.o kernel/global.o kernel/c_kernel.o lib/memory.o lib/display.o lib/port.o lib/func.o
+OBJS		= kernel/kernel.o kernel/global.o kernel/c_kernel.o \
+						lib/proc.o lib/memory.o lib/display.o lib/port.o lib/func.o lib/irqhandler.o \
+						lib/kerneltask.o
 DASM_OUTPUT	= kernel.bin.asm
 
 
@@ -76,38 +78,38 @@ $(YISHI_KERNEL) : $(OBJS)
 	$(LD) $(LD_FLAGS) -o $(YISHI_KERNEL) $(OBJS)
 
 
-# 生成boot.bin
 boot/boot.bin : boot/boot.asm boot/include/boot.inc boot/include/Ext2.inc
 	$(ASM) $(ASM_BOOT_FLAGS) -o $@ $<
 
-# 生成loader.bin
 boot/loader.bin : boot/loader.asm boot/include/loader.inc boot/include/pm.inc
 	$(ASM) $(ASM_BOOT_FLAGS) -o $@ $<
 
-# 生成kerne.o
 kernel/kernel.o : kernel/kernel.asm
 	$(ASM) $(ASM_KERNEL_FLAGS) -o $@ $<
 
-# 生成c_kernel.o
 kernel/c_kernel.o : kernel/kernel.c
 	$(CC) $(C_FLAGS) -o $@ $<
 
-# 生成global.o 
 kernel/global.o : kernel/global.c
 	$(CC) $(C_FLAGS) -o $@ $<
 
-# 生成func.o
+lib/proc.o : lib/proc.c
+	$(CC) $(C_FLAGS) -o $@ $<
+
 lib/func.o : lib/func.c
 	$(CC) $(C_FLAGS) -o $@ $<
 
-# 生成memory.o
 lib/memory.o : lib/memory.asm
 	$(ASM) $(ASM_KERNEL_FLAGS) -o $@ $<
 
-# 生成display.o
 lib/display.o : lib/display.asm
 	$(ASM) $(ASM_KERNEL_FLAGS) -o $@ $<
 
-# 生成port.o
 lib/port.o : lib/port.asm
 	$(ASM) $(ASM_KERNEL_FLAGS) -o $@ $<
+
+lib/irqhandler.o : lib/irqhandler.c
+	$(CC) $(C_FLAGS) -o $@ $<
+
+lib/kerneltask.o : lib/kerneltask.c
+	$(CC) $(C_FLAGS) -o $@ $<

@@ -6,17 +6,22 @@
 	extern	disp_pos
 	extern	gdt_ptr
 	extern	idt_ptr
+	extern	k_reenter
+	extern p_proc_ready
+	extern tss
 ; 导入全局变量结束
 
 ;导入c文件函数
 	extern init_gdt
 	extern init_interupt
-	extern	spurious_irq
+	extern	irq_table
 	extern exception_handler
 	extern init_tss
+	extern start_proc
 ;导入c文件函数结束
 
 ;导出中断处理函数
+	global restart
 	global	divide_error
 	global	single_step_exception
 	global	nmi
@@ -51,24 +56,7 @@
 	global  hwint15
 ;导出中断处理函数结束
 
-
-;文件内宏定义
-	SELECTOR_KERNEL_CS	equ	08h
-	SELECTOR_TSS	equ 020h
-	; 定义默认的8259A中断处理函数
-	%macro  hwint_master    1
-        push    %1
-        call    spurious_irq
-        add     esp, 4
-        hlt
-	%endmacro
-	%macro  hwint_slave     1
-        push    %1
-        call    spurious_irq
-        add     esp, 4
-        hlt
-	%endmacro
-;文件内宏定义结束
+%include "kernel.inc"
 
 ;堆栈段 ---------------------------------------------------------------------------------------------------------------------------------------------------------------
 	[SECTION .bss]
@@ -112,13 +100,15 @@ _start:
 
 kernel_init_done:
 
-	xchg bx,bx
-
 	call init_tss
 
 	xor	eax, eax
 	mov	ax, SELECTOR_TSS
 	ltr	ax
+
+	xchg bx,bx
+
+	call start_proc
 
 	jmp $
 
@@ -260,3 +250,56 @@ kernel_init_done:
 		; 会造成永久停机
 
 ; CPU保留中断处理结束
+
+; 时钟中断保存进程状态函数--------------------------------------------
+save:
+		; 记录进程的状态
+        pushad
+        push    ds
+        push    es
+        push    fs
+        push    gs
+        mov     dx, ss
+        mov     ds, dx
+        mov     es, dx
+
+		;  记录进程表起始地址
+        mov     esi, esp
+
+        inc     dword [k_reenter]
+        cmp     dword [k_reenter], 0
+        jne     end_without_switch_stack
+
+		; 切换到内核栈
+        mov     esp, StackTop
+        push    restart
+		; 回到中断处理中
+        jmp     [esi + RETADR - P_STACKBASE]
+
+end_without_switch_stack:
+		; 之所以重入的中断不需要切换栈空间
+		; 是因为本来就在栈空间
+        push    restart_reenter
+		; 回到中断处理中
+        jmp     [esi + RETADR - P_STACKBASE]
+; 时钟中断保存进程状态函数--------------------------------------------
+
+; 中断恢复函数---------------------------------------------------------------
+; 用于从中断恢复到进程中
+; 普通地从中断恢复到进程
+restart:
+	mov	esp, [p_proc_ready]
+	lldt	[esp + P_LDT_SEL]
+	lea	eax, [esp + P_STACKTOP]
+	mov	dword [tss + TSS3_S_SP0], eax
+; 从中断恢复到中断,不需要切换ldt和设置tss
+restart_reenter:
+	dec	dword [k_reenter]
+	pop	gs
+	pop	fs
+	pop	es
+	pop	ds
+	popad
+	add	esp, 4
+	iretd
+

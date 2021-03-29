@@ -3,3 +3,8 @@
 
 #include "global.h"
 
+//系统预定义进程初始状态
+TASK task_table[BASE_TASKS_NUM] = {{TestA, STACK_SIZE_TESTA, "TestA"},
+                                   {TestB, STACK_SIZE_TESTB, "TestB"},
+                                   {TestC, STACK_SIZE_TESTC, "TestC"}};
+

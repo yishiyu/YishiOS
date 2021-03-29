@@ -114,6 +114,8 @@ void init_tss() {
     tss.ss0 = SELECTOR_KERNEL_DS;
     init_descriptor(&gdt[INDEX_TSS],
                     vir2phys(seg2phys(SELECTOR_KERNEL_DS), &tss),
-                    sizeof(tss) - 1, DA_386TSS);
+                    sizeof(tss) - 1, DESEC_ATTR_386TSS);
     tss.iobase = sizeof(tss); /* 没有I/O许可位图 */
 }
+
+

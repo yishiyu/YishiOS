@@ -1,11 +1,14 @@
 // kernel.c 中的二级函数
 //创建这个文件的目的是为了减小kernel.c的体积
+#ifndef	YISHIOS_FUNC_H
+#define	YISHIOS_FUNC_H
 
 #include "display.h"
 #include "global.h"
 #include "memory.h"
 #include "port.h"
-
+#include "type.h"
+#include "macro.h"
 
 // 中断处理函数
 // 具体实现在kernel.asm中
@@ -49,3 +52,9 @@ void init_idt_desc(unsigned char vector, u8 desc_type, int_handler handler,
 void init_idt();
 void init_descriptor(DESCRIPTOR *p_desc, u32 base, u32 limit, u16 attribute);
 u32 seg2phys(u16 seg);
+
+void enable_irq();
+void disable_irq();
+void put_irq_handler(int irq, irq_handler handler);
+
+#endif

@@ -7,4 +7,6 @@
 void	disp_str(char * info);
 void	disp_color_str(char * info, int color);
 void    disp_int(int num);
+//清空屏幕,把指针归位到0位置
+void    disp_clear_screen();
 #endif 

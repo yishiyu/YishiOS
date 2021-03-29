@@ -13,6 +13,7 @@ extern	disp_pos
 global	disp_str
 global	disp_color_str
 global disp_int
+global disp_clear_screen
 
 
 ; ------------------------------------------------------------------------
@@ -199,3 +200,33 @@ display:
 
 	ret
 ; disp_al 结束-------------------------------------------------------------
+
+
+; ------------------------------------------------------------------------
+; 清空屏幕并把指针归位到左上角
+; ------------------------------------------------------------------------
+disp_clear_screen:
+	push	ecx
+	push	edx
+	push	edi
+
+	mov edi, 0
+	mov	ah, 0Fh			; 0000b: 黑底    1111b: 白字
+	mov ecx, 80*25
+	mov al, ' '
+
+clear_process:
+	mov	[gs:edi], ax
+	add	edi, 2
+
+	loop clear_process
+
+	mov edi, (80 * 0 + 0) * 2
+	mov	dword [disp_pos], edi
+
+	pop	edi
+	pop	edx
+	pop	ecx
+
+	ret
+; disp_clear_screen 结束-------------------------------------------------------------
