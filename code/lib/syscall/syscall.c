@@ -41,7 +41,10 @@ int sys_get_diskinfo(char* buffer, int count, int pid) {
     return message.u.disk_message.result;
 }
 
+u32 sys_get_pid() { return asm_syscall(SYS_GET_PID, 0, 0, 0, 0); }
+
 //=================最终工作的函数======================
 // IPC相关函数单独放在一个文件中
 
 u32 kernel_get_ticks() { return ticks; }
+u32 kernel_get_pid() { return p_proc_ready_head->pid; }

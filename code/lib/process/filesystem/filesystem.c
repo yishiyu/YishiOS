@@ -41,7 +41,15 @@ void FS_server() {
                 // 读取文件
                 result = FS_read_file(&message);
                 break;
-
+            case FS_CD:
+                // 切换文件夹
+                // 1. 搜索新文件夹
+                result = FS_search_file(&message, FILE_TYPE_DIR);
+                // 2. 成功找到文件夹,读取新文件夹
+                if (result == FILE_TYPE_DIR) {
+                    result = FS_read_file(&message);
+                }
+                break;
             default:
                 break;
         }
@@ -63,7 +71,7 @@ int FS_get_root(MESSAGE* message) {
     return 1;
 }
 
-// 读取文件(文件夹本身也是一种特殊文件)
+// 读取文件
 // 输入参数:  文件描述符指针, 读取数据量, 数据缓冲区, 进程pid
 // 函数功能: 读取指定文件到缓冲区中
 // 返回值含义: 1 --> 成功读取   0 --> 文件剩余部分不足,只读取剩余部分
@@ -89,14 +97,54 @@ int FS_read_file(MESSAGE* message) {
         bytes_left -= bytes_to_read;
 
         // 磁盘操作
-        FS_read_disk(B2S(FS_root_inode.i_block[block_index]), buffer,
-                     bytes_to_read);
+        FS_read_disk(
+            B2S(message->u.fs_message.fd->fd_inode->i_block[block_index]),
+            buffer, bytes_to_read);
         buffer += bytes_to_read;
     }
 
     // 2.2 读取第13个block(一级间接索引)
     // 2.3 读取第14个block(二级间接索引)
     // 2.4 读取第15个block(三级间接索引)
+    return result;
+}
+
+// 搜索文件(文件夹本身也是一种文件夹)
+// 输入参数:  文件夹缓冲区指针, 缓冲区大小, 进程pid, 文件名字,  文件类型
+// 文件类型含义:  | 0 --> 文件不存在 | 1 --> 普通文件  | 2 --> 文件夹 |
+// 函数功能:  在当前文件夹中搜索指定文件(或文件夹), 返回文件描述符
+// 本函数本身只负责寻找文件描述符(如果目标文件存在的话)
+// 读取文件的任务交给FS_read_file()
+int FS_search_file(MESSAGE* message, u8 file_type) {
+    // 1. 参数准备
+    // 1.1 指针地址转化
+    char* directory_buffer = message->u.fs_message.buffer;
+    directory_buffer =
+        (char*)va2la(message->u.fs_message.pid, (void*)directory_buffer);
+    char* file_name = message->u.fs_message.file_name;
+    file_name = (char*)va2la(message->u.fs_message.pid, (void*)file_name);
+    // 1.2 结构体指针
+    DIR_ENTRY* directory_entry;
+    int result = 0;
+
+    // 2. 解析目录
+    int buffer_size = message->u.fs_message.count;
+    int entry_index = 0;
+    for (int i = 0; (i < 20) && (entry_index < buffer_size); i++) {
+        directory_entry =
+            (struct directory_entry*)&directory_buffer[entry_index];
+        entry_index += directory_entry->rec_len;
+        // 文件为目标文件
+        if ((directory_entry->file_type == file_type) &&
+            (strcmp(file_name, &directory_entry->name) == 0)) {
+            // 修改返回值, 修改文件操作位置, 复制文件inode结构体
+            result = file_type;
+            message->u.fs_message.fd->fd_pos = 0;
+            FS_get_inode(directory_entry->inode,
+                         message->u.fs_message.fd->fd_inode);
+            break;
+        }
+    }
     return result;
 }
 
@@ -159,7 +207,7 @@ void FS_init() {
     int inode_table_size_per_group =
         FS_superblock.s_inodes_per_group * inode_size;
     int inode_table_des_index = 0;
-    for (int i = 0; i < 2 /*group_descriptor_count*/; i++) {
+    for (int i = 0; i < group_descriptor_count; i++) {
         // 1.1 初始化FS_block_bitmap
         block_index = FS_groupdescriptor[i].bg_block_bitmap;
         FS_read_disk(B2S(block_index), (char*)&FS_block_bitmap[i], block_size);

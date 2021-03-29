@@ -56,6 +56,10 @@ void terminal_handler(TERMINAL* terminal, KEYMAP_RESULT result) {
                 // 回显字符
                 terminal_disp_char(terminal, result.data);
                 // 执行命令
+                // 1. 加入一个终止符0,使命令称为一个完整的字符串
+                terminal->in_buf[(terminal->in_tail + terminal->in_count) %
+                                 TTY_BUFFER_NUM] = 0;
+                // 2. 执行命令
                 terminal_command_handler(terminal);
                 // 显示一个提示符
                 terminal_disp_str(terminal, "\n> ");
@@ -77,18 +81,21 @@ void terminal_handler(TERMINAL* terminal, KEYMAP_RESULT result) {
 
             default:
                 // 可显示字符
-                // 当且仅当输入字符使总命令长度改变的时候才改变count变量
-                if (((terminal->in_head - terminal->in_tail) %
-                     TTY_BUFFER_NUM) == terminal->in_count) {
-                    terminal->in_count++;
-                }
-                // 添加字符到中断结构体命令缓冲区
-                terminal->in_buf[terminal->in_head] = result.data;
-                terminal->in_head++;
-                terminal->in_head %= TTY_BUFFER_NUM;
+                // 缓冲区没满才进行操作(留一些多余的空间)
+                if (terminal->in_count < (TTY_BUFFER_NUM - 8)) {
+                    // 当且仅当输入字符使总命令长度改变的时候才改变count变量
+                    if (((terminal->in_head - terminal->in_tail) %
+                         TTY_BUFFER_NUM) == terminal->in_count) {
+                        terminal->in_count++;
+                    }
+                    // 添加字符到中断结构体命令缓冲区
+                    terminal->in_buf[terminal->in_head] = result.data;
+                    terminal->in_head++;
+                    terminal->in_head %= TTY_BUFFER_NUM;
 
-                // 回显字符
-                terminal_disp_char(terminal, result.data);
+                    // 回显字符
+                    terminal_disp_char(terminal, result.data);
+                }
                 break;
         }
     }
@@ -180,7 +187,10 @@ void terminal_set_cursor(TERMINAL* terminal) {
 // 处理命令
 void terminal_command_handler(TERMINAL* terminal) {
     // 1. 判断命令
-    // 暂时假设没有参数,不用先处理命令格式
+    // 1.1 根据count变量修改tail以获取命令终点
+    terminal->in_head = terminal->in_tail + terminal->in_count;
+    // 1.2 把命令中的空格替换为0,把命令分割成多个字符串
+    str_replace(terminal->in_buf + terminal->in_tail, ' ', 0);
 
     // 2. 执行命令
     char* temp = terminal->in_buf + terminal->in_tail;
@@ -188,10 +198,15 @@ void terminal_command_handler(TERMINAL* terminal) {
         terminal_root(terminal);
     } else if (strcmp(terminal->in_buf + terminal->in_tail, "ls") == 0) {
         terminal_ls(terminal);
+    } else if (strcmp(terminal->in_buf + terminal->in_tail, "cd") == 0) {
+        // cd 命令有一个参数, 修改in_tail以读取参数
+        terminal->in_tail += strlen(terminal->in_buf + terminal->in_tail);
+        terminal->in_tail++;
+        terminal_cd(terminal, terminal->in_buf + terminal->in_tail);
     }
 
-    // 3. 暂时简单地把缓冲区清空
-    terminal->in_tail = terminal->in_head;
+    // 3. 把缓冲区清空
+    terminal->in_tail = terminal->in_head = 0;
     terminal->in_count = 0;
 }
 
@@ -273,7 +288,6 @@ void terminal_disp_int(TERMINAL* terminal, int data) {
 void terminal_root(TERMINAL* terminal) {
     // 1. 参数准备
     char* directory_buffer = terminal->directory_buffer;
-    DIR_ENTRY* directory_entry;
     // 2. 请求文件系统的服务
     MESSAGE message;
     message.source = terminal->pid;
@@ -285,22 +299,6 @@ void terminal_root(TERMINAL* terminal) {
     message.u.fs_message.function = FS_ROOT;
     sys_sendrec(SEND, SERVER_FS, &message, terminal->pid);
     sys_sendrec(RECEIVE, SERVER_FS, &message, terminal->pid);
-    // 3. 解析根目录
-    int file_size = terminal->directory_fd->fd_inode->i_size;
-    int buffer_size = terminal->directory_buffer_size;
-    int directory_limit = (file_size > buffer_size) ? buffer_size : file_size;
-    int entry_index = 0;
-    for (int i = 0; (i < 10) && (entry_index < directory_limit); i++) {
-        directory_entry =
-            (struct directory_entry*)&directory_buffer[entry_index];
-        entry_index += directory_entry->rec_len;
-        // 文件为普通文件或目录文件
-        if ((directory_entry->file_type == 1) ||
-            (directory_entry->file_type == 2)) {
-            terminal_disp_str(terminal, &(directory_entry->name));
-            terminal_disp_char(terminal, '\n');
-        }
-    }
 }
 
 // 显示当前文件夹中的文件
@@ -327,5 +325,20 @@ void terminal_ls(TERMINAL* terminal) {
     }
 }
 
-
+int terminal_cd(TERMINAL* terminal, char* file_name) {
+    // 1. 参数准备
+    char* directory_buffer = terminal->directory_buffer;
+    // 2. 请求文件系统的服务
+    MESSAGE message;
+    message.source = terminal->pid;
+    message.type = terminal->pid;
+    message.u.fs_message.pid = terminal->pid;
+    message.u.fs_message.buffer = terminal->directory_buffer;
+    message.u.fs_message.count = DIRET_BUF_SIZE;
+    message.u.fs_message.fd = terminal->directory_fd;
+    message.u.fs_message.function = FS_CD;
+    message.u.fs_message.file_name = file_name;
+    sys_sendrec(SEND, SERVER_FS, &message, terminal->pid);
+    sys_sendrec(RECEIVE, SERVER_FS, &message, terminal->pid);
+}
 #pragma endregion

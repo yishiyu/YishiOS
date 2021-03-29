@@ -76,6 +76,7 @@ void FS_server();
 // 功能函数
 int FS_get_root(MESSAGE* message);
 int FS_read_file(MESSAGE* message);
+int FS_search_file(MESSAGE* message, u8 file_type);
 
 // 子函数
 int FS_get_inode(u32 inode_index, struct inode* inode_buf);
@@ -91,6 +92,11 @@ void FS_init();
 #define root_inode_index 2
 // 文件系统提供的功能
 #define FS_ROOT 0x01  // 打开根目录
-#define FS_READ 0x02   // 读取文件
+#define FS_READ 0x02  // 读取文件
+#define FS_CD 0x03 // 切换文件夹
+
+// 文件类型
+#define FILE_TYPE_REG 0x01
+#define FILE_TYPE_DIR 0x02
 
 #endif

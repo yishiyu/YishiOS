@@ -186,9 +186,9 @@ typedef struct terminal {
     //控制台
     CONSOLE* console;
     // 文件系统相关
-    char* directory_buffer;     // 当前目录缓冲区
-    int directory_buffer_size;  //缓冲区大小
-    FILE_DESCRIPTOR* directory_fd;   //目录文件描述符
+    char* directory_buffer;         // 当前目录缓冲区
+    int directory_buffer_size;      //缓冲区大小
+    FILE_DESCRIPTOR* directory_fd;  //目录文件描述符
 } TERMINAL;
 
 // ext2文件系统结构
@@ -242,7 +242,8 @@ struct FS_MESSAGE {
     struct file_descriptor* fd;  // 文件描述符指针
     char* buffer;                // 数据缓冲区
     u32 count;                   // 读取的大小
-    u8 result;
+    u8 result;                   //返回值结果
+    char* file_name;             // 文件名字
 };
 
 typedef struct mess {

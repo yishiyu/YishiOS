@@ -58,7 +58,8 @@ int t_present_terminal;
 irq_handler irq_table[IRQ_NUM];
 
 //系统调用处理函数指针数组
-system_call sys_call_table[SYS_CALL_NUM] = {kernel_sendrec, kernel_get_ticks};
+system_call sys_call_table[SYS_CALL_NUM] = {kernel_sendrec, kernel_get_ticks,
+                                            kernel_get_pid};
 
 // 任务级进程
 TASK task_table[TASK_NUM] = {

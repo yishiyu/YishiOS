@@ -14,6 +14,9 @@ void tty_0() {
     terminal->directory_fd = &directory_fd;
     terminal->pid = PID_TTY0;
 
+    int i = 0;
+    int pid = sys_get_pid();
+
     // 其他部分初始化
     terminal_init(terminal);
     terminal_draw_screen(terminal);
@@ -33,7 +36,10 @@ void tty_1() {
     terminal->directory_buffer_size = DIRET_BUF_SIZE;
     terminal->directory_fd = &directory_fd;
     terminal->pid = PID_TTY1;
-    
+
+    int i = 0;
+    int pid = sys_get_pid();
+
     terminal_init(terminal);
     terminal_main(terminal, PID_TTY1);
 }

@@ -36,5 +36,6 @@ void terminal_disp_int(TERMINAL* terminal, int data);
 // shell命令对应的函数
 void terminal_root(TERMINAL* terminal);
 void terminal_ls(TERMINAL* terminal);
+int terminal_cd(TERMINAL* terminal, char* file_name);
 
 #endif

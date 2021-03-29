@@ -83,3 +83,11 @@ int strcmp(const char *s1, const char *s2) {
     }
     return result;
 }
+
+// 字符串替换字符
+void str_replace(char *str, char src, char des) {
+    for (; *str;) {
+        if (*str == src) *str = des;
+        str++;
+    }
+}
