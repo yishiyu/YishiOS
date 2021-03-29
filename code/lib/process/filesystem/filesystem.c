@@ -49,6 +49,14 @@ void FS_server() {
                 if (result == FILE_TYPE_DIR) {
                     result = FS_read_file(&message);
                 }
+            case FS_OPENFILE:
+                // 打开文件(读取大小用来指示是否读取文件)
+                // 1. 搜索新文件
+                result = FS_search_file(&message, FILE_TYPE_REG);
+                // 2. 成功找到文件,读取新文件
+                if (result == FILE_TYPE_REG) {
+                    result = FS_read_file(&message);
+                }
                 break;
             default:
                 break;

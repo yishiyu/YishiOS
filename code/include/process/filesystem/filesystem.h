@@ -91,12 +91,13 @@ void FS_init();
 #define inode_size (0x80)
 #define root_inode_index 2
 // 文件系统提供的功能
-#define FS_ROOT 0x01  // 打开根目录
-#define FS_READ 0x02  // 读取文件
-#define FS_CD 0x03 // 切换文件夹
+#define FS_ROOT 0x01      // 打开根目录
+#define FS_READ 0x02      // 读取文件
+#define FS_CD 0x03        // 切换文件夹
+#define FS_OPENFILE 0x04  // 打开文件
 
 // 文件类型
-#define FILE_TYPE_REG 0x01
-#define FILE_TYPE_DIR 0x02
+#define FILE_TYPE_REG 0x01  // regular 普通文件
+#define FILE_TYPE_DIR 0x02  // directory 文件夹文件
 
 #endif
