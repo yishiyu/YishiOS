@@ -14,7 +14,56 @@ global	disp_str
 global	disp_color_str
 global disp_int
 global disp_clear_screen
+global disp_char
 
+
+; ------------------------------------------------------------------------
+;	Dispchar
+; 	显示一个字符(参数必须为ascii码可显示字符的地址)
+;	通过堆栈传递一个字节变量
+; ------------------------------------------------------------------------
+disp_char:
+	mov eax, [esp + 4]
+	mov	edi, [disp_pos]
+
+	; 处理回车符号
+	cmp	al, 0dh
+	jnz deal_with_return_end
+
+	mov	eax, edi
+	mov	bl, 160
+	div	bl
+	and	eax, 0FFh
+	inc	eax
+	mov	bl, 160
+	mul	bl
+	mov	edi, eax
+	mov	[disp_pos], edi
+	jmp disp_char_end
+
+deal_with_return_end:
+	; 处理退格符
+	cmp	al, 08h
+	jnz deal_with_back_end
+
+	sub	edi, 2
+	mov	ah, 0Fh
+	mov al, 020h
+	mov	[gs:edi], ax
+	mov	[disp_pos], edi
+	jmp disp_char_end
+
+deal_with_back_end:
+
+	mov	ah, 0Fh
+	mov	[gs:edi], ax
+
+	; 修改指针位置
+	add	edi, 2
+	mov	[disp_pos], edi
+
+disp_char_end:
+	ret
 
 ; ------------------------------------------------------------------------
 ;	DispStr

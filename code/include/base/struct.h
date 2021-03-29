@@ -115,17 +115,16 @@ typedef struct s_task {
 
 // 键盘缓冲区结构体
 typedef struct s_keymap {
-    u8 key_buf[KEY_BUF_SIZE];  //缓冲区
-    u8 key_head;              // 指向缓冲区中下一个空闲位置
-    u8 key_tail;              // 最早输入的键值
+    u8 key_buf[KEY_BUF_SIZE];   //缓冲区
+    u8 key_flag[KEY_BUF_SIZE];  //每一个码的标志位
+    u8 key_head;                // 指向缓冲区中下一个空闲位置
+    u8 key_tail;                // 最早输入的键值
     int key_count;              //缓冲区中已有的键值数量
 } KEYMAP_BUFFER;
-
 
 typedef struct s_keyrmap_result {
     key_type type;   //键值的类型
     key_value data;  //键值的数据
 } KEYMAP_RESULT;
-
 
 #endif

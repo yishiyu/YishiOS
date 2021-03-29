@@ -42,14 +42,24 @@ void keyboard_handler(int irq) {
     //向缓冲区中添加scan code
     //不进行其他处理,尽量加快处理速度
     // 1. 检查缓冲区是否满
-    if (key_buffer.key_count >= KEY_BUF_SIZE) {
-        return;
-    } else {
-        //disp_int((int)scan_code);
+    if (key_buffer.key_count < KEY_BUF_SIZE) {
+        // disp_int((int)scan_code);
         // 2. 填充缓冲区
         // 3. 头指针后移
         // 4. 修改计数器
         key_buffer.key_buf[key_buffer.key_head] = scan_code;
+        
+        // 如果当前写入的字符是E0,则把该字符的标志位置为0,否则置为1
+        // 如果上一个写入的字符是E0,则写入当前字符后把两个标志位置都置为1
+        if(scan_code==0xE0){
+            key_buffer.key_flag[key_buffer.key_head] = 0;
+        }else{
+            key_buffer.key_flag[key_buffer.key_head] = 1;
+            if(key_buffer.key_count>0){
+                key_buffer.key_flag[(key_buffer.key_head-1)%KEY_BUF_SIZE] = 1;
+            }
+        }
+
         key_buffer.key_head++;
         key_buffer.key_head %= KEY_BUF_SIZE;
         key_buffer.key_count++;

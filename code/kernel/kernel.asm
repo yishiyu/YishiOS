@@ -108,7 +108,6 @@ kernel_init_done:
 	mov	ax, SELECTOR_TSS
 	ltr	ax
 
-	xchg bx,bx
 
 	call start_proc
 

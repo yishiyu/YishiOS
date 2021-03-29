@@ -3,7 +3,9 @@
 #define YISHIOS_SYSCALL_H
 
 #include "global.h"
+#include "struct.h"
 #include "keymap.h"
+#include "type.h"
 
 //===============用户可以调用的系统调用==================
 

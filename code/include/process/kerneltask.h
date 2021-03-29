@@ -3,6 +3,8 @@
 #define YISHIOS_KERNEL_TASK_H
 
 #include "display.h"
+#include "syscall.h"
+#include "keymap.h"
 
 void TestA();
 void TestB();

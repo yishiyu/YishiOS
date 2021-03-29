@@ -12,8 +12,18 @@ global asm_read_keyboard
 ; 读取键盘函数
 ;=========================
 asm_read_keyboard:
-    xchg bx,bx
     mov eax, SYS_READ_KEYBOARD
+    xchg bx,bx
     int SYS_CALL_VECTOR
     ret
     
+
+;========================
+; 控制中断
+;========================
+enable_int:
+    sti
+    ret
+disable_int:
+    cli
+    ret
