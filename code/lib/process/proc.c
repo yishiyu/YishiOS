@@ -144,32 +144,4 @@ void init_pcb(TASK* task, PROCESS* proc, u32 pid, char* stack,
     proc->next_sending = 0;
 }
 
-// 从预定义的PCB中取得一个空节点,如果没有多余节点,直接触发系统错误
-int get_pcb(PROCESS** proc) {
-    // 有多余的pcb块
-    if (PCB_USED < MAX_PROCESS_NUM) {
-        disp_str("point proc.c get_pcb 0 , PCB_USED == ");
-        disp_int(PCB_USED);
-        disp_str("\n");
-        pause();
 
-        // 寻找可用的pid(即空白 PCB)
-        for (int pid = 0; pid < MAX_PROCESS_NUM; pid++) {
-            disp_str("point proc.c get_pcb 1 , pid == ");
-            disp_int(pid);
-            disp_str("  PCB_stack_status[pid] == ");
-            disp_int(PCB_stack_status[pid]);
-            disp_str("\n");
-            pause();
-
-            if (PCB_stack_status[pid] == 0) {
-                PCB_stack_status[pid] = 1;
-                PCB_USED++;
-                *proc = &PCB_stack[pid];
-                return pid;
-            }
-        }
-    }
-    // 触发错误
-    return -1;
-}

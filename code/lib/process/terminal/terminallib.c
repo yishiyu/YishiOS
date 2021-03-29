@@ -207,10 +207,17 @@ void terminal_command_handler(TERMINAL* terminal) {
         // 屏幕下滚至清空屏幕
         // 1. 光标移至下一行行首
         terminal->console->cursor += TERMINAL_WIDTH;
-        terminal->console->cursor -= (terminal->console->cursor % TERMINAL_WIDTH);
+        terminal->console->cursor -=
+            (terminal->console->cursor % TERMINAL_WIDTH);
         // 2. 终端显示首地址转换
         terminal->console->current_start_addr = terminal->console->cursor;
         terminal_draw_screen(terminal);
+    } else if (strcmp(terminal->in_buf + terminal->in_tail, "open") == 0) {
+        terminal->in_tail += strlen(terminal->in_buf + terminal->in_tail);
+        terminal->in_tail++;
+        terminal_open(terminal, terminal->in_buf + terminal->in_tail);
+    } else if (strcmp(terminal->in_buf + terminal->in_tail, "run") == 0) {
+        terminal_run(terminal);
     }
 
     // 3. 把缓冲区清空
@@ -333,6 +340,7 @@ void terminal_ls(TERMINAL* terminal) {
     }
 }
 
+// 切换文件夹
 int terminal_cd(TERMINAL* terminal, char* file_name) {
     // 1. 参数准备
     char* directory_buffer = terminal->directory_buffer;
@@ -348,5 +356,35 @@ int terminal_cd(TERMINAL* terminal, char* file_name) {
     message.u.fs_message.file_name = file_name;
     sys_sendrec(SEND, SERVER_FS, &message, terminal->pid);
     sys_sendrec(RECEIVE, SERVER_FS, &message, terminal->pid);
+}
+
+// 读取一个文件的inode
+int terminal_open(TERMINAL* terminal, char* file_name) {
+    // 1. 参数准备
+    char* directory_buffer = terminal->directory_buffer;
+    // 2. 请求文件系统的服务
+    MESSAGE message;
+    message.source = terminal->pid;
+    message.type = terminal->pid;
+    message.u.fs_message.pid = terminal->pid;
+    message.u.fs_message.buffer = terminal->directory_buffer;
+    message.u.fs_message.count = 0;  // 只打开不读取
+    message.u.fs_message.fd = terminal->file_fd;
+    message.u.fs_message.function = FS_OPENFILE;
+    message.u.fs_message.file_name = file_name;
+    sys_sendrec(SEND, SERVER_FS, &message, terminal->pid);
+    sys_sendrec(RECEIVE, SERVER_FS, &message, terminal->pid);
+}
+
+// 运行当前打开的文件
+int terminal_run(TERMINAL* terminal){
+    MESSAGE message;
+    message.source = terminal->pid;
+    message.type = terminal->pid;
+    message.u.fs_message.pid = terminal->pid;
+    message.u.fs_message.fd = terminal->file_fd;
+    message.u.fs_message.function = MEM_EXECUTE;
+    sys_sendrec(SEND, SERVER_MEM, &message, terminal->pid);
+    sys_sendrec(RECEIVE, SERVER_MEM, &message, terminal->pid);
 }
 #pragma endregion

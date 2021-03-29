@@ -10,8 +10,6 @@ static u8 FS_block_bitmap[32][1024];
 static u8 FS_inode_bitmap[32][1024];
 // inode table存放在6mb~10mb处
 static const struct inode* FS_inode_table = (struct inode*)0x600000;
-// 文件系统缓冲区放在10mb~20mb
-static const char* FS_buffer = (char*)0xa00000;
 // 根目录inode
 static struct inode FS_root_inode;
 

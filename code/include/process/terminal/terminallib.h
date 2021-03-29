@@ -7,6 +7,7 @@
 #include "global.h"
 #include "keymap.h"
 #include "macro.h"
+#include "memory.h"
 #include "struct.h"
 #include "syscall.h"
 #include "type.h"
@@ -37,5 +38,7 @@ void terminal_disp_int(TERMINAL* terminal, int data);
 void terminal_root(TERMINAL* terminal);
 void terminal_ls(TERMINAL* terminal);
 int terminal_cd(TERMINAL* terminal, char* file_name);
+int terminal_open(TERMINAL* terminal, char* file_name);
+int terminal_run(TERMINAL* terminal);
 
 #endif

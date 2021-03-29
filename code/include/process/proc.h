@@ -15,6 +15,6 @@ int start_proc();
 // 辅助函数
 void init_pcb(TASK* task, PROCESS* proc, u32 pid, char* stack,
               u16 selector_ldt);
-int get_pcb(PROCESS** proc);
+
 
 #endif

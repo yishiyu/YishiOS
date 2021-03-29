@@ -191,6 +191,7 @@ typedef struct terminal {
     char* directory_buffer;         // 当前目录缓冲区
     int directory_buffer_size;      //缓冲区大小
     FILE_DESCRIPTOR* directory_fd;  //目录文件描述符
+    FILE_DESCRIPTOR* file_fd;       //文件描述符
 } TERMINAL;
 
 // ext2文件系统结构
@@ -248,9 +249,9 @@ struct FS_MESSAGE {
     char* file_name;             // 文件名字
 };
 struct MEM_MESSAGE {
-    u8 function;        // 执行的操作类型
-    u32 pid;            // 信息来源进程
-    struct inode file;  // 目标文件
+    u8 function;         // 执行的操作类型
+    u32 pid;             // 信息来源进程
+    struct inode* file;  // 目标文件
     // 创建子进程: -1: 创建失败  0~MAX_PRO_NUM : 子进程pid
     int result;  //返回值结果
 };
@@ -275,9 +276,51 @@ typedef struct video_unit {
 
 // 定时器服务结构体
 typedef struct timer {
-    int pid;  // 定时器对应的进程
+    int pid;   // 定时器对应的进程
     u32 time;  // 定时器剩余时间,单位为毫秒
 } TIMER;
 
+// 啊下面这些内容的定义是来自GNU C标准库
+
+#define EI_NIDENT (16)
+#define PT_NULL 0    /* Program header table entry unused */
+#define PT_LOAD 1    /* Loadable program segment */
+#define PT_DYNAMIC 2 /* Dynamic linking information */
+#define PT_INTERP 3  /* Program interpreter */
+#define PT_NOTE 4    /* Auxiliary information */
+#define PT_SHLIB 5   /* Reserved */
+#define PT_PHDR 6    /* Entry for header table itself */
+#define PT_TLS 7     /* Thread-local storage segment */
+#define PT_NUM 8     /* Number of defined types */
+
+// ELF 文件头
+typedef struct {
+    unsigned char e_ident[EI_NIDENT]; /* Magic number and other info */
+    Elf32_Half e_type;                // 文件类型
+    Elf32_Half e_machine;             // 程序要求的机器架构
+    Elf32_Word e_version;             // 文件的版本
+    Elf32_Addr e_entry;               // 程序的入口地址
+    Elf32_Off e_phoff;                // Program header table 文件内偏移
+    Elf32_Off e_shoff;                // Section header table 文件内偏移
+    Elf32_Word e_flags;      // 处理器特殊标志 对于IA32来说是0
+    Elf32_Half e_ehsize;     // ELF header 字节数
+    Elf32_Half e_phentsize;  // Program header table entry size
+    Elf32_Half e_phnum;      // Program header table entry count
+    Elf32_Half e_shentsize;  // Section header table entry size
+    Elf32_Half e_shnum;      // Section header table entry count */
+    Elf32_Half e_shstrndx;   /* Section header string table index */
+} Elf32_header;
+
+// ELF 段表头
+typedef struct {
+    Elf32_Word p_type;    // Segment type
+    Elf32_Off p_offset;   // Segment file offset
+    Elf32_Addr p_vaddr;   // Segment virtual address (段内偏移地址)
+    Elf32_Addr p_paddr;   // Segment physical address(物理地址)
+    Elf32_Word p_filesz;  // Segment size in file(需要复制的数量)
+    Elf32_Word p_memsz;   // Segment size in memory(用于确定段界限)
+    Elf32_Word p_flags;   // Segment flags
+    Elf32_Word p_align;   // Segment alignment
+} Elf32_Phdr;
 
 #endif
