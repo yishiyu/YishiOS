@@ -62,44 +62,33 @@ struct group_descriptor {
     u16 bg_pad;
     u32 bg_reserved[3];
 };
-struct inode {
-    u16 i_mode;
-    u16 i_uid;
-    u32 i_size;
-    u32 i_atime;
-    u32 i_ctime;
-    u32 i_mtime;
-    u32 i_dtime;
-    u16 i_gid;
-    u16 i_links_count;
-    u32 i_blocks;
-    u32 i_flags;
-    u32 osd1;
-    u32 i_block[15];
-    u32 i_generation;
-    u32 i_file_acl;
-    u32 i_dir_acl;
-    u32 i_faddr;
-    u16 osd2[3];
-};
-struct directory_entry {
+typedef struct directory_entry {
     u32 inode;
     u16 rec_len;
     u8 name_len;
     u8 file_type;
-    char* name;  // 长度==name_len
-};
-
-
-
+    char name;  // 长度==name_len
+} DIR_ENTRY;
 
 // 入口函数
 void FS_server();
 
+// 功能函数
+int FS_get_root(MESSAGE* message);
+
 // 子函数
-void FS_handler(MESSAGE* message);
+int FS_get_inode(u32 inode_index, struct inode* inode_buf);
+int FS_read_disk(u32 sector_head, char* buffer, int count);
+int FS_write_disk(u32 sector_head, char* buffer, int count);
 void FS_init();
 
 // 关于文件系统的宏定义
+// block号转sector号
+#define B2S(block) (block * 2)
+#define block_size (0x400)
+#define inode_size (0x80)
+#define root_inode_index 2
+// 文件系统提供的功能
+#define FS_ROOT 0x01  // 打开根目录
 
 #endif

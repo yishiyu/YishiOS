@@ -2,67 +2,51 @@
 
 // 第一个终端,同时也是默认的终端
 void tty_0() {
-    // char buffer[1024];
-    // memset(&buffer, 0, 1024);
+    // TERMINAL* terminal = &terminal_table[0];
+    // terminal_init(terminal);
+    // terminal_draw_screen(terminal);
+    // terminal_main(terminal, PID_TTY0);
 
-    // while (1) {
-    //     memset(&buffer, 0, 1024);
-    //     sys_get_diskinfo(buffer, 512, PID_TTY0);
-    //     disp_str(buffer);
-    //     int i = 0;
-    // }
-    // char buffer[1024];
-    // memset(&buffer, 0, 1024);
-
-    // MESSAGE message;
-
-    // while (1) {
-    //     strcpy(buffer, "helloworld");
-    //     message.source = PID_TTY0;
-    //     message.type = SERVER_DISK;
-    //     message.u.disk_message.pid = PID_TTY0;
-    //     message.u.disk_message.function = DISK_WRITE;
-    //     message.u.disk_message.bytes_count = 512;
-    //     message.u.disk_message.buffer = buffer;
-    //     message.u.disk_message.sector_head = 200;
-    //     sys_sendrec(SEND, SERVER_DISK, &message, PID_TTY0);
-    //     sys_sendrec(RECEIVE, SERVER_DISK, &message, PID_TTY0);
-    //     memset(&buffer, 0, 1024);
-    //     message.source = PID_TTY0;
-    //     message.type = SERVER_DISK;
-    //     message.u.disk_message.pid = PID_TTY0;
-    //     message.u.disk_message.function = DISK_READ;
-    //     message.u.disk_message.bytes_count = 512;
-    //     message.u.disk_message.buffer = buffer;
-    //     message.u.disk_message.sector_head = 200;
-    //     sys_sendrec(SEND, SERVER_DISK, &message, PID_TTY0);
-    //     sys_sendrec(RECEIVE, SERVER_DISK, &message, PID_TTY0);
-    //     disp_str(buffer);
-    //     int i = 0;
-    //     int j = 1;
-    // }
-    TERMINAL* terminal = &terminal_table[0];
-    terminal_init(terminal);
-    terminal_draw_screen(terminal);
-    terminal_main(terminal, PID_TTY0);
-    // char data[] = "hello world";
-    // MESSAGE message;
-    // message.source = PID_TTY0;
-    // message.type = SERVER_OUTPUT;
-    // message.u.output_message.console = &console_table[0];
-    // message.u.output_message.data = &data;
-    // message.u.output_message.function = OUTPUT_MESSTYPE_DISP;
-    // message.u.output_message.pid = PID_TTY0;
-    // sys_sendrec(SEND, OUTPUT_SYSTEM, &message, PID_TTY0);
-    // sys_terminal_write(0,&data,PID_TTY0);
+    // 1. 参数准备
+    char root_buf[4096];
+    DIR_ENTRY* root_dir_entry;
+    struct inode root_inode;
+    FILE_DESCRIPTOR root_fd;
+    root_fd.fd_pos = 0;
+    root_fd.fd_inode = &root_inode;
+    // 2. 请求文件系统的服务
+    MESSAGE message;
+    message.source = PID_TTY0;
+    message.type = PID_TTY0;
+    message.u.fs_message.pid = PID_TTY0;
+    message.u.fs_message.buffer = root_buf;
+    message.u.fs_message.count = 4096;
+    message.u.fs_message.fd = &root_fd;
+    message.u.fs_message.function = FS_ROOT;
+    sys_sendrec(SEND, SERVER_FS, &message, PID_TTY0);
+    sys_sendrec(RECEIVE, SERVER_FS, &message, PID_TTY0);
+    // 3. 解析根目录
+    int entry_index = 0;
+    for (int i = 0; i < 10; i++) {
+        root_dir_entry = (struct directory_entry*)&root_buf[entry_index];
+        entry_index += root_dir_entry->rec_len;
+        // 文件为普通文件或目录文件
+        if ((root_dir_entry->file_type == 1) ||
+            (root_dir_entry->file_type == 2)) {
+            disp_str(&(root_dir_entry->name));
+            disp_str("\n");
+        }
+    }
+    while (1)
+        ;
 }
 
 // 第二个终端
 void tty_1() {
-    TERMINAL* terminal = &terminal_table[1];
-    terminal_init(terminal);
-    // terminal_draw_screen(terminal);
-    terminal_main(terminal, PID_TTY1);
-    // while (1)
-    //     ;
+    // TERMINAL* terminal = &terminal_table[1];
+    // terminal_init(terminal);
+    // // terminal_draw_screen(terminal);
+    // terminal_main(terminal, PID_TTY1);
+    while (1)
+        ;
 }

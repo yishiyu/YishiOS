@@ -9,6 +9,11 @@ int strlen(const char *s) {
 }
 
 // 复制字符串
+char *strcpy_limit(char *destination, const char *source, int count) {
+    while ((*destination++ = *source++) && (count--))
+        ;
+    return (destination - 1);
+}
 char *strcpy(char *destination, const char *source) {
     while (*destination++ = *source++)
         ;

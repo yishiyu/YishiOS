@@ -180,6 +180,34 @@ typedef struct terminal {
     CONSOLE* console;
 } TERMINAL;
 
+// ext2文件系统结构
+struct inode {
+    u16 i_mode;
+    u16 i_uid;
+    u32 i_size;
+    u32 i_atime;
+    u32 i_ctime;
+    u32 i_mtime;
+    u32 i_dtime;
+    u16 i_gid;
+    u16 i_links_count;
+    u32 i_blocks;
+    u32 i_flags;
+    u32 osd1;
+    u32 i_block[15];
+    u32 i_generation;
+    u32 i_file_acl;
+    u32 i_dir_acl;
+    u32 i_faddr;
+    u32 osd2[3];
+};
+
+// 文件描述符
+typedef struct file_descriptor {
+    int fd_pos;
+    struct inode* fd_inode;
+} FILE_DESCRIPTOR;
+
 // 以下内容改自Minix
 // output子系统信息结构体, 信息类型为OUTPUT_SYSTEM (0)
 struct OUTPUT_MESSAGE {
@@ -204,8 +232,12 @@ struct DISK_MESSAGE {
     u8 result;        // 磁盘操作的结果
 };
 struct FS_MESSAGE {
-    u8 function;  // 执行的操作类型
-    u32 pid;      // 信息来源 进程
+    u8 function;                 // 执行的操作类型
+    u32 pid;                     // 信息来源 进程
+    struct file_descriptor* fd;  // 文件描述符指针
+    char* buffer;                // 数据缓冲区
+    u32 count;                   // 读取的大小
+    u8 result;
 };
 
 typedef struct mess {

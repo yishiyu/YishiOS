@@ -8,10 +8,12 @@ void disk_server() {
     MESSAGE message;
 
     disk_init();
-
+    memset(&disk_buffer, 0, 1024);
     while (1) {
-        memset(&disk_buffer, 0, 1024);
         sys_sendrec(RECEIVE, ANY, &message, PID_DISK_SERVER);
+        // 对收到的信息进行判断,排除中断信息(否则会出现试图向中断发送信息的情况)
+        if ((message.source < 0) || (message.source >= MAX_PROCESS_NUM))
+            continue;
 
         int src = message.source;
         int result = 0;
@@ -44,6 +46,7 @@ void disk_server() {
         message.type = SERVER_DISK;
         message.u.disk_message.result = result;
         sys_sendrec(SEND, src, &message, PID_DISK_SERVER);
+        memset(&disk_buffer, 0, 1024);
     }
 }
 
@@ -61,29 +64,38 @@ void disk_read(MESSAGE* message) {
     u32 bytes_count = message->u.disk_message.bytes_count;
 
     // 硬盘命令
-    DISK_CMD command;
-    command.features = 0;
-    command.count = (bytes_count + SECTOR_SIZE - 1) / SECTOR_SIZE;
-    command.lba_low = sector_head & 0xff;
-    command.lba_mid = (sector_head >> 8) & 0xff;
-    command.lba_high = (sector_head >> 16) & 0xff;
-    command.device = MAKE_DEVICE_REG(1, 0, (sector_head >> 24) & 0xf);
-    command.command = ATA_READ;
-    disk_cmd_out(&command);
-
+    u32 sector_left = (bytes_count + SECTOR_SIZE - 1) / SECTOR_SIZE;
+    u32 sector_done = 0;
     // 准备向调用者传送数据
     int bytes_left = bytes_count;
     void* la = (void*)va2la(message->u.disk_message.pid,
                             message->u.disk_message.buffer);
 
-    while (bytes_left > 0) {
-        int bytes = (bytes_left < DISK_BUFFER_SIZE) ? bytes_left : DISK_BUFFER_SIZE;
-        interrupt_wait();
-        // 从磁盘读取
-        port_read(REG_DATA, disk_buffer, DISK_BUFFER_SIZE);
-        phys_copy(la, (void*)va2la(PID_DISK_SERVER, disk_buffer), bytes);
-        bytes_left -= DISK_BUFFER_SIZE;
-        la += DISK_BUFFER_SIZE;
+    while (sector_left > 0) {
+        DISK_CMD command;
+        command.features = 0;
+        command.count = (sector_left > 128) ? 128 : sector_left;
+        command.lba_low = sector_head & 0xff;
+        command.lba_mid = (sector_head >> 8) & 0xff;
+        command.lba_high = (sector_head >> 16) & 0xff;
+        command.device = MAKE_DEVICE_REG(1, 0, (sector_head >> 24) & 0xf);
+        command.command = ATA_READ;
+        disk_cmd_out(&command);
+        sector_left -= command.count;
+        sector_done += command.count;
+        sector_head += command.count;
+
+        while (command.count > 0) {
+            int bytes =
+                (bytes_left < DISK_BUFFER_SIZE) ? bytes_left : DISK_BUFFER_SIZE;
+            interrupt_wait();
+            // 从磁盘读取
+            port_read(REG_DATA, disk_buffer, DISK_BUFFER_SIZE);
+            phys_copy(la, (void*)va2la(PID_DISK_SERVER, disk_buffer), bytes);
+            la += bytes;
+            command.count -= 2;
+            bytes_left -= bytes;
+        }
     }
 }
 void disk_write(MESSAGE* message) {
@@ -92,32 +104,40 @@ void disk_write(MESSAGE* message) {
     u32 bytes_count = message->u.disk_message.bytes_count;
 
     // 硬盘命令
-    DISK_CMD command;
-    command.features = 0;
-    command.count = (bytes_count + SECTOR_SIZE - 1) / SECTOR_SIZE;
-    command.lba_low = sector_head & 0xff;
-    command.lba_mid = (sector_head >> 8) & 0xff;
-    command.lba_high = (sector_head >> 16) & 0xff;
-    command.device = MAKE_DEVICE_REG(1, 0, (sector_head >> 24) & 0xf);
-    command.command = ATA_WRITE;
-    disk_cmd_out(&command);
-
+    u32 sector_left = (bytes_count + SECTOR_SIZE - 1) / SECTOR_SIZE;
+    u32 sector_done = 0;
     // 准备向调用者传送数据
     int bytes_left = bytes_count;
     void* la = (void*)va2la(message->u.disk_message.pid,
                             message->u.disk_message.buffer);
 
-    while (bytes_left > 0) {
-        int bytes = (bytes_left < SECTOR_SIZE) ? bytes_left : SECTOR_SIZE;
-        // 等待硬盘响应
-        if (!waitfor(STATUS_BSY, 0, HD_TIMEOUT)) {
-            return;
+    while (sector_left > 0) {
+        DISK_CMD command;
+        command.features = 0;
+        command.count = (sector_left > 128) ? 128 : sector_left;
+        command.lba_low = sector_head & 0xff;
+        command.lba_mid = (sector_head >> 8) & 0xff;
+        command.lba_high = (sector_head >> 16) & 0xff;
+        command.device = MAKE_DEVICE_REG(1, 0, (sector_head >> 24) & 0xf);
+        command.command = ATA_WRITE;
+        disk_cmd_out(&command);
+        sector_left -= command.count;
+        sector_done += command.count;
+        sector_head += command.count;
+
+        while (command.count > 0) {
+            int bytes = (bytes_left < SECTOR_SIZE) ? bytes_left : SECTOR_SIZE;
+            // 等待硬盘响应
+            if (!waitfor(STATUS_BSY, 0, HD_TIMEOUT)) {
+                return;
+            }
+            // 向硬盘写入数据
+            port_write(REG_DATA, la, bytes);
+            interrupt_wait();
+            la += bytes;
+            command.count -= 1;
+            bytes_left -= bytes;
         }
-        // 向硬盘写入数据
-        port_write(REG_DATA, la, bytes);
-        interrupt_wait();
-        bytes_left -= SECTOR_SIZE;
-        la += SECTOR_SIZE;
     }
 }
 // 获取磁盘信息函数

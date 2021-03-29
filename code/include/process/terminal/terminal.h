@@ -2,8 +2,9 @@
 #ifndef YISHIOS_TERMINAL_H
 #define YISHIOS_TERMINAL_H
 
-#include "terminallib.h"
+#include "filesystem.h"
 #include "global.h"
+#include "terminallib.h"
 
 // 不同的函数即不同的终端
 // 不同的终端共享相同的子函数,但是不共享数据
