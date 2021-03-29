@@ -27,12 +27,12 @@ void terminal_init_screen(TERMINAL* terminal) {
 // 终端的主函数
 void terminal_main(TERMINAL* terminal) {
     int start = 1;
-    while(start) {
+    while (start) {
         if (t_present_terminal == terminal->terminal_ID) {
             //一个终端启动 后打印终端信息
-            char* message = "Terminal n\n";
-            message[9] = (char)(terminal->terminal_ID) + '0';
-            terminal_disp_str(terminal,message);
+            terminal_disp_str(terminal, "Terminal ");
+            terminal_disp_int(terminal, terminal->terminal_ID);
+            terminal_disp_str(terminal, "\n");
             start = 0;
         }
     }
@@ -49,15 +49,30 @@ void terminal_handler(TERMINAL* terminal, KEYMAP_RESULT result) {
     if (result.type == KEYBOARD_TYPE_ASCII) {
         // 处理特殊字符
         switch (result.data) {
+            // case 'a':
+            //     terminal_disp_int(terminal, terminal->in_head);
+            //     terminal_disp_char(terminal,' ');
+            //     terminal_disp_int(terminal, terminal->in_tail);
+            //     terminal_disp_char(terminal,' ');
+            //     terminal_disp_int(terminal, terminal->in_count);
+            //     terminal_disp_char(terminal,' ');
+            //     break;
             case '\n':
             case 0x0d:
                 // 回车符
                 terminal_command_handler(terminal);
+                // 回显字符
+                terminal_disp_char(terminal, result.data);
                 break;
-
             case '\b':
-                if (terminal->in_head != terminal->in_tail) {
-                    // 缓冲区中非空
+                // 回显字符
+                // 为什么退格符的回显字符要放在处理之前呢,因为退格符的回显中有特殊的判定条件
+                terminal_disp_char(terminal, result.data);
+
+                // 缓冲区中非空,且当前光标处于输入字符的最右边
+                if ((terminal->in_head != terminal->in_tail) &&
+                    (((terminal->in_head - terminal->in_tail) %
+                      TTY_BUFFER_NUM) == terminal->in_count)) {
                     terminal->in_head--;
                     terminal->in_head %= TTY_BUFFER_NUM;
                     terminal->in_count--;
@@ -66,16 +81,20 @@ void terminal_handler(TERMINAL* terminal, KEYMAP_RESULT result) {
 
             default:
                 // 可显示字符
+                // 当且仅当输入字符使总命令长度改变的时候才改变count变量
+                if (((terminal->in_head - terminal->in_tail) %
+                     TTY_BUFFER_NUM) == terminal->in_count) {
+                    terminal->in_count++;
+                }
                 // 添加字符到中断结构体命令缓冲区
                 terminal->in_buf[terminal->in_head] = result.data;
                 terminal->in_head++;
                 terminal->in_head %= TTY_BUFFER_NUM;
-                terminal->in_count++;
 
+                // 回显字符
+                terminal_disp_char(terminal, result.data);
                 break;
         }
-        // 回显字符
-        terminal_disp_char(terminal, result.data);
     }
 
     // 处理特殊命令
@@ -88,10 +107,44 @@ void terminal_handler(TERMINAL* terminal, KEYMAP_RESULT result) {
 
             case KEYBOARD_FUNC_UP:
                 // 向上滚动屏幕
+                if (terminal->console.current_start_addr >
+                    terminal->console.original_addr) {
+                    terminal->console.current_start_addr -= 80;
+                    terminal_draw_screen(terminal);
+                }
                 break;
 
             case KEYBOARD_FUNC_DOWN:
                 // 向下滚动屏幕
+                if (terminal->console.current_start_addr <
+                    (terminal->console.original_addr +
+                     terminal->console.mem_limit)) {
+                    terminal->console.current_start_addr += 80;
+                    terminal_draw_screen(terminal);
+                }
+                break;
+
+            case KEYBOARD_FUNC_LEFT:
+                // 左移光标
+                // 命令 还有空余空间,可以左移
+                if (terminal->in_head != terminal->in_tail) {
+                    terminal->in_head--;
+                    terminal->in_head %= TTY_BUFFER_NUM;
+                    terminal->console.cursor--;
+                    terminal_set_cursor(terminal);
+                }
+                break;
+
+            case KEYBOARD_FUNC_RIGHT:
+                // 右移光标
+                // 命令 还有空余空间,可以右移
+                if (((terminal->in_head - terminal->in_tail) % TTY_BUFFER_NUM) <
+                    terminal->in_count) {
+                    terminal->in_head++;
+                    terminal->in_head %= TTY_BUFFER_NUM;
+                    terminal->console.cursor++;
+                    terminal_set_cursor(terminal);
+                }
                 break;
 
             default:
@@ -105,9 +158,10 @@ void terminal_draw_screen(TERMINAL* terminal) {
     disable_int();
     //设置起始位置
     out_byte(CRT_CTRL_ADDR_REG, START_ADDR_H);
-    out_byte(CRT_CTRL_DATA_REG, (terminal->console.original_addr >> 8) & 0xFF);
+    out_byte(CRT_CTRL_DATA_REG,
+             (terminal->console.current_start_addr >> 8) & 0xFF);
     out_byte(CRT_CTRL_ADDR_REG, START_ADDR_L);
-    out_byte(CRT_CTRL_DATA_REG, (terminal->console.original_addr) & 0xFF);
+    out_byte(CRT_CTRL_DATA_REG, (terminal->console.current_start_addr) & 0xFF);
     //设置光标位置
     out_byte(CRT_CTRL_ADDR_REG, CURSOR_H);
     out_byte(CRT_CTRL_DATA_REG, (terminal->console.cursor >> 8) & 0xFF);
@@ -162,7 +216,9 @@ void terminal_disp_char(TERMINAL* terminal, char data) {
 
         case '\b':
             // 退格符
-            if (terminal->in_head != terminal->in_tail) {
+            if ((terminal->in_head != terminal->in_tail) &&
+                (((terminal->in_head - terminal->in_tail) % TTY_BUFFER_NUM) ==
+                 terminal->in_count)) {
                 // 缓冲区非空,即此条命令有未被消除的部分
                 video_mem_position--;
                 *video_mem_position = BLANK_CHAR_COLOR;
@@ -186,4 +242,22 @@ void terminal_disp_str(TERMINAL* terminal, char* data) {
         data++;
     }
 }
-void terminal_disp_int(TERMINAL* terminal) {}
+void terminal_disp_int(TERMINAL* terminal, int data) {
+    char message[20] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                        0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+    char* temp = &message[19];
+
+    // 把数字转成字符串
+    if (data == 0) {
+        temp--;
+        *temp = '0';
+    }
+    while (data > 0) {
+        temp--;
+        *temp = (data % 10 + '0');
+        data /= 10;
+    }
+
+    // 输出字符串
+    terminal_disp_str(terminal, temp);
+}

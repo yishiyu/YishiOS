@@ -54,6 +54,6 @@ void terminal_command_handler(TERMINAL* terminal);
 // 屏幕显示函数
 void terminal_disp_char(TERMINAL* terminal, char data);
 void terminal_disp_str(TERMINAL* terminal, char* data);
-void terminal_disp_int(TERMINAL* terminal);
+void terminal_disp_int(TERMINAL* terminal, int data);
 
 #endif
