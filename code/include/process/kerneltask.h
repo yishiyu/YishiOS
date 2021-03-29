@@ -7,6 +7,7 @@
 #include "keymap.h"
 #include "output.h"
 #include "terminal.h"
+#include "filesystem.h"
 
 void empty_function();
 

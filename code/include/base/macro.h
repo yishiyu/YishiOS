@@ -35,16 +35,16 @@
 //键盘处理进程,tty任务
 //键盘结果缓冲区大小
 // tty任务缓冲区大小
-#define BASE_TASKS_NUM 3
+#define BASE_TASKS_NUM 4
 #define TERMINAL_NUM 2
 #define TASK_NUM (BASE_TASKS_NUM + TERMINAL_NUM)
-#define KEY_RESULT_NUM 128
 #define TTY_BUFFER_NUM 256
 
 //不同任务的优先级(即占有周期数)
 #define PRIORITY_OUTPUT_SERVER 5
 #define PRIORITY_INTPUT_SERVER 5
 #define PRIORITY_DISK_SERVER 5
+#define PRIORITY_FS_SERVER 5
 #define PRIORITY_TERMINAL 5
 #define PRIORITY_EMPTY_TASK 2
 
@@ -52,11 +52,12 @@
 #define STACK_OUTPUT_SYSTEM 0x8000
 #define STACK_INPUT_SYSTEM 0x8000
 #define STACK_DISK_SYSTEM 0x8000
+#define STACK_FILE_FYSTEM 0x8000
 #define STACK_TERMINAL 0x8000
 #define STACK_EMPTY_TASK 0x100
 #define BASE_TASKS_STACK_SIZE                                       \
     (STACK_OUTPUT_SYSTEM + STACK_INPUT_SYSTEM + STACK_DISK_SYSTEM + \
-     TERMINAL_NUM * STACK_TERMINAL + STACK_EMPTY_TASK)
+     STACK_FILE_FYSTEM + TERMINAL_NUM * STACK_TERMINAL + STACK_EMPTY_TASK)
 
 //定义内核代码,数据,显存选择子
 #define SELECTOR_KERNEL_CS SELECTOR_FLAT_C
@@ -184,6 +185,7 @@
 #define SYS_CALL_VECTOR 0x90
 
 // 系统调用表
+// 系统调用中只有两个是宏内核的方式实现,其他的用IPC实现
 // 需要与global.c声明的系统调用表顺序保持一致
 #define SYS_SENDREC 0
 #define SYS_GET_TICKS 1
@@ -243,6 +245,7 @@
 #define OUTPUT_SYSTEM PID_OUTPUT_SERVER
 #define INPUT_SYSTEM PID_INPUT_SERVER
 #define DISK_SYSTEM PID_DISK_SERVER
+#define FILE_SYSTEM PID_FS_SERVER
 // #define TASK_TTY	0
 // #define TASK_SYS	1
 // #define TASK_WINCH	2
@@ -257,20 +260,22 @@
 #define PID_OUTPUT_SERVER 0
 #define PID_INPUT_SERVER 1
 #define PID_DISK_SERVER 2
-#define PID_TTY0 3
-#define PID_TTY1 4
+#define PID_FS_SERVER 3
+#define PID_TTY0 4
+#define PID_TTY1 5
 // 剩下可以分配的PCB的起点
-#define PID_STACK_BASE 5
+#define PID_STACK_BASE 6
 #define PID_EMTPY_TASK (MAX_PROCESS_NUM + 30)
 
 // 消息类型
 #define SERVER_OUTPUT PID_OUTPUT_SERVER  // 输出信息
 #define SERVER_INPUT PID_INPUT_SERVER    // 输入信息
 #define SERVER_DISK PID_DISK_SERVER      // 磁盘信息
+#define SERVER_FS PID_FS_SERVER          // 文件系统的消息
 
 // 硬件中断类型
 #define HARD_INT_KEYBOARD 0x01  // 键盘中断
-#define HARD_INT_DISK   0x02 // 硬盘中断
+#define HARD_INT_DISK 0x02      // 硬盘中断
 
 // OUTPUT子系统宏定义
 // OUTPUT子系统消息类型

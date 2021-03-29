@@ -1,7 +1,8 @@
 #include "disk.h"
 
+#define DISK_BUFFER_SIZE SECTOR_SIZE * 2
 u8 disk_status;
-u8 disk_buffer[SECTOR_SIZE * 2];
+u8 disk_buffer[DISK_BUFFER_SIZE];
 
 void disk_server() {
     MESSAGE message;
@@ -75,14 +76,14 @@ void disk_read(MESSAGE* message) {
     void* la = (void*)va2la(message->u.disk_message.pid,
                             message->u.disk_message.buffer);
 
-    while (bytes_left) {
-        int bytes = (bytes_left < SECTOR_SIZE) ? bytes_left : SECTOR_SIZE;
+    while (bytes_left > 0) {
+        int bytes = (bytes_left < DISK_BUFFER_SIZE) ? bytes_left : DISK_BUFFER_SIZE;
         interrupt_wait();
         // 从磁盘读取
-        port_read(REG_DATA, disk_buffer, SECTOR_SIZE);
+        port_read(REG_DATA, disk_buffer, DISK_BUFFER_SIZE);
         phys_copy(la, (void*)va2la(PID_DISK_SERVER, disk_buffer), bytes);
-        bytes_left -= SECTOR_SIZE;
-        la += SECTOR_SIZE;
+        bytes_left -= DISK_BUFFER_SIZE;
+        la += DISK_BUFFER_SIZE;
     }
 }
 void disk_write(MESSAGE* message) {
@@ -106,7 +107,7 @@ void disk_write(MESSAGE* message) {
     void* la = (void*)va2la(message->u.disk_message.pid,
                             message->u.disk_message.buffer);
 
-    while (bytes_left) {
+    while (bytes_left > 0) {
         int bytes = (bytes_left < SECTOR_SIZE) ? bytes_left : SECTOR_SIZE;
         // 等待硬盘响应
         if (!waitfor(STATUS_BSY, 0, HD_TIMEOUT)) {

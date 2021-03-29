@@ -21,7 +21,7 @@ DASM	= ndisasm
 CC		= gcc
 LD		= ld
 INCLUDE_PATH = -I include/base/ -I include/display -I include/interupt -I include/process \
-								 -I include/syscall -I include/process/terminal \
+								 -I include/syscall -I include/process/terminal -I include/process/filesystem\
 								 -I include/process/output -I include/process/input -I include/process/disk
 ASM_BOOT_FLAGS	= -I boot/include/
 ASM_KERNEL_FLAGS	=$(INCLUDE_PATH) -f elf
@@ -35,14 +35,15 @@ LD_GDB_FLAGS = -Ttext $(ENTRYPOINT) -m elf_i386
 YISHI_BOOT	= boot/boot.bin boot/loader.bin
 YISHI_KERNEL	= kernel/kernel.bin
 GDB_KERNEL = kernel_gdb.bin
-OBJS		= kernel/kernel.o kernel/global.o kernel/c_kernel.o \
-						lib/proc.o lib/memory.o lib/display.o lib/port.o lib/func.o lib/irqhandler.o \
-						lib/initirq.o lib/syscall/syscall.o lib/syscall/syscallasm.o \
-						lib/process/input/keymap.o lib/process/terminal/terminal.o \
-						lib/process/terminal/terminallib.o \
-						lib/syscall/ipc.o lib/syscall/syscalllib.o lib/process/input/input_keyboard.o \
-						lib/process/kerneltask.o lib/process/output/output.o lib/process/input/input.o \
-						lib/process/disk/disk.o lib/process/disk/disklib.o lib/base/string.o
+OBJS		= objs/kernel.o objs/global.o objs/c_kernel.o \
+						objs/proc.o objs/memory.o objs/display.o objs/port.o objs/func.o objs/irqhandler.o \
+						objs/initirq.o objs/syscall.o objs/syscallasm.o \
+						objs/keymap.o objs/terminal.o \
+						objs/terminallib.o \
+						objs/ipc.o objs/syscalllib.o objs/input_keyboard.o \
+						objs/kerneltask.o objs/output.o objs/input.o \
+						objs/disk.o objs/disklib.o objs/string.o \
+						objs/filesystem.o
 DASM_OUTPUT	= kernel.bin.asm
 CALL_TREE = calltree.png
 
@@ -63,7 +64,6 @@ calltree :
 	cat ./temp
 	rm ./temp
 
-
 # 引导文件 内核文件
 everything : $(YISHI_BOOT) $(YISHI_KERNEL) $(GDB_KERNEL)
 
@@ -81,7 +81,7 @@ disasm :
 
 
 # 仅生成最终的目标文件
-final : everything clean
+final : everything
 
 
 # 把生成的文件写入 复制进硬盘
@@ -110,74 +110,77 @@ boot/boot.bin : boot/boot.asm boot/include/boot.inc boot/include/Ext2.inc
 boot/loader.bin : boot/loader.asm boot/include/loader.inc boot/include/pm.inc
 	$(ASM) $(ASM_BOOT_FLAGS) -o $@ $<
 
-kernel/kernel.o : kernel/kernel.asm
+objs/kernel.o : kernel/kernel.asm
 	$(ASM) $(ASM_KERNEL_FLAGS) -o $@ $<
 
-kernel/c_kernel.o : kernel/kernel.c
+objs/c_kernel.o : kernel/kernel.c
 	$(CC) $(C_FLAGS) -o $@ $<
 
-kernel/global.o : kernel/global.c
+objs/global.o : kernel/global.c
 	$(CC) $(C_FLAGS) -o $@ $<
 
-lib/func.o : lib/base/func.c
+objs/func.o : lib/base/func.c
 	$(CC) $(C_FLAGS) -o $@ $<
 
-lib/memory.o : lib/base/memory.asm
+objs/memory.o : lib/base/memory.asm
 	$(ASM) $(ASM_KERNEL_FLAGS) -o $@ $<
 
-lib/port.o : lib/base/port.asm
+objs/port.o : lib/base/port.asm
 	$(ASM) $(ASM_KERNEL_FLAGS) -o $@ $<
 
-lib/proc.o : lib/process/proc.c
+objs/proc.o : lib/process/proc.c
 	$(CC) $(C_FLAGS) -o $@ $<
 
-lib/display.o : lib/display/display.asm
+objs/display.o : lib/display/display.asm
 	$(ASM) $(ASM_KERNEL_FLAGS) -o $@ $<
 
-lib/irqhandler.o : lib/interupt/irqhandler.c
+objs/irqhandler.o : lib/interupt/irqhandler.c
 	$(CC) $(C_FLAGS) -o $@ $<
 	
-lib/initirq.o : lib/interupt/initirq.c
+objs/initirq.o : lib/interupt/initirq.c
 	$(CC) $(C_FLAGS) -o $@ $<
 
-lib/syscall/syscall.o : lib/syscall/syscall.c
+objs/syscall.o : lib/syscall/syscall.c
 	$(CC) $(C_FLAGS) -o $@ $<
 
-lib/syscall/syscallasm.o : lib/syscall/syscall.asm
+objs/syscallasm.o : lib/syscall/syscall.asm
 	$(ASM) $(ASM_KERNEL_FLAGS) -o $@ $<
 
-lib/process/terminal/terminal.o : lib/process/terminal/terminal.c
+objs/terminal.o : lib/process/terminal/terminal.c
 	$(CC) $(C_FLAGS) -o $@ $<
 	
-lib/process/input/keymap.o : lib/process/input/keymap.c
+objs/keymap.o : lib/process/input/keymap.c
 	$(CC) $(C_FLAGS) -o $@ $<
 
-lib/process/terminal/terminallib.o : lib/process/terminal/terminallib.c
+objs/terminallib.o : lib/process/terminal/terminallib.c
 	$(CC) $(C_FLAGS) -o $@ $<
 
-lib/syscall/ipc.o : lib/syscall/ipc.c
+objs/ipc.o : lib/syscall/ipc.c
 	$(CC) $(C_FLAGS) -o $@ $<
 
-lib/syscall/syscalllib.o : lib/syscall/syscalllib.c
+objs/syscalllib.o : lib/syscall/syscalllib.c
 	$(CC) $(C_FLAGS) -o $@ $<
 
-lib/process/kerneltask.o : lib/process/kerneltask.c
+objs/kerneltask.o : lib/process/kerneltask.c
 	$(CC) $(C_FLAGS) -o $@ $<
 
-lib/process/output/output.o : lib/process/output/output.c
+objs/output.o : lib/process/output/output.c
 	$(CC) $(C_FLAGS) -o $@ $<
 
-lib/process/input/input.o : lib/process/input/input.c
+objs/input.o : lib/process/input/input.c
 	$(CC) $(C_FLAGS) -o $@ $<
 
-lib/process/input/input_keyboard.o : lib/process/input/input_keyboard.c
+objs/input_keyboard.o : lib/process/input/input_keyboard.c
 	$(CC) $(C_FLAGS) -o $@ $<
 
-lib/process/disk/disk.o : lib/process/disk/disk.c
+objs/disk.o : lib/process/disk/disk.c
 	$(CC) $(C_FLAGS) -o $@ $<
 
-lib/process/disk/disklib.o : lib/process/disk/disk.asm
+objs/disklib.o : lib/process/disk/disk.asm
 	$(ASM) $(ASM_KERNEL_FLAGS) -o $@ $<
 
-lib/base/string.o : lib/base/string.c
+objs/string.o : lib/base/string.c
+	$(CC) $(C_FLAGS) -o $@ $<
+
+objs/filesystem.o : lib/process/filesystem/filesystem.c
 	$(CC) $(C_FLAGS) -o $@ $<

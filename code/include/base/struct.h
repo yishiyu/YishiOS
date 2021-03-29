@@ -158,14 +158,6 @@ typedef struct s_keyrmap_result {
     key_value data;  //键值的数据
 } KEYMAP_RESULT;
 
-// 键盘处理进程保存结果的缓冲区大小
-typedef struct s_keymap_result_buffer {
-    KEYMAP_RESULT result_buf[KEY_RESULT_NUM];
-    u8 key_head;
-    u8 key_tail;
-    int key_count;
-} KEYMAP_RESULT_BUFFER;
-
 // 终端中的数据,相当于类中的成员变量
 //控制台结构体
 typedef struct console {
@@ -207,9 +199,13 @@ struct DISK_MESSAGE {
     u8 function;      // 执行的操作类型
     u32 pid;          // 信息来源进程
     char* buffer;     // 缓冲区指针
-    u32 sector_head;   // 操作的起始位置
+    u32 sector_head;  // 操作的起始位置
     int bytes_count;  //读取的字节数
     u8 result;        // 磁盘操作的结果
+};
+struct FS_MESSAGE {
+    u8 function;  // 执行的操作类型
+    u32 pid;      // 信息来源 进程
 };
 
 typedef struct mess {
@@ -219,6 +215,7 @@ typedef struct mess {
         struct OUTPUT_MESSAGE output_message;
         struct INPUT_MESSAGE input_message;
         struct DISK_MESSAGE disk_message;
+        struct FS_MESSAGE fs_message;
     } u;
 } MESSAGE;
 
