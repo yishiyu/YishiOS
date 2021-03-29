@@ -26,10 +26,14 @@ InodeTable_Offset	equ 00h
 RootDir_Base    equ 0110h
 RootDir_Offset  equ 00h
 
+
+
+
 ;inode相关的数据结构
 ;长度为128字节
 ;记录数据block号的起始偏移为40
 Inode_Length    equ 128
+Inode_Blocks    equ 28
 Inode_Block equ 40
 
 

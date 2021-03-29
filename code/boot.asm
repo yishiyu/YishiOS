@@ -49,18 +49,10 @@ boot_start:
 	mov	dword	[disk_address_packet + 12],	GroupDescriptors_LBA_H
 	call	read_sector
 
-	;读取Inode Table(具体位置从Group Desriptors中获取)
-	mov word	[disk_address_packet + 4],	InodeTable_Offset
-	mov	word	[disk_address_packet + 6],	InodeTable_Base
-	mov ax, GroupDescriptors_Base
-	mov	ds, ax
-	mov	eax,	dword [GroupDescriptors_Offset + 8]				;获取inode table首地址,单位为block
-	add eax,eax
-	mov bx, cs
-	mov	ds,	bx																						 ;一定要记得把ds寄存器恢复!!!!!找了半天出错原因!!!(其实完全可以用es寄存器...傻了...)
-	mov	dword	[disk_address_packet + 8],	eax						 ;高地址依然为0
-
-	call	read_sector
+	;得到inode结构体
+	;es:bx => 2号inode
+	mov eax, 2
+	call get_inode
 	
 	;根据Inode Table读取根目录(ext2系统2号inode保留为根目录inode)
 	; inode 40-99 bytes 描述指向数据的block号(60bytes 描述了15个block)
@@ -70,15 +62,9 @@ boot_start:
 	;低15个block为三级索引
 
 	;读取根目录
-
 	mov word	[disk_address_packet + 4],	RootDir_Offset
 	mov	word	[disk_address_packet + 6],	RootDir_Base
-	;InodeTable 的基地址
-	;第二个inode中inode_block的偏移
-	mov	bx,InodeTable_Base
-	mov	es,bx
-	mov	bx,Inode_Length + Inode_Block
-	mov	eax,[es:bx]
+	mov	eax,[es:bx + Inode_Block]
 	add eax,eax
 	mov	dword	[disk_address_packet + 8],	eax
 	mov	dword	[disk_address_packet + 12],	0
@@ -164,16 +150,17 @@ loader_found:
 	; 好了终于能加载Loader了!!!!!!!
 	; 此时寄存器情况
 	; gs:bx => 当前目录项的指针
-
+	mov eax, dword [gs:bx + Inode_Number_Offset]
+	call get_inode
+	
 	mov word	[disk_address_packet + 4],	Loader_Offset
 	mov	word	[disk_address_packet + 6],	Loader_Base
-	mov	eax, [gs:bx + Inode_Number_Offset]
-	add eax, eax
-	mov	dword	[disk_address_packet + 8],	eax
-
 	
-
-
+	call	loade_file
+	
+	; JoJo! 这是我最后的跳转 !!!
+	jmp	Loader_Base:Loader_Offset
+	
 
 
 ;======================================
@@ -226,6 +213,71 @@ read_sector:
 	popa
 	ret
 
+;======================================
+;	get_inode
+;	获取inode号对应的inode
+;	eax = 目标inode号
+;	结束后es:bx指向目标inode
+;======================================
+get_inode:
+	;把获取到的inode所在的block放在InodeTable处
+	;修改es和bx使其指向目标inode
+	mov word	[disk_address_packet + 4],	InodeTable_Offset
+	mov	word	[disk_address_packet + 6],	InodeTable_Base
+
+	dec eax		;需要注意的是inode的编号是从1开始的
+	mov bl,8	;每个block可以存放8个inode
+	div	bl			; al => 商,单位为block
+	mov cl, ah ; cl => 余数,为block内偏移
+	xor ah, ah
+
+	mov bx, GroupDescriptors_Base
+	mov	es, bx
+	mov	ebx,	dword [es:GroupDescriptors_Offset + 8]				;获取inode table首地址,单位为block
+	add eax, ebx		; eax => 所在的总的block
+	add eax, eax		; eax => 所在的总的扇区号
+	mov	dword	[disk_address_packet + 8],	eax
+
+	call read_sector
+
+	mov bx, InodeTable_Base
+	mov es, bx
+	mov al, cl
+	mov bl, Inode_Length
+	mul bl
+	mov bx,ax
+
+	ret
+
+;======================================
+;	loade_file
+;	根据inode加载file,最大支持加载前12个block,即12k,对于一个loader足够大了
+;	es:bx 指向文件inode
+;	内存目标地址需要实现填充在访问磁盘的数据结构中
+;======================================
+loade_file:
+	; 判断文件大小,最大只加载12个block (12kb)
+	; 默认block大小为1kb,得到的数字不是block数,而是扇区数
+	mov ecx, dword [es:bx + Inode_Blocks]
+	cmp ecx, 24				;最大支持24个扇区
+	jbe	valid_size
+	mov	ecx,24
+valid_size:
+	mov byte [disk_address_packet + 2], 2		;分多次读取,每次读取一个block
+
+read_block:
+	mov eax, dword [es:bx + Inode_Block]
+	add bx, 4
+	add eax, eax
+	mov	dword	[disk_address_packet + 8],	eax
+	
+	;读取磁盘并使内存目的地址指向下一个block
+	call read_sector
+	add	word	[disk_address_packet + 6], 0x400
+
+	sub ecx, 2
+	ja	read_block
+	ret
 
 times 	510-($-$$)	db	0					; 填充剩下的空间，使生成的二进制代码恰好为512字节
 dw 	0xaa55											; 结束标志
