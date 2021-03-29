@@ -409,14 +409,14 @@ vgaromimage: file=/usr/share/vgabios/vgabios.bin
 #floppya: 1_44=a:, status=inserted
 #floppya: 1_44=a.img, status=inserted, write_protected=1
 #floppya: 1_44=/dev/rfd0a, status=inserted
-floppya: 1_44=freedos.img, status=inserted
+#floppya: 1_44=yishi.img, status=inserted
 
 #=======================================================================
 # FLOPPYB:
 # See FLOPPYA above for syntax
 #=======================================================================
 #floppyb: 1_44=b:, status=inserted
-floppyb: 1_44=yishi.img, status=inserted
+#floppyb: 1_44=b.img, status=inserted
 
 #=======================================================================
 # ATA0, ATA1, ATA2, ATA3
@@ -495,6 +495,7 @@ ata3: enabled=0, ioaddr1=0x168, ioaddr2=0x360, irq=9
 #ata0-master: type=disk, mode=flat, path="c.img", cylinders=0 # autodetect
 #ata0-slave: type=disk, mode=vvfat, path=/bochs/images/vvfat, journal=vvfat.redolog
 #ata0-slave: type=cdrom, path=/dev/cdrom, status=inserted
+ata0-master: type=disk, path="c.img", mode=flat
 
 #=======================================================================
 # BOOT:
@@ -507,8 +508,8 @@ ata3: enabled=0, ioaddr1=0x168, ioaddr2=0x360, irq=9
 #   boot: network, disk
 #   boot: cdrom, floppy, disk
 #=======================================================================
-boot: floppy
-#boot: disk
+#boot: floppy
+boot: disk
 #boot: cdrom
 
 #=======================================================================
