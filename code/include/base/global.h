@@ -52,6 +52,10 @@ extern PROCESS* p_proc_ready;
 //中断处理函数指针数组
 extern irq_handler irq_table[];
 
+//系统调用处理函数指针数组
+extern system_call sys_call_table[];
+u32 kernel_read_keyboard();
+
 //系统预定义进程初始状态
 extern TASK task_table[];
 

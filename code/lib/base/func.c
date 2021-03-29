@@ -75,25 +75,28 @@ void init_8259A() {
 // 改自Orange's OS by 于渊
 void init_idt() {
     // 全部初始化成中断门(没有陷阱门)
-    init_idt_desc(INT_VECTOR_DIVIDE, DESEC_ATTR_386IGate, divide_error, PRIVILEGE_KRNL);
+    init_idt_desc(INT_VECTOR_DIVIDE, DESEC_ATTR_386IGate, divide_error,
+                  PRIVILEGE_KRNL);
 
     init_idt_desc(INT_VECTOR_DEBUG, DESEC_ATTR_386IGate, single_step_exception,
                   PRIVILEGE_KRNL);
 
     init_idt_desc(INT_VECTOR_NMI, DESEC_ATTR_386IGate, nmi, PRIVILEGE_KRNL);
 
-    init_idt_desc(INT_VECTOR_BREAKPOINT, DESEC_ATTR_386IGate, breakpoint_exception,
+    init_idt_desc(INT_VECTOR_BREAKPOINT, DESEC_ATTR_386IGate,
+                  breakpoint_exception, PRIVILEGE_USER);
+
+    init_idt_desc(INT_VECTOR_OVERFLOW, DESEC_ATTR_386IGate, overflow,
                   PRIVILEGE_USER);
 
-    init_idt_desc(INT_VECTOR_OVERFLOW, DESEC_ATTR_386IGate, overflow, PRIVILEGE_USER);
-
-    init_idt_desc(INT_VECTOR_BOUNDS, DESEC_ATTR_386IGate, bounds_check, PRIVILEGE_KRNL);
+    init_idt_desc(INT_VECTOR_BOUNDS, DESEC_ATTR_386IGate, bounds_check,
+                  PRIVILEGE_KRNL);
 
     init_idt_desc(INT_VECTOR_INVAL_OP, DESEC_ATTR_386IGate, inval_opcode,
                   PRIVILEGE_KRNL);
 
-    init_idt_desc(INT_VECTOR_COPROC_NOT, DESEC_ATTR_386IGate, copr_not_available,
-                  PRIVILEGE_KRNL);
+    init_idt_desc(INT_VECTOR_COPROC_NOT, DESEC_ATTR_386IGate,
+                  copr_not_available, PRIVILEGE_KRNL);
 
     init_idt_desc(INT_VECTOR_DOUBLE_FAULT, DESEC_ATTR_386IGate, double_fault,
                   PRIVILEGE_KRNL);
@@ -101,7 +104,8 @@ void init_idt() {
     init_idt_desc(INT_VECTOR_COPROC_SEG, DESEC_ATTR_386IGate, copr_seg_overrun,
                   PRIVILEGE_KRNL);
 
-    init_idt_desc(INT_VECTOR_INVAL_TSS, DESEC_ATTR_386IGate, inval_tss, PRIVILEGE_KRNL);
+    init_idt_desc(INT_VECTOR_INVAL_TSS, DESEC_ATTR_386IGate, inval_tss,
+                  PRIVILEGE_KRNL);
 
     init_idt_desc(INT_VECTOR_SEG_NOT, DESEC_ATTR_386IGate, segment_not_present,
                   PRIVILEGE_KRNL);
@@ -109,8 +113,8 @@ void init_idt() {
     init_idt_desc(INT_VECTOR_STACK_FAULT, DESEC_ATTR_386IGate, stack_exception,
                   PRIVILEGE_KRNL);
 
-    init_idt_desc(INT_VECTOR_PROTECTION, DESEC_ATTR_386IGate, general_protection,
-                  PRIVILEGE_KRNL);
+    init_idt_desc(INT_VECTOR_PROTECTION, DESEC_ATTR_386IGate,
+                  general_protection, PRIVILEGE_KRNL);
 
     init_idt_desc(INT_VECTOR_PAGE_FAULT, DESEC_ATTR_386IGate, page_fault,
                   PRIVILEGE_KRNL);
@@ -118,37 +122,56 @@ void init_idt() {
     init_idt_desc(INT_VECTOR_COPROC_ERR, DESEC_ATTR_386IGate, copr_error,
                   PRIVILEGE_KRNL);
 
-    init_idt_desc(INT_VECTOR_IRQ0 + 0, DESEC_ATTR_386IGate, hwint00, PRIVILEGE_KRNL);
+    init_idt_desc(INT_VECTOR_IRQ0 + 0, DESEC_ATTR_386IGate, hwint00,
+                  PRIVILEGE_KRNL);
 
-    init_idt_desc(INT_VECTOR_IRQ0 + 1, DESEC_ATTR_386IGate, hwint01, PRIVILEGE_KRNL);
+    init_idt_desc(INT_VECTOR_IRQ0 + 1, DESEC_ATTR_386IGate, hwint01,
+                  PRIVILEGE_KRNL);
 
-    init_idt_desc(INT_VECTOR_IRQ0 + 2, DESEC_ATTR_386IGate, hwint02, PRIVILEGE_KRNL);
+    init_idt_desc(INT_VECTOR_IRQ0 + 2, DESEC_ATTR_386IGate, hwint02,
+                  PRIVILEGE_KRNL);
 
-    init_idt_desc(INT_VECTOR_IRQ0 + 3, DESEC_ATTR_386IGate, hwint03, PRIVILEGE_KRNL);
+    init_idt_desc(INT_VECTOR_IRQ0 + 3, DESEC_ATTR_386IGate, hwint03,
+                  PRIVILEGE_KRNL);
 
-    init_idt_desc(INT_VECTOR_IRQ0 + 4, DESEC_ATTR_386IGate, hwint04, PRIVILEGE_KRNL);
+    init_idt_desc(INT_VECTOR_IRQ0 + 4, DESEC_ATTR_386IGate, hwint04,
+                  PRIVILEGE_KRNL);
 
-    init_idt_desc(INT_VECTOR_IRQ0 + 5, DESEC_ATTR_386IGate, hwint05, PRIVILEGE_KRNL);
+    init_idt_desc(INT_VECTOR_IRQ0 + 5, DESEC_ATTR_386IGate, hwint05,
+                  PRIVILEGE_KRNL);
 
-    init_idt_desc(INT_VECTOR_IRQ0 + 6, DESEC_ATTR_386IGate, hwint06, PRIVILEGE_KRNL);
+    init_idt_desc(INT_VECTOR_IRQ0 + 6, DESEC_ATTR_386IGate, hwint06,
+                  PRIVILEGE_KRNL);
 
-    init_idt_desc(INT_VECTOR_IRQ0 + 7, DESEC_ATTR_386IGate, hwint07, PRIVILEGE_KRNL);
+    init_idt_desc(INT_VECTOR_IRQ0 + 7, DESEC_ATTR_386IGate, hwint07,
+                  PRIVILEGE_KRNL);
 
-    init_idt_desc(INT_VECTOR_IRQ8 + 0, DESEC_ATTR_386IGate, hwint08, PRIVILEGE_KRNL);
+    init_idt_desc(INT_VECTOR_IRQ8 + 0, DESEC_ATTR_386IGate, hwint08,
+                  PRIVILEGE_KRNL);
 
-    init_idt_desc(INT_VECTOR_IRQ8 + 1, DESEC_ATTR_386IGate, hwint09, PRIVILEGE_KRNL);
+    init_idt_desc(INT_VECTOR_IRQ8 + 1, DESEC_ATTR_386IGate, hwint09,
+                  PRIVILEGE_KRNL);
 
-    init_idt_desc(INT_VECTOR_IRQ8 + 2, DESEC_ATTR_386IGate, hwint10, PRIVILEGE_KRNL);
+    init_idt_desc(INT_VECTOR_IRQ8 + 2, DESEC_ATTR_386IGate, hwint10,
+                  PRIVILEGE_KRNL);
 
-    init_idt_desc(INT_VECTOR_IRQ8 + 3, DESEC_ATTR_386IGate, hwint11, PRIVILEGE_KRNL);
+    init_idt_desc(INT_VECTOR_IRQ8 + 3, DESEC_ATTR_386IGate, hwint11,
+                  PRIVILEGE_KRNL);
 
-    init_idt_desc(INT_VECTOR_IRQ8 + 4, DESEC_ATTR_386IGate, hwint12, PRIVILEGE_KRNL);
+    init_idt_desc(INT_VECTOR_IRQ8 + 4, DESEC_ATTR_386IGate, hwint12,
+                  PRIVILEGE_KRNL);
 
-    init_idt_desc(INT_VECTOR_IRQ8 + 5, DESEC_ATTR_386IGate, hwint13, PRIVILEGE_KRNL);
+    init_idt_desc(INT_VECTOR_IRQ8 + 5, DESEC_ATTR_386IGate, hwint13,
+                  PRIVILEGE_KRNL);
 
-    init_idt_desc(INT_VECTOR_IRQ8 + 6, DESEC_ATTR_386IGate, hwint14, PRIVILEGE_KRNL);
+    init_idt_desc(INT_VECTOR_IRQ8 + 6, DESEC_ATTR_386IGate, hwint14,
+                  PRIVILEGE_KRNL);
 
-    init_idt_desc(INT_VECTOR_IRQ8 + 7, DESEC_ATTR_386IGate, hwint15, PRIVILEGE_KRNL);
+    init_idt_desc(INT_VECTOR_IRQ8 + 7, DESEC_ATTR_386IGate, hwint15,
+                  PRIVILEGE_KRNL);
+
+    init_idt_desc(SYS_CALL_VECTOR, DESEC_ATTR_386IGate, sys_call,
+                  PRIVILEGE_USER);
 }
 
 void disable_irq(int irq) {

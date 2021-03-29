@@ -48,6 +48,8 @@ PROCESS* p_proc_ready;
 //中断处理函数指针数组
 irq_handler irq_table[IRQ_NUM];
 
+//系统调用处理函数指针数组
+system_call sys_call_table[SYS_CALL_NUM] = {kernel_read_keyboard};
 
 //系统预定义进程初始状态
 TASK task_table[BASE_TASKS_NUM] = {{TestA, STACK_SIZE_TESTA, "TestA"},

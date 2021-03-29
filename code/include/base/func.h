@@ -41,6 +41,7 @@ void hwint12();
 void hwint13();
 void hwint14();
 void hwint15();
+void sys_call();
 
 //本文件内使用的二级子函数
 void init_8259A();

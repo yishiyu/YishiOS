@@ -13,6 +13,7 @@ typedef unsigned char u8;
 typedef void (*int_handler)();
 typedef void (*task_f)();
 typedef	void	(*irq_handler)	(int irq);
+typedef void*	system_call;
 
 //读取键盘相关
 // key_type表明读取键盘得到的数据的类型
@@ -20,5 +21,6 @@ typedef	void	(*irq_handler)	(int irq);
 // key_type = 1  ==> 特殊信息
 typedef char key_type;
 typedef char key_value;
+
 
 #endif

@@ -15,6 +15,7 @@
 	extern init_gdt
 	extern init_interupt
 	extern	irq_table
+	extern	sys_call_table
 	extern exception_handler
 	extern init_tss
 	extern start_proc
@@ -54,6 +55,7 @@
 	global  hwint13
 	global  hwint14
 	global  hwint15
+	global	sys_call
 ;导出中断处理函数结束
 
 %include "kernel.inc"
@@ -111,6 +113,28 @@ kernel_init_done:
 	call start_proc
 
 	jmp $
+
+; 系统调用入口,通过int 0x80调用
+; eax为系统调用号
+; ebx,ecx,edx为参数
+; 返回值为eax
+sys_call:
+	call	save
+	sti
+
+	push	esi
+	push 	dword [p_proc_ready]
+	push	edx
+	push	ecx
+	push 	ebx
+	call 	[sys_call_table + eax * 4]
+	add 	esp, 4*4
+
+	pop	esi
+	mov 	[esi+EAXREG - P_STACKBASE], eax
+	cli
+	ret
+
 
 
 ;改自Orange's OS by 于渊
@@ -259,9 +283,17 @@ save:
         push    es
         push    fs
         push    gs
+
+		; edx中可能存着系统调用的参数,先保护起来
+		mov	esi, edx
+		
         mov     dx, ss
         mov     ds, dx
         mov     es, dx
+		mov		fs, dx
+
+		; 恢复edx
+		mov edx, esi
 
 		;  记录进程表起始地址
         mov     esi, esp
