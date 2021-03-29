@@ -1,7 +1,7 @@
 // 防止各种中断处理
 #include "irqhandler.h"
 
-// 之所以加了个参数,是因为才处理中断的时候把中断号压栈了
+// 之所以加了个参数,是因为在处理中断的时候把中断号压栈了
 // 具体情况看include/base/kernel.inc 中关于中断处理函数的宏定义
 void clock_handler(int irq) {
     ticks++;

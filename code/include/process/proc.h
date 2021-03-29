@@ -16,5 +16,7 @@ int start_proc();
 void init_pcb(TASK* task, PROCESS* proc, u32 pid, char* stack,
               u16 selector_ldt);
 
+// kernel.asm中的从中断恢复的函数
+extern void restart();
 
 #endif

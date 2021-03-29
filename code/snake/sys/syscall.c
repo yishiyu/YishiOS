@@ -38,9 +38,9 @@ void sys_terminal_draw(MESSAGE* message, int console_index, char* data,
 
 int sys_sendrec(int function, int src_dest, MESSAGE* m, int pid) {
     if (function == BOTH) {
-        asm_syscall(SYS_SENDREC, (u32)function, (u32)src_dest, (u32)m,
+        asm_syscall(SYS_SENDREC, (u32)SEND, (u32)src_dest, (u32)m,
                     (u32)pid);
-        asm_syscall(SYS_SENDREC, (u32)function, (u32)src_dest, (u32)m,
+        asm_syscall(SYS_SENDREC, (u32)RECEIVE, (u32)src_dest, (u32)m,
                     (u32)pid);
     } else {
         asm_syscall(SYS_SENDREC, (u32)function, (u32)src_dest,

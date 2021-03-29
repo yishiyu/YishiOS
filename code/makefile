@@ -89,9 +89,14 @@ buildimg :
 	dd if=boot/boot.bin of=c.img bs=512 count=1 conv=notrunc
 	# 把内核文件复制进硬盘
 	sudo mount ./c.img /mnt/bean
+	sudo rm -rf /mnt/bean/*
 	sudo cp ./boot/loader.bin /mnt/bean
 	sudo cp ./kernel/kernel.bin /mnt/bean
 	sudo cp ./snake/snake.bin /mnt/bean
+	sudo mkdir /mnt/bean/directory_1
+	sudo mkdir /mnt/bean/directory_1/directory_2
+	sudo cp ./snake/snake.bin /mnt/bean/directory_1
+	sudo cp ./snake/snake.bin /mnt/bean/directory_1/directory_2
 	sudo umount /mnt/bean
 
 # 生成 目标镜像

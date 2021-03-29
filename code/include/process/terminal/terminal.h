@@ -18,4 +18,9 @@ void tty_0();
 // 第二个终端
 void tty_1();
 
+// 显示欢迎字符
+extern VIDEO_UNIT YishiOS_hello_world[];
+void Wellocome_to_YishiOS();
+void init_word(VIDEO_UNIT *buffer, u8* word);
+
 #endif

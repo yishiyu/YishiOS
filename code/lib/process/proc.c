@@ -1,22 +1,5 @@
 #include "proc.h"
 
-// 本文件调试开关
-// #define __DEBUG_PROC__
-
-// 逻辑关系: 任何一个没定义,就消除函数定义
-#ifndef __YISHIOS_DEBUG__
-#define pause()
-#define disp_int(str)
-#define disp_str(str)
-#else
-#ifndef __DEBUG_PROC__
-#define pause()
-#define disp_int(str)
-#define disp_str(str)
-#endif
-#endif
-
-void restart();
 
 // 初始化所有系统任务,终端任务,同时在就绪队列中设置一个指针指向第一个终端
 int start_proc() {
