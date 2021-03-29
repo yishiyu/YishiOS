@@ -26,10 +26,9 @@ extern GATE idt[];
 extern TSS tss;
 
 //系统初始进程PCB
-extern PROCESS proc_table[];
-
+// extern PROCESS proc_table[];
 //系统终端进程表
-extern PROCESS terminal_table[];
+//extern PROCESS terminal_table[];
 
 //预留给系统初始进程的栈
 extern char task_stack[];
@@ -49,9 +48,12 @@ extern u32 k_reenter;
 extern int ticks;
 
 //系统预定义进程初始状态
-extern TASK task_table[];
+// extern TASK task_table[];
 // 系统终端进程初始状态
-extern TASK tty_task_table[];
+// extern TASK tty_task_table[];
+// 所有任务级进程
+extern TASK task_table[];
+
 // 把原本乱七八糟的进程表统一为三个链表
 // 同时使用一个栈来存放预定义好的进程链表节点
 extern int PCB_stack_top;
@@ -73,7 +75,6 @@ extern irq_handler irq_table[];
 
 //系统调用处理函数指针数组
 extern system_call sys_call_table[];
-u32 kernel_read_keyboard();
 
 //键盘输入缓冲区
 //键盘处理结果结构体缓冲区

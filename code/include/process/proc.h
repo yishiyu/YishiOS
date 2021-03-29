@@ -5,6 +5,19 @@
 #ifndef YISHIOS_PROC_H
 #define YISHIOS_PROC_H
 
+// 本文件调试开关 
+//#define __DEBUG_PROC__
+
+#ifndef __YISHIOS_DEBUG__
+#ifndef __DEBUG_PROC__
+#define pause()
+#define disp_int(str)
+#define disp_str(str)
+#endif
+#endif
+
+
+
 #include "func.h"
 #include "initirq.h"
 
@@ -14,6 +27,6 @@ int start_proc();
 // 辅助函数
 void init_pcb(TASK* task, PROCESS* proc, u32 pid, char* stack,
               u16 selector_ldt);
-PROCESS get_pcb();
+int get_pcb(PROCESS** proc);
 
 #endif

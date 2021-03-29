@@ -39,9 +39,9 @@ u32 k_reenter;
 int ticks;
 
 //进程任务队列
-PROCESS proc_table[BASE_TASKS_NUM];
+// PROCESS proc_table[BASE_TASKS_NUM];
 //终端任务队列
-PROCESS terminal_table[TERMINAL_NUM];
+// PROCESS terminal_table[TERMINAL_NUM];
 // 预定义的进程链表节点栈
 int PCB_stack_top = 0;
 PROCESS PCB_stack[MAX_PROCESS_NUM];
@@ -66,12 +66,18 @@ system_call sys_call_table[SYS_CALL_NUM] = {kernel_read_keyboard,
 
 //系统预定义进程初始状态
 //其中的终端即终端队列中的第一个成员,即默认就绪队列中的终端指针指向第一个终端
-TASK task_table[BASE_TASKS_NUM] = {{keyboard_server, STACK_KEYBOARD_SERVER,
-                                    "keyboard_server",
-                                    PRIORITY_KEYBOARD_SERVER}};
-
+// TASK task_table[BASE_TASKS_NUM] = {{keyboard_server, STACK_KEYBOARD_SERVER,
+//                                     "keyboard_server",
+//                                     PRIORITY_KEYBOARD_SERVER}};
 // 系统终端进程初始状态
-TASK tty_task_table[TERMINAL_NUM] = {
+// TASK tty_task_table[TERMINAL_NUM] = {
+//     {tty_0, STACK_TERMINAL, "terminal_0", PRIORITY_TERMINAL},
+//     {tty_1, STACK_TERMINAL, "terminal_1", PRIORITY_TERMINAL}};
+
+// 任务级进程
+TASK task_table[TASK_NUM] = {
+    {keyboard_server, STACK_KEYBOARD_SERVER, "keyboard_server",
+     PRIORITY_KEYBOARD_SERVER},
     {tty_0, STACK_TERMINAL, "terminal_0", PRIORITY_TERMINAL},
     {tty_1, STACK_TERMINAL, "terminal_1", PRIORITY_TERMINAL}};
 

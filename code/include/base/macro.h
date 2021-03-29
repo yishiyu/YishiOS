@@ -2,6 +2,18 @@
 #ifndef YISHIOS_MACRO_H
 #define YISHIOS_MACRO_H
 
+// 设定一个调试标志
+#define __YISHIOS_DEBUG__
+
+// 把这个声明放在需要调试的文件的头文件中即可
+// #ifndef __YISHIOS_DEBUG__
+// #ifndef __DEBUG_PROC__
+// #define pause()
+// #define disp_int(str)
+// #define disp_str(str)
+// #endif
+// #endif
+
 //用于导出变量等
 #define EXTERN extern
 
@@ -20,6 +32,7 @@
 #define KEY_RESULT_NUM 128
 #define TTY_BUFFER_NUM 256
 #define TERMINAL_NUM 2
+#define TASK_NUM (BASE_TASKS_NUM + TERMINAL_NUM)
 
 //不同任务的优先级(即占有周期数)
 #define PRIORITY_KEYBOARD_SERVER 5

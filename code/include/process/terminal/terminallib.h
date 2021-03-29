@@ -11,7 +11,6 @@
 #include "type.h"
 
 // 子函数
-extern void pause();
 extern void disable_int();
 extern void enable_int();
 extern void out_byte(u16 port, u8 value);

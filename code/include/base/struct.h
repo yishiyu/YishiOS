@@ -105,8 +105,8 @@ typedef struct s_proc {
     char p_name[16];
 
     // 双向链表的两个指针
-    struct PROCESS* pre_pcb;
-    struct PROCESS* next_pcb;
+    struct s_proc* pre_pcb;
+    struct s_proc* next_pcb;
 
 } PROCESS;
 

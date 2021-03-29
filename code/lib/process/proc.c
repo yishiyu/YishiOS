@@ -15,13 +15,35 @@ int start_proc() {
     // 进程编号
     u32 PID = 0;
 
-    // ------------------------------------初始化普通进程-------------------------------------
-    //系统初始进程相关结构体
+    // 用于暂存上一个节点的指针
+    // 临时指针
+    PROCESS* pre_proc;
+
+    //-----------------------------------初始化就绪队列--------------------------------
     TASK* p_task = task_table;
-    PROCESS* p_proc = proc_table;
+    PROCESS* temp_proc;
 
-    for (int i = 0; i < BASE_TASKS_NUM; i++) {
-        init_pcb(&p_task[i], &p_proc[i], PID, p_task_stack, selector_ldt);
+    for (int i = 0; i < TASK_NUM; i++) {
+        // 获取一个新的PCB
+        if (!get_pcb(&temp_proc)) {
+            disp_str("point proc.c start_proc, no enough pcb");
+            pause();
+            while (1)
+                ;
+        }
+
+        // 初始化PCB
+        init_pcb(&p_task[i], temp_proc, PID, p_task_stack, selector_ldt);
+
+        // 初始化就绪队列
+        if (i == 0) {
+            p_proc_ready_head = temp_proc;
+            pre_proc = temp_proc;
+        } else {
+            temp_proc->pre_pcb = pre_proc;
+            pre_proc->next_pcb = temp_proc;
+            pre_proc = temp_proc;
+        }
 
         // 从内核栈中为初始进程分配堆
         p_task_stack -= p_task[i].stacksize;
@@ -30,26 +52,16 @@ int start_proc() {
         // 修改PID
         PID++;
     }
+    pre_proc->next_pcb = &p_proc_ready_tail;
+    p_proc_ready_tail.pre_pcb = pre_proc;
 
-    // -------------------------------------初始化终端进程-----------------------------------
-    TASK* t_task = tty_task_table;
-    PROCESS* t_proc = terminal_table;
-
-    for (int i = 0; i < TERMINAL_NUM; i++) {
-        init_pcb(&t_task[i], &t_proc[i], PID, p_task_stack, selector_ldt);
-
-        // 从内核栈中为初始进程分配堆
-        p_task_stack -= p_task[i].stacksize;
-        // 指向GDT中下一个空描述符
-        selector_ldt += 1 << 3;
-        // 修改PID
-        PID++;
-    }
+    //-----------------------------------初始化挂起队列和阻塞队列------------------------------
+    p_proc_pause_head = &p_proc_pause_tail;
+    p_proc_wait_head = &p_proc_wait_tail;
 
     //===============系统初始化完成,进入系统进程=================
     k_reenter = 0;
     ticks = 0;
-    p_proc_ready_head = proc_table;
     t_present_terminal = 0;
 
     // 之所以在启动进程之前进行中断的初始化
@@ -107,13 +119,19 @@ void init_pcb(TASK* task, PROCESS* proc, u32 pid, char* stack,
 }
 
 // 从预定义的PCB中取得一个空节点,如果没有多余节点,直接触发系统错误
-PROCESS get_pcb() {
+int get_pcb(PROCESS** proc) {
     // 有多余的pcb块
     if (PCB_stack_top < MAX_PROCESS_NUM) {
-        return PCB_stack[PCB_stack_top++];
+        disp_str("point proc.c get_pcb 0 , PCB_stack_top == ");
+        disp_int(PCB_stack_top);
+        disp_str("\n");
+        pause();
+
+        *proc = &PCB_stack[PCB_stack_top];
+        PCB_stack_top++;
+        return 1;
     } else {
         // 触发错误
-        while (1)
-            ;
+        return 0;
     }
 }
