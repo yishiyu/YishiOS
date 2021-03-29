@@ -395,16 +395,28 @@ read_sector:
 ;	内存目标地址需要实现填充在访问磁盘的数据结构中
 ;======================================
 loade_file:
-	; 判断文件大小,最大只加载12个block (12kb)
-	; 默认block大小为1kb,得到的数字不是block数,而是扇区数
+	; 判断文件大小
+	; 在这里不提供虚拟内存服务,最多扩展到1级索引
+	; 最大的加载大小为12 + 256 = 268 kb
+	; inode 40-99 bytes 描述指向数据的block号(60bytes 描述了15个block)
+	; 一个block能存放1024/4 = 256 个block号
+	;前12个block为直接索引
+	;第13个block为一级索引
+	;第14个block为二级索引
+	;低15个block为三级索引
+
+	;保存原始的bx
+	push bx
+
+	; 读取直接索引的block
 	mov ecx, dword [es:bx + Inode_Blocks]
-	cmp ecx, 24				;最大支持24个扇区
-	jbe	valid_size
+	cmp ecx, 24																;直接索引最大支持24个扇区
+	jbe	direct_block
 	mov	ecx,24
-valid_size:
+direct_block:
 	mov byte [_Disk_Address_Packet + 2], 2		;分多次读取,每次读取一个block
 
-read_block:
+read_direct_block:
 	mov eax, dword [es:bx + Inode_Block]
 	add bx, 4
 	add eax, eax
@@ -413,9 +425,60 @@ read_block:
 	;读取磁盘并使内存目的地址指向下一个block
 	call read_sector
 	add	word	[_Disk_Address_Packet + 4], 0x400
-
 	sub ecx, 2
-	ja	read_block
+	ja	read_direct_block
+
+
+	;暂存下一个block的位置
+	mov ax, bx
+	; 恢复原始的bx
+	pop bx
+
+	;判断有没有一级索引的block没有读
+	mov ecx, dword [es:bx + Inode_Blocks]
+	cmp ecx, 24
+	jbe	loade_file_end
+	sub ecx, 24											;获取还需要读的扇区数
+	;恢复指向下一个block的位置
+	mov bx, ax
+
+	;保存当前文件的内存写入位置
+	push dword [_Disk_Address_Packet + 4]
+	push dword [_Disk_Address_Packet + 6]
+
+	; 读取直接索引的block
+	; 读取索引block
+	mov eax, dword [es:bx + Inode_Block]
+	add eax, eax
+	mov	dword	[_Disk_Address_Packet + 8],	eax
+	mov word	[_Disk_Address_Packet + 4],	First_Index_Block_Offset
+	mov	word	[_Disk_Address_Packet + 6],	First_Index_Block_Base
+	call read_sector
+
+	; 根据索引block读取
+	;调整es和bx
+	mov ax, First_Index_Block_Base
+	mov es, ax
+	mov bx, First_Index_Block_Offset
+	;恢复原本文件的内存写入位置
+	pop dword [_Disk_Address_Packet + 6]
+	pop dword [_Disk_Address_Packet + 4]
+
+
+read_first_index_block:
+	mov eax, dword [es:bx]
+	add bx, 4
+	add eax, eax
+	mov	dword	[_Disk_Address_Packet + 8],	eax
+
+	;读取磁盘并使内存目的地址指向下一个block
+	call read_sector
+	add	word	[_Disk_Address_Packet + 4], 0x400
+	sub ecx, 2
+	ja	read_first_index_block
+
+loade_file_end:
+
 	ret
 
 
@@ -802,6 +865,7 @@ init_next_section:
 	add	esi, 020h																								   ; 指向下一个 Program Header Table entry
 	dec	ecx
 	jnz	deal_with_one_program_header_table_entry
+
 
 	ret
 

@@ -32,6 +32,10 @@ InodeTable_Offset	equ 00h
 RootDir_Base    equ 0110h
 RootDir_Offset  equ 00h
 
+;一级索引临时block存放区
+First_Index_Block_Base    equ   0150h
+First_Index_Block_Offset    equ 00h
+
 ;inode相关的数据结构
 ;长度为128字节
 ;记录数据block号的起始偏移为40

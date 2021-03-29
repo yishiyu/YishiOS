@@ -59,7 +59,7 @@ final : everything clean
 
 # 把生成的文件写入 复制进硬盘
 buildimg :
-	# 把MBR写入首扇区
+	# 把MBR写入首扇区(不截断式写入)
 	dd if=boot/boot.bin of=c.img bs=512 count=1 conv=notrunc
 	# 把内核文件复制进硬盘
 	sudo mount ./c.img /mnt/bean
