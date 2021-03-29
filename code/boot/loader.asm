@@ -871,8 +871,6 @@ init_next_section:
 
 
 
-
-
 ; 堆栈就在32位代码段的末尾
 Protect_Mode_Stack_Space:	times	1000h	db	0
 Protect_Mode_Stack_Top	equ	Loader_Phy_Address + $

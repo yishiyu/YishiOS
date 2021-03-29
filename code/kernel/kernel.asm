@@ -111,13 +111,11 @@ _start:
 kernel_init_done:
 
 	xchg bx,bx
-	; 手动触发一个#DE错误试试
-	mov eax, 090h
-	mov bx, 0
-	div bx
 
 	sti			;允许中断访问
 	hlt			;停机等待中断到来
+
+	xchg bx,bx
 
 ;改自Orange's OS by 于渊
 ; 8259A 中断处理
