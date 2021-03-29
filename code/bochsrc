@@ -409,14 +409,14 @@ vgaromimage: file=/usr/share/vgabios/vgabios.bin
 #floppya: 1_44=a:, status=inserted
 #floppya: 1_44=a.img, status=inserted, write_protected=1
 #floppya: 1_44=/dev/rfd0a, status=inserted
-floppya: 1_44=yishi.img, status=inserted
+floppya: 1_44=freedos.img, status=inserted
 
 #=======================================================================
 # FLOPPYB:
 # See FLOPPYA above for syntax
 #=======================================================================
 #floppyb: 1_44=b:, status=inserted
-#floppyb: 1_44=b.img, status=inserted
+floppyb: 1_44=yishi.img, status=inserted
 
 #=======================================================================
 # ATA0, ATA1, ATA2, ATA3
