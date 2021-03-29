@@ -72,8 +72,15 @@ boot_start:
 	add eax,eax
 	mov	dword	[disk_address_packet + 8],	eax
 	mov	dword	[disk_address_packet + 12],	0
-	;只搜索根目录前12个block
-	mov	cx,	12
+
+	;先获取根目录占用的block数量
+	;最多只搜索根目录前12个block
+	mov	eax, [es:bx + Inode_Blocks]
+	shr eax, 1
+	mov	cx,	ax
+	cmp cx, 12
+	jle root_dir_read
+	mov cx, 12
 	
 	;bx = inode中inode_block数据的地址
 	;cx = 剩余未搜索block数量
@@ -277,7 +284,7 @@ read_block:
 	
 	;读取磁盘并使内存目的地址指向下一个block
 	call read_sector
-	add	word	[disk_address_packet + 6], 0x400
+	add	word	[disk_address_packet + 4], 0x400
 
 	sub ecx, 2
 	ja	read_block
