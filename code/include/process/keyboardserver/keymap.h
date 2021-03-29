@@ -10,6 +10,11 @@
 #define KEYBOARD_TYPE_ASCII 1  // 可打印的ASCII码
 #define KEYBOARD_TYPE_FUNC 2   // 功能按钮
 
+// 功能按钮
+#define KEYBOARD_FUNC_SHIFT 4
+#define KEYBOARD_FUNC_CTRL 5
+#define KEYBOARD_FUNC_ALT 6
+
 // 键盘码表
 extern u32 keymap[];
 

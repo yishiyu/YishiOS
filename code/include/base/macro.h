@@ -22,8 +22,8 @@
 #define TERMINAL_NUM 2
 
 //不同任务的优先级(即占有周期数)
-#define PRIORITY_KEYBOARD_SERVER 10
-#define PRIORITY_TERMINAL 20
+#define PRIORITY_KEYBOARD_SERVER 5
+#define PRIORITY_TERMINAL 5
 
 
 //系统初始任务分配的堆栈大小: 各32kb
@@ -158,4 +158,12 @@
 // 键盘缓冲区大小
 #define KEY_BUF_SIZE 128
 
+// 终端显示部分
+#define VIDEO_MEM_SIZE 0x8000	/* 32K: B8000H -> BFFFFH */
+#define	CRT_CTRL_ADDR_REG	0x3D4	/* CRT Controller Registers - Addr Register */
+#define	CRT_CTRL_DATA_REG	0x3D5	/* CRT Controller Registers - Data Register */
+#define	START_ADDR_H	0xC	/* reg index of video mem start addr (MSB) */
+#define	START_ADDR_L	0xD	/* reg index of video mem start addr (LSB) */
+#define	CURSOR_H	0xE	/* reg index of cursor position (MSB) */
+#define	CURSOR_L	0xF	/* reg index of cursor position (LSB) */
 #endif

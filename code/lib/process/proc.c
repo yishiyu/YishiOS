@@ -32,15 +32,6 @@ int start_proc() {
                sizeof(DESCRIPTOR));
         p_proc->ldts[1].attr1 = DESEC_ATTR_DATA_RW | PRIVILEGE_TASK << 5;
 
-        // 把系统任务的优先级提升为内核级
-        // p_proc->ldt_sel = selector_ldt;
-        // memcpy(&p_proc->ldts[0], &gdt[SELECTOR_KERNEL_CS >> 3],
-        //        sizeof(DESCRIPTOR));
-        // p_proc->ldts[0].attr1 = DESEC_ATTR_CODE_E | PRIVILEGE_KRNL << 5;
-        // memcpy(&p_proc->ldts[1], &gdt[SELECTOR_KERNEL_DS >> 3],
-        //        sizeof(DESCRIPTOR));
-        // p_proc->ldts[1].attr1 = DESEC_ATTR_DATA_RW | PRIVILEGE_KRNL << 5;
-
         //填充GDT中的LDT描述符
         //描述符地址, 段起始地址, 段界限, 段属性
         init_descriptor(&gdt[selector_ldt >> 3],
@@ -62,19 +53,6 @@ int start_proc() {
                           SELEC_TI_LOCAL | RPL_TASK;
         p_proc->regs.gs = (SELECTOR_KERNEL_GS & SELEC_ATTR_RPL_MASK) | RPL_TASK;
 
-        //为了使得键盘服务器可以切换终端,把其提升为内核级
-        // p_proc->regs.cs = ((8 * 0) & SELEC_ATTR_RPL_MASK & SELEC_TI_MASK) |
-        //                   SELEC_TI_LOCAL | RPL_KRNL;
-        // p_proc->regs.ds = ((8 * 1) & SELEC_ATTR_RPL_MASK & SELEC_TI_MASK) |
-        //                   SELEC_TI_LOCAL | RPL_KRNL;
-        // p_proc->regs.es = ((8 * 1) & SELEC_ATTR_RPL_MASK & SELEC_TI_MASK) |
-        //                   SELEC_TI_LOCAL | RPL_KRNL;
-        // p_proc->regs.fs = ((8 * 1) & SELEC_ATTR_RPL_MASK & SELEC_TI_MASK) |
-        //                   SELEC_TI_LOCAL | RPL_KRNL;
-        // p_proc->regs.ss = ((8 * 1) & SELEC_ATTR_RPL_MASK & SELEC_TI_MASK) |
-        //                   SELEC_TI_LOCAL | RPL_KRNL;
-        // p_proc->regs.gs = (SELECTOR_KERNEL_GS & SELEC_ATTR_RPL_MASK) |
-        // RPL_TASK;
 
         // 设置进程当前运行的PC寄存器和栈寄存器
         // 之所以没有堆,是因为操作系统还没有内存管理功能...
@@ -157,7 +135,7 @@ int start_proc() {
     k_reenter = 0;
     ticks = 0;
     p_proc_ready = proc_table;
-    t_present_tty = terminal_table;
+    t_present_terminal = 0;
 
     // 之所以在启动进程之前进行中断的初始化
     // 是为了防止在设置其他内容的时候发生中断

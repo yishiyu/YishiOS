@@ -9,6 +9,7 @@ SYS_CALL_VECTOR equ 0x90
 global asm_read_keyboard
 global enable_int
 global disable_int
+global pause
 
 ;=========================
 ; 读取键盘函数
@@ -27,4 +28,11 @@ enable_int:
     ret
 disable_int:
     cli
+    ret
+
+;========================
+; 调试断点
+;========================
+pause:
+    xchg bx,bx
     ret

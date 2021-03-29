@@ -18,6 +18,7 @@ void clock_handler(int irq) {
     }
 
     PROCESS* p;
+    int terminal_id = 0;
     int greatest_ticks = 0;
 
     while (!greatest_ticks) {
@@ -31,9 +32,11 @@ void clock_handler(int irq) {
 
         // 处理终端队列
         // 当前只处理当前终端,这样做的话是无法做到后台运行终端的,后面再改
-        if (t_present_tty->ticks > greatest_ticks) {
-            greatest_ticks = t_present_tty->ticks;
-            p_proc_ready = t_present_tty;
+        for (terminal_id=0;terminal_id<TERMINAL_NUM;terminal_id++) {
+            if (terminal_table[terminal_id].ticks > greatest_ticks) {
+                greatest_ticks = terminal_table[terminal_id].ticks;
+                p_proc_ready = &terminal_table[terminal_id];
+            }
         }
 
         // 重置时钟片分配
@@ -43,7 +46,9 @@ void clock_handler(int irq) {
                 p->ticks = p->priority;
             }
             //处理终端队列
-            t_present_tty->ticks = t_present_tty->priority;
+            for(terminal_id=0;terminal_id<TERMINAL_NUM;terminal_id++){
+                terminal_table[terminal_id].ticks = terminal_table[terminal_id].priority;
+            }
         }
     }
 }

@@ -35,7 +35,9 @@ YISHI_KERNEL	= kernel/kernel.bin
 OBJS		= kernel/kernel.o kernel/global.o kernel/c_kernel.o \
 						lib/proc.o lib/memory.o lib/display.o lib/port.o lib/func.o lib/irqhandler.o \
 						lib/initirq.o lib/syscall/syscall.o lib/syscall/syscalllib.o \
-						lib/process/keyboardserver/keymap.o lib/process/terminal/terminal.o lib/process/keyboardserver/keyboardserver.o
+						lib/process/keyboardserver/keymap.o lib/process/terminal/terminal.o \
+						lib/process/keyboardserver/keyboardserver.o lib/process/terminal/terminallib.o \
+						lib/process/terminal/terminallibasm.o
 DASM_OUTPUT	= kernel.bin.asm
 CALL_TREE = calltree.png
 
@@ -141,3 +143,9 @@ lib/process/keyboardserver/keyboardserver.o : lib/process/keyboardserver/keyboar
 	
 lib/process/keyboardserver/keymap.o : lib/process/keyboardserver/keymap.c
 	$(CC) $(C_FLAGS) -o $@ $<
+
+lib/process/terminal/terminallib.o : lib/process/terminal/terminallib.c
+	$(CC) $(C_FLAGS) -o $@ $<
+
+lib/process/terminal/terminallibasm.o : lib/process/terminal/terminallib.asm
+	$(ASM) $(ASM_KERNEL_FLAGS) -o $@ $<

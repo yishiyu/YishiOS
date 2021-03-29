@@ -51,7 +51,7 @@ extern int ticks;
 //就绪队列头指针
 //其实当前只有一个任务队列,这个指针指向当前下一个执行的进程
 extern PROCESS* p_proc_ready;
-extern PROCESS* t_present_tty;
+extern int t_present_terminal;
 
 //中断处理函数指针数组
 extern irq_handler irq_table[];

@@ -46,7 +46,7 @@ int ticks;
 
 //就绪指针
 PROCESS* p_proc_ready;
-PROCESS* t_present_tty;
+int t_present_terminal;
 
 
 //中断处理函数指针数组

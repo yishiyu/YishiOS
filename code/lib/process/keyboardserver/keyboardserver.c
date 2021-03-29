@@ -116,32 +116,32 @@ void keyboard_server_decode() {
             case SHIFT_L:
                 shift_l = make;
                 result.type = KEYBOARD_TYPE_FUNC;
-                result.data = 4;
+                result.data = KEYBOARD_FUNC_SHIFT;
                 break;
             case SHIFT_R:
                 shift_r = make;
                 result.type = KEYBOARD_TYPE_FUNC;
-                result.data = 4;
+                result.data = KEYBOARD_FUNC_SHIFT;
                 break;
             case CTRL_L:
                 ctrl_l = make;
                 result.type = KEYBOARD_TYPE_FUNC;
-                result.data = 5;
+                result.data = KEYBOARD_FUNC_CTRL;
                 break;
             case CTRL_R:
                 ctrl_r = make;
                 result.type = KEYBOARD_TYPE_FUNC;
-                result.data = 5;
+                result.data = KEYBOARD_FUNC_CTRL;
                 break;
             case ALT_L:
                 alt_l = make;
                 result.type = KEYBOARD_TYPE_FUNC;
-                result.data = 6;
+                result.data = KEYBOARD_FUNC_ALT;
                 break;
             case ALT_R:
                 alt_r = make;
                 result.type = KEYBOARD_TYPE_FUNC;
-                result.data = 6;
+                result.data = KEYBOARD_FUNC_ALT;
                 break;
             // 普通的可打印字符
             default:
@@ -165,12 +165,10 @@ void keyboard_server_handle() {
     }
 
     //按下ALT键切换tty
-    if (result.data == 6) {
+    if (result.data == KEYBOARD_FUNC_ALT) {
         disable_int();
-        t_present_tty += 1;
-        if (t_present_tty >= terminal_table + TERMINAL_NUM) {
-            t_present_tty = terminal_table;
-        }
+        t_present_terminal += 1;
+        t_present_terminal %= TERMINAL_NUM;
         enable_int();
     }
 }

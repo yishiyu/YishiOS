@@ -2,8 +2,9 @@
 #ifndef	YISHIOS_IRQHANDLER_H
 #define	YISHIOS_IRQHANDLER_H
 
-#include "global.h"              
+#include "global.h"
 #include "display.h"
+#include "terminal.h"
 
 // 时钟中断处理
 void clock_handler(int irq);
