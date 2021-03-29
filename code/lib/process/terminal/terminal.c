@@ -25,10 +25,12 @@ void tty_0() {
     int i = 0;
     int pid = sys_get_pid();
 
+    MESSAGE message;
+
     // 其他部分初始化
     terminal_init(terminal);
     terminal_draw_screen(terminal);
-    terminal_main(terminal, PID_TTY0);
+    terminal_main(terminal, PID_TTY0, &message);
 }
 
 // 第二个终端
@@ -56,8 +58,10 @@ void tty_1() {
     int i = 0;
     int pid = sys_get_pid();
 
-    while (1)
-        ;
-    // terminal_init(terminal);
-    // terminal_main(terminal, PID_TTY1);
+	while(1);
+
+    MESSAGE message;
+
+    terminal_init(terminal);
+    terminal_main(terminal, PID_TTY1, &message);
 }

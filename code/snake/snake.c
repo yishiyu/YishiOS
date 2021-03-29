@@ -16,7 +16,7 @@ static u32 snake_head = 0;  // 位置队列头指针
 static u32 snake_tail = 0;  // 位置队列尾指针
 static u32 snake_now = 0;   // 当前贪吃蛇蛇头位置队列下标
 static int snake_pos[SNAKE_MAX_LENGTH] = {0};
-static u32 snake_ball = 80 * 5 + 60;
+static int snake_ball = 80 * 5 + 60;
 
 // 控制贪吃蛇的移动方向
 static int snake_dire = 1;
@@ -30,12 +30,8 @@ void _start() {
 
     // 2. 进入主循环
     while (1) {
-        sys_sendrec(RECEIVE, ANY, &messages[4], pid_snake);
-        sys_terminal_write(&messages[0], 0, "hello world !!! \n", pid_snake);
-        sys_terminal_write(&messages[1], 0, "  YISHI OS !!! \n", pid_snake);
-        sys_set_timer(pid_snake, 1000);
-        // sys_sendrec(RECEIVE, ANY, &message, pid_snake);
-        // snake_handler();
+        sys_sendrec(RECEIVE, ANY, &message, pid_snake);
+        snake_handler();
     }
 }
 
@@ -47,11 +43,12 @@ void snake_init() {
     // 初始化显示内容
     for (int i = 0; i < MAX_ROW; i++) {
         for (int j = 0; j < MAX_COLUMN; j++) {
-            video_mem[i * MAX_ROW + j].data = ' ';
-            video_mem[i * MAX_ROW + j].color = SNAKE_COLOR;
-            snake_pos[i * MAX_ROW + j] = 0;
+            video_mem[i * MAX_COLUMN + j].data = ' ';
+            video_mem[i * MAX_COLUMN + j].color = SNAKE_COLOR;
+            snake_pos[i * MAX_COLUMN + j] = 0;
         }
     }
+
     sys_terminal_clear(&message, 0, pid_snake);
 
     // 初始化贪吃蛇为一个点
@@ -61,6 +58,10 @@ void snake_init() {
     snake_pos[0] = 0;
     video_mem[0].data = SNAKE_HEAD;
     video_mem[0].color = SNAKE_COLOR;
+
+    // 初始化球球
+    snake_ball = sys_get_ticks() % SNAKE_VALID;
+    video_mem[snake_ball].data = SNAKE_BALL;
 
     // 设置一个定时器
     sys_set_timer(pid_snake, SNAKE_SPEED);
@@ -95,23 +96,26 @@ void snake_refresh() {
 // 时钟信号处理
 void snake_move() {
     // 1. 修改蛇头标志
-    video_mem[snake_pos[snake_now]].color = SNAKE_COLOR;
     video_mem[snake_pos[snake_now]].data = SNAKE_BODY;
 
     // 2. 根据运动方向修改贪吃蛇位置
     snake_pos[snake_head] =
         (snake_pos[snake_now] + direction[snake_dire]) % SNAKE_MAX_LENGTH;
-    video_mem[snake_pos[snake_head]].color = SNAKE_COLOR;
     video_mem[snake_pos[snake_head]].data = SNAKE_HEAD;
     snake_now = snake_head;
     snake_head++;
     snake_head %= SNAKE_MAX_LENGTH;
 
     // 3. 修改显存并清除最后一节蛇尾
-    video_mem[snake_pos[snake_tail]].color = SNAKE_COLOR;
-    video_mem[snake_pos[snake_tail]].data = SNAKE_BLANK;
-    snake_tail++;
-    snake_tail %= SNAKE_MAX_LENGTH;
+    // 查看是否吃到了球球,如果吃到了球球就不消去尾巴
+    if (snake_pos[snake_now] != snake_ball) {
+        video_mem[snake_pos[snake_tail]].data = SNAKE_BLANK;
+        snake_tail++;
+        snake_tail %= SNAKE_MAX_LENGTH;
+    } else {
+        snake_ball = sys_get_ticks() % SNAKE_VALID;
+        video_mem[snake_ball].data = SNAKE_BALL;
+    }
 
     // 4. 刷新缓存
     snake_refresh();

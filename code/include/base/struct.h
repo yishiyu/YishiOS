@@ -132,8 +132,9 @@ typedef struct s_proc {
     // 用于产生链表结构的指针
     struct s_proc* next_sending;
 
-    // 父进程pid
+    // 父子进程pid
     int parent_pid;
+    int child_pid;
 
 } PROCESS;
 
@@ -192,6 +193,9 @@ typedef struct terminal {
     int directory_buffer_size;      //缓冲区大小
     FILE_DESCRIPTOR* directory_fd;  //目录文件描述符
     FILE_DESCRIPTOR* file_fd;       //文件描述符
+    // 子进程pid
+    int child_pid;
+
 } TERMINAL;
 
 // ext2文件系统结构

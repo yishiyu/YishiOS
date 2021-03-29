@@ -11,11 +11,13 @@
 #define MAX_ROW (25)
 #define MAX_COLUMN (80)
 #define SNAKE_MAX_LENGTH (MAX_ROW * MAX_COLUMN)
+#define SNAKE_VALID (24 * 80)
 
 // 贪吃蛇显示设置
 #define SNAKE_COLOR MAKE_COLOR(BLACK, WHITE)
-#define SNAKE_HEAD ('#')
+#define SNAKE_HEAD ('@')
 #define SNAKE_BODY ('*')
+#define SNAKE_BALL ('O')
 #define SNAKE_BLANK (' ')
 
 // 贪吃蛇方向
@@ -25,7 +27,7 @@
 #define SNAKE_RIGHT 3
 
 // 贪吃蛇移动速度 (移动间隔时间,单位为ms)
-#define SNAKE_SPEED 1000
+#define SNAKE_SPEED 300
 
 // 功能按键
 // 功能按钮

@@ -17,6 +17,8 @@ void terminal_init(TERMINAL* terminal) {
     // 而函数中的变量是所有调用该函数的进程所共享的
     // 故这一步必须在终端的入口函数处初始化
     // (因为终端的入口函数内的变量只由固定终端使用)
+    // 3. 初始化父子进程pid
+    terminal->child_pid = NO_TASK;
 }
 
 // 初始化 终端的显示内容
@@ -33,14 +35,33 @@ void terminal_init_screen(TERMINAL* terminal) {
 }
 
 // 终端的主函数
-void terminal_main(TERMINAL* terminal, int terminal_pid) {
+void terminal_main(TERMINAL* terminal, int terminal_pid, MESSAGE* message) {
     terminal_disp_str(terminal, "Terminal ");
     terminal_disp_int(terminal, terminal->terminal_ID);
     terminal_disp_str(terminal, "\n> ");
-    MESSAGE message;
     while (1) {
-        sys_sendrec(RECEIVE, PID_INPUT_SERVER, &message, terminal_pid);
-        terminal_handler(terminal, message.u.input_message.keyboard_result);
+        sys_sendrec(RECEIVE, PID_INPUT_SERVER, message, terminal_pid);
+
+        switch (message->source) {
+            case PID_INPUT_SERVER:
+                // 如果终端创建了子进程的话,就把消息继续向子进程传递
+                if (terminal->child_pid != NO_TASK) {
+                    message->source = terminal->pid;
+                    message->type = terminal->pid;
+                    message->u.input_message.input_source = terminal->pid;
+                    sys_sendrec(SEND, terminal->child_pid, message,
+                                terminal->pid);
+                } else {
+                    terminal_handler(terminal,
+                                     message->u.input_message.keyboard_result);
+                }
+                break;
+
+            default:
+                terminal_handler(terminal,
+                                 message->u.input_message.keyboard_result);
+                break;
+        }
     }
 }
 #pragma endregion
@@ -384,9 +405,14 @@ int terminal_run(TERMINAL* terminal) {
     message.type = terminal->pid;
     message.u.mem_message.pid = terminal->pid;
     message.u.mem_message.function = MEM_EXECUTE;
-    message.u.mem_message.result==0;
+    message.u.mem_message.result == 0;
     message.u.mem_message.file = terminal->file_fd->fd_inode;
     sys_sendrec(SEND, SERVER_MEM, &message, terminal->pid);
-    sys_sendrec(RECEIVE, SERVER_MEM, &message, terminal->pid);
+    MESSAGE message_rec;
+    sys_sendrec(RECEIVE, SERVER_MEM, &message_rec, terminal->pid);
+    // 创建子进程成功
+    if (message_rec.u.mem_message.result >= 0) {
+        terminal->child_pid = message_rec.u.mem_message.result;
+    }
 }
 #pragma endregion

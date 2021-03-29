@@ -27,7 +27,7 @@ void mem_server() {
         int src = message.source;
         int result = 0;
 
-        switch (message.u.fs_message.function) {
+        switch (message.u.mem_message.function) {
             case MEM_EXECUTE:
                 // 运行一个程序
                 result = execute(&message);
@@ -39,11 +39,11 @@ void mem_server() {
             default:
                 break;
         }
-        // message.source = FILE_SYSTEM;
-        // message.type = SERVER_FS;
-        // message.u.disk_message.result = result;
-        // sys_sendrec(SEND, src, &message, PID_FS_SERVER);
-        // memset(&message, 0, sizeof(message));
+        message.source = MEM_SYSTEM;
+        message.type = SERVER_MEM;
+        message.u.mem_message.result = result;
+        sys_sendrec(SEND, src, &message, PID_MEM_SERVER);
+        memset(&message, 0, sizeof(message));
     }
 }
 
