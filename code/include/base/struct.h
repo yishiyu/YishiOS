@@ -103,6 +103,11 @@ typedef struct s_proc {
 
     u32 pid;
     char p_name[16];
+
+    // 双向链表的两个指针
+    struct PROCESS* pre_pcb;
+    struct PROCESS* next_pcb;
+
 } PROCESS;
 
 // 这个结构体用来定义系统初始进程
@@ -111,6 +116,7 @@ typedef struct s_task {
     task_f initial_eip;
     int stacksize;
     char name[16];
+    int priority;
 } TASK;
 
 // 键盘缓冲区结构体

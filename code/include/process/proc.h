@@ -5,10 +5,15 @@
 #ifndef YISHIOS_PROC_H
 #define YISHIOS_PROC_H
 
-
 #include "func.h"
 #include "initirq.h"
 
+// 初始化进程函数
 int start_proc();
+
+// 辅助函数
+void init_pcb(TASK* task, PROCESS* proc, u32 pid, char* stack,
+              u16 selector_ldt);
+PROCESS get_pcb();
 
 #endif

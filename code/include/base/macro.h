@@ -169,19 +169,22 @@
 
 // 终端字符颜色
 #define DEFAULT_CHAR_COLOR (MAKE_COLOR(BLACK, WHITE))
-#define BLANK_CHAR_COLOR (MAKE_COLOR(BLACK,BLACK))
+#define BLANK_CHAR_COLOR (MAKE_COLOR(BLACK, BLACK))
 #define GRAY_CHAR (MAKE_COLOR(BLACK, BLACK) | BRIGHT)
 #define RED_CHAR (MAKE_COLOR(BLUE, RED) | BRIGHT)
 // 字符颜色
-#define BLACK 0x0                       /* 0000 */
-#define WHITE 0x7                       /* 0111 */
-#define RED 0x4                         /* 0100 */
-#define GREEN 0x2                       /* 0010 */
-#define BLUE 0x1                        /* 0001 */
-#define FLASH 0x80                      /* 1000 0000 */
-#define BRIGHT 0x08                     /* 0000 1000 */
+#define BLACK 0x0   /* 0000 */
+#define WHITE 0x7   /* 0111 */
+#define RED 0x4     /* 0100 */
+#define GREEN 0x2   /* 0010 */
+#define BLUE 0x1    /* 0001 */
+#define FLASH 0x80  /* 1000 0000 */
+#define BRIGHT 0x08 /* 0000 1000 */
 #define MAKE_COLOR(x, y) ((x << 4) | y)
 // 终端参数 设置
 #define TERMINAL_WIDTH 80
+
+// 系统中存在的进程的最大个数
+#define MAX_PROCESS_NUM 10
 
 #endif

@@ -48,9 +48,24 @@ extern u32 k_reenter;
 // 用于系统计时用的变量
 extern int ticks;
 
-//就绪队列头指针
-//其实当前只有一个任务队列,这个指针指向当前下一个执行的进程
-extern PROCESS* p_proc_ready;
+//系统预定义进程初始状态
+extern TASK task_table[];
+// 系统终端进程初始状态
+extern TASK tty_task_table[];
+// 把原本乱七八糟的进程表统一为三个链表
+// 同时使用一个栈来存放预定义好的进程链表节点
+extern int PCB_stack_top;
+extern PROCESS PCB_stack[];
+
+// 用于进程调度的三个队列的头尾指针和尾节点
+extern PROCESS* p_proc_ready_head;
+extern PROCESS p_proc_ready_tail;
+extern PROCESS* p_proc_wait_head;
+extern PROCESS p_proc_wait_tail;
+extern PROCESS* p_proc_pause_head;
+extern PROCESS p_proc_pause_tail;
+
+// 当前终端号
 extern int t_present_terminal;
 
 //中断处理函数指针数组
@@ -59,12 +74,6 @@ extern irq_handler irq_table[];
 //系统调用处理函数指针数组
 extern system_call sys_call_table[];
 u32 kernel_read_keyboard();
-
-//系统预定义进程初始状态
-extern TASK task_table[];
-
-// 系统终端进程初始状态
-extern TASK tty_task_table[];
 
 //键盘输入缓冲区
 //键盘处理结果结构体缓冲区

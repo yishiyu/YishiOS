@@ -10,14 +10,7 @@ void tty_0() {
 
 // 第二个终端
 void tty_1() {
-    // TERMINAL* terminal = &terminal_console_table[1];
-    // terminal_init(terminal);
-    // terminal_main(terminal);
-    while (1) {
-        for (int i = 0; i < 100; i++) {
-            for (int j = 0; j < 1000; j++) {
-            }
-        }
-        sys_terminal_write(0," lalala ");
-    }
+    TERMINAL* terminal = &terminal_console_table[1];
+    terminal_init(terminal);
+    terminal_main(terminal);
 }

@@ -7,7 +7,7 @@
 	extern	gdt_ptr
 	extern	idt_ptr
 	extern	k_reenter
-	extern p_proc_ready
+	extern p_proc_ready_head
 	extern tss
 ; 导入全局变量结束
 
@@ -122,7 +122,7 @@ sys_call:
 	sti
 
 	push	esi
-	push 	dword [p_proc_ready]
+	push 	dword [p_proc_ready_head]
 	push	edx
 	push	ecx
 	push 	ebx
@@ -319,7 +319,7 @@ end_without_switch_stack:
 ; 用于从中断恢复到进程中
 ; 普通地从中断恢复到进程
 restart:
-	mov	esp, [p_proc_ready]
+	mov	esp, [p_proc_ready_head]
 	lldt	[esp + P_LDT_SEL]
 	lea	eax, [esp + P_STACKTOP]
 	mov	dword [tss + TSS3_S_SP0], eax

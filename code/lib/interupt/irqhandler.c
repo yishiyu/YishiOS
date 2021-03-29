@@ -5,7 +5,7 @@
 // 具体情况看include/base/kernel.inc 中关于中断处理函数的宏定义
 void clock_handler(int irq) {
     ticks++;
-    p_proc_ready->ticks--;
+    p_proc_ready_head->ticks--;
     // disp_str("#");
 
     //如果从中断进程进入其中,则此时
@@ -13,7 +13,7 @@ void clock_handler(int irq) {
         return;
     }
 
-    if (p_proc_ready->ticks > 0) {
+    if (p_proc_ready_head->ticks > 0) {
         return;
     }
 
@@ -26,7 +26,7 @@ void clock_handler(int irq) {
         for (p = proc_table; p < proc_table + BASE_TASKS_NUM; p++) {
             if (p->ticks > greatest_ticks) {
                 greatest_ticks = p->ticks;
-                p_proc_ready = p;
+                p_proc_ready_head = p;
             }
         }
 
@@ -35,7 +35,7 @@ void clock_handler(int irq) {
         for (terminal_id=0;terminal_id<TERMINAL_NUM;terminal_id++) {
             if (terminal_table[terminal_id].ticks > greatest_ticks) {
                 greatest_ticks = terminal_table[terminal_id].ticks;
-                p_proc_ready = &terminal_table[terminal_id];
+                p_proc_ready_head = &terminal_table[terminal_id];
             }
         }
 
