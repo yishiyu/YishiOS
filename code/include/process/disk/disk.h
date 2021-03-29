@@ -4,6 +4,7 @@
 #include "global.h"
 #include "macro.h"
 #include "struct.h"
+#include "string.h"
 
 // 磁盘命令结构体
 typedef struct disk_cmd {

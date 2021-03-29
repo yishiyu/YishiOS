@@ -74,8 +74,54 @@ void disk_info(MESSAGE* message) {
     port_read(REG_DATA, disk_buffer, SECTOR_SIZE);
 
     // 把磁盘信息转化成纯ascii字符串(存放在disk_buffer后512字节中)
-    // 转化的过程中,字符串的位置是固定的
-    // char* result_buf = &disk_buffer[512];
+    // 转化的过程中,字符串的位置是固定的,下面这一段是借鉴orange的
+    // 由于磁盘数据以小端方式存放,而使用char数组获取数据有点麻烦
+    // 把char数组指针转化为u16指针来操作
+    u16* buf_ptr = (u16*)disk_buffer;
+    char* result_buf = &disk_buffer[512];
+    int i, k;
+    char s[64];
+    struct iden_info_ascii {
+        int idx;
+        int len;
+        char* desc;
+    } iinfo[] = {{10, 20, "HD SN: "},     /* Serial number in ASCII */
+                 {27, 40, "HD Model: "}}; /* Model number in ASCII */
+
+    // 转化相关信息
+    for (k = 0; k < sizeof(iinfo) / sizeof(iinfo[0]); k++) {
+        char* p = (char*)&buf_ptr[iinfo[k].idx];
+
+        // 用这种奇怪的方式复制字符串是因为磁盘传过来的数据是小端存放
+        for (i = 0; i < iinfo[k].len / 2; i++) {
+            s[i * 2 + 1] = *p++;
+            s[i * 2] = *p++;
+        }
+        s[i * 2] = 0;
+
+        result_buf = strcpy(result_buf, iinfo[k].desc);
+        result_buf = strcpy(result_buf, s);
+        *(result_buf++) = '\n';
+    }
+    *result_buf = 0;
+
+    // 获取其他信息
+    result_buf = strcpy(result_buf, "LBA supported: ");
+    if (buf_ptr[49] & 0x0200)
+        result_buf = strcpy(result_buf, "yes \n");
+    else
+        result_buf = strcpy(result_buf, "no \n");
+
+    result_buf = strcpy(result_buf, "LBA48 supported: ");
+    if (buf_ptr[83] & 0x0400)
+        result_buf = strcpy(result_buf, "yes \n");
+    else
+        result_buf = strcpy(result_buf, "no \n");
+
+    int sectors = (((int)buf_ptr[61] << 16) + buf_ptr[60]) / 2048;
+    result_buf = strcpy(result_buf, "Disk size (MB) : ");
+    result_buf = itoa(sectors, result_buf);
+    *result_buf = 0;
 
     // 把信息送给调用者
     void* la = (void*)va2la(message->u.disk_message.pid,
@@ -83,7 +129,8 @@ void disk_info(MESSAGE* message) {
     u32 bytes_count = (SECTOR_SIZE > message->u.disk_message.bytes_count)
                           ? message->u.disk_message.bytes_count
                           : SECTOR_SIZE;
-    phys_copy(la, (void*)va2la(PID_DISK_SERVER, disk_buffer), bytes_count);
+    phys_copy(la, (void*)va2la(PID_DISK_SERVER, &disk_buffer[512]),
+              bytes_count);
 }
 
 // 磁盘操作函数

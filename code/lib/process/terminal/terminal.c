@@ -2,21 +2,14 @@
 
 // 第一个终端,同时也是默认的终端
 void tty_0() {
-    MESSAGE message;
+    
     char buffer[1024];
     memset(&buffer, 0, 1024);
 
     while (1) {
-        message.source = PID_TTY0;
-        message.type = DISK_SYSTEM;
-        message.u.disk_message.function = DISK_INFO;
-        message.u.disk_message.pid = PID_TTY0;
-        message.u.disk_message.buffer = &buffer;
-        message.u.disk_message.bytes_count = 1024;
-        sys_sendrec(SEND, DISK_SYSTEM, &message, PID_TTY0);
-        sys_sendrec(RECEIVE, DISK_SYSTEM, &message, PID_TTY0);
+        sys_get_diskinfo(buffer,512,PID_TTY0);
+        disp_str(buffer);
         int i=0;
-        int j=1;
     }
     // TERMINAL* terminal = &terminal_table[0];
     // terminal_init(terminal);
